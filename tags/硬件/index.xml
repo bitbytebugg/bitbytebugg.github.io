@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>硬件 on Weijie&#39;s Blog Site</title>
+        <link>https://example.com/tags/%E7%A1%AC%E4%BB%B6/</link>
+        <description>Recent content in 硬件 on Weijie&#39;s Blog Site</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Weijie</copyright>
+        <lastBuildDate>Sat, 10 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/%E7%A1%AC%E4%BB%B6/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>计算机总线</title>
+        <link>https://example.com/p/computer-bus/</link>
+        <pubDate>Sat, 10 Aug 2024 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/computer-bus/</guid>
+        <description>&lt;img src="https://example.com/p/computer-bus/cover.jpg" alt="Featured image of post 计算机总线" /&gt;&lt;h2 id=&#34;概念&#34;&gt;概念
+&lt;/h2&gt;&lt;p&gt;定义：总线是计算机系统中用于在各组件之间传输数据、地址和控制信号的公共通信通道。它是一组电子线路，允许处理器、内存、输入输出设备等通过共享路径进行通信和协调。总线的主要功能包括数据传输、地址传输和控制信号传输，确保系统各部件能够高效、有序地工作。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;我的理解&lt;/strong&gt;：总线的物理实体就是CPU、内存、显卡和其他主板芯片之间用来连接各个芯片引脚的导线。但是这些导线上的信号、时序、电气和机械特性有一个标准/规范。具体来看ISA总线、PCI总线等实际就是制定的不同的这些规范。显然总线的这些标准和规范不是在总线的物理实体（导线）上实现的，而是在需要总线连接的芯片/组件/设备内部实现的。举个例子如果一个芯片在a1, a2, &amp;hellip;, a32这些引脚实现了PCI总线的标准，那连接a1, &amp;hellip;, a32这些引脚和导线就是PCI总线。&lt;/p&gt;
+&lt;p&gt;HDMI是否是一种总线，不是，HDMI和总线的区别：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;功能范围&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;总线&lt;/strong&gt;：用于在计算机系统内部或外部传输数据、地址和控制信号，支持多种设备通信。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;HDMI&lt;/strong&gt;：专注于音视频信号的传输，不涉及地址或控制信号。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;连接方式&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;总线&lt;/strong&gt;：允许多个设备通过共享通道通信。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;HDMI&lt;/strong&gt;：通常是点对点连接，如电脑连接显示器。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;协议复杂性&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;总线&lt;/strong&gt;：需要复杂的协议管理数据传输和设备通信。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;HDMI&lt;/strong&gt;：协议相对简单，主要用于音视频流的传输。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;分类&#34;&gt;分类
+&lt;/h2&gt;&lt;p&gt;按照数据传输方式，总线可分为：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;并行总线：每个信号都有自己的信号线，传输速度快，接口简单，但是使用的电缆线多。&lt;/li&gt;
+&lt;li&gt;串行总线：多个信号复用少量信号线，电缆线数少，便于远距离传播，信号传输慢，接口复杂。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;按照总线在系统结构中的层次位置，可以分为：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;片内总线（On-Chip Bus）：在集成电路的内部，用来连接各功能单元的信息通路。如CPU芯片内部连接ALU、寄存器、控制器等部件的信息通路。&lt;/li&gt;
+&lt;li&gt;内部总线（Internal Bus）：用于计算机内部模块之间的通信。如主板上连接CPU、存储器、I/O接口等各种芯片的信息通路包括ISA、MCA、PCI、PCI-Express等。&lt;/li&gt;
+&lt;li&gt;外部总线（External Bus）：用于计算机之间或计算机与设备之间通信包括IEEE488、RS232、RS485、USB。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;按照总线内部信息传输的性质，可以分为：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;地址总线（Adress Bus）：用于传递地址信息。是==单向三态总线==，只能从CPU传向I/O端口或存储器，地址总线位数决定了CPU可直接寻址的内存空间大小，注意IO设备和内存的独立编址和统一编址。&lt;/li&gt;
+&lt;li&gt;数据总线（Data Bus）：用于传递数据信息。是==双向三态总线==，其总线位数通常与微处理器字长一致。&lt;/li&gt;
+&lt;li&gt;控制总线（Control Bus）：用于传递控制信息。包括控制、时序和中断信号线，单双向都有，对总线性能起关键作用。&lt;/li&gt;
+&lt;li&gt;电源总线（Power Bus）：用于向系统提供电源。PCI-E总线供电能力是75W&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;性能指标&#34;&gt;性能指标
+&lt;/h2&gt;&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;总线带宽（Bandwidth）&lt;/strong&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;定义：总线在单位时间内能够传输的数据量。&lt;/li&gt;
+&lt;li&gt;单位：通常以兆字节每秒（MB/s）或吉字节每秒（GB/s）表示。&lt;/li&gt;
+&lt;li&gt;重要性：带宽越高，总线传输数据的能力越强。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;2. &lt;strong&gt;时钟频率（Clock Frequency）&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;定义：总线的工作频率，即总线每秒钟的时钟周期数。&lt;/li&gt;
+&lt;li&gt;单位：通常以兆赫兹（MHz）或吉赫兹（GHz）表示。&lt;/li&gt;
+&lt;li&gt;重要性：时钟频率越高，总线传输数据的速度越快。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;3. &lt;strong&gt;总线宽度（Bus Width）&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;定义：总线一次传输的数据位数。&lt;/li&gt;
+&lt;li&gt;单位：以位（bit）表示，如32位、64位。&lt;/li&gt;
+&lt;li&gt;重要性：总线宽度越大，一次传输的数据量越多。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- KaTeX --&gt;
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css&#34; integrity=&#34;sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV&#34; crossorigin=&#34;anonymous&#34;&gt;
+&lt;script defer src=&#34;https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js&#34; integrity=&#34;sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8&#34; crossorigin=&#34;anonymous&#34;&gt;&lt;/script&gt;
+&lt;script defer src=&#34;https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js&#34; integrity=&#34;sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05&#34; crossorigin=&#34;anonymous&#34; onload=&#34;renderMathInElement(document.body);&#34;&gt;&lt;/script&gt;
+$$总线带宽(MB/s) = 1/8 \times 总线宽度 \times 总线频率$$</description>
+        </item>
+        <item>
+        <title>计算机启动过程</title>
+        <link>https://example.com/p/computer-booting-process/</link>
+        <pubDate>Mon, 05 Aug 2024 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/computer-booting-process/</guid>
+        <description>&lt;img src="https://example.com/p/computer-booting-process/cover.jpg" alt="Featured image of post 计算机启动过程" /&gt;&lt;p&gt;我们启动计算机的第一步实际上是从插上主机电源开始的，因为从此时开始主板上已经产生电信号了。所以我们的故事也从计算机电源的开启过程讲起。&lt;/p&gt;
+&lt;h2 id=&#34;atx供电电路&#34;&gt;ATX供电电路
+&lt;/h2&gt;&lt;p&gt;PC电源不仅输出电压，还要与主板有信号联系，两者在时间次序上有一定的关系，这个次序也是数字电路中经常提到的概念——时序。时序是电源与主板良好配合的重要条件，也是导致电脑无法正常开关机，以及电源与主板不兼容的最常见原因。&lt;/p&gt;
+&lt;p&gt;ATX电源和主板在开机过程中交互的信号有两个：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;PS_ON#: #表示这个信号是低电平有效的，这个信号通常由主板控制（机箱开关按钮连接的是主板上的IO芯片），电源收到这个信号则会启动电源，提供5V, 3.3V, 12V各路电压。&lt;/li&gt;
+&lt;li&gt;PWR_GOOD/PWR_OK: 也写作P.G或者P.OK信号。电源收到PS_ON#信号后启动，然后在所有输出电压正常建立后的0.1~0.5秒内，电源将会把P.G信号变成高电平传回给主板，表示电源已经准备好，然后主板开始启动和运行。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;ATX电源和主板在关机过程中信号交互过程是：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;主板开机电路驱动PS_ON#恢复为高电平&lt;/li&gt;
+&lt;li&gt;电源拉低P.G信号，告诉主板电源马上就要下电，主板立刻进行硬件的紧急复位，以保护硬件不会受损。&lt;/li&gt;
+&lt;li&gt;很短的一段时间后电源各路电压关闭，+5VSB的待机电压不会关闭。（所以只要插上电源插头，即使没有打开开机按钮，主板上也是带电的）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;设计P.G信号的原因&lt;/strong&gt;：&lt;/p&gt;
+&lt;p&gt;微机开机后，由于各路输出电压的时序不同，易对主板的工作状态造成混乱，因此，电源中特设了一个延迟的P.G信号提供给主机板，该信号从IBM－PC诞生时就有，一直沿用至今。对该信号的要求是：开机后，相对于＋5V电压，延迟100ms～300ms产生，在关机时，则提前100ms消失。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;电源保持时间&lt;/strong&gt;：&lt;/p&gt;
+&lt;p&gt;另一个概念 &lt;a class=&#34;link&#34; href=&#34;https://www.expreview.com/58036.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;电源保持时间&lt;/a&gt;和 P.G信号的关系不大。电源保持时间是指在失去交流电输入时，PC电源在100%负载的情况下，各路输出的保持时间（因为有电容元件的关系，插头断电后电源输出线上的电流不会立刻归0，一般主电容越大，这个电流持续时间越长）。ATX规范里这项标准要求不低于16ms。当非正常关机时，主板无法给出关机信号，此时电源会探测到交流断电，并把P.G信号变为低电平通知主板，主板立刻进行硬件的紧急复位，以保护硬件不会受损。这种情况电源通知主板断电后，至少还要保持千分之一秒的正常输出电压，供主板进行复位，否则有可能造某些硬件的损坏。我猜测这里保持时间超过1ms并不能保证硬件不损坏，因为上面说过各路电压在P.G信号消失的100ms后断电，所以如果保持时间在100ms以上应该是可以保证硬件不损坏的。但是ATX规范的电源保持时间16ms虽然比1ms大但是小于非断电保持时间100ms，即使达到ATX规范给的断电保持时间，还是有可能出现硬件损坏的。所以电源断电保持时间这个参数并不是严格意义上的断电保护机制，而是一种确保断电保护机制（UPS）能够实行的措施，所以16ms只是给UPS启动并正常工作的时间。&lt;/p&gt;
+&lt;h2 id=&#34;主板触发电路&#34;&gt;主板触发电路
+&lt;/h2&gt;&lt;p&gt;“主板触发电路”应该是电脑维修中的一个专业的术语。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/computer-booting-process/%E4%B8%BB%E6%9D%BF%E8%A7%A6%E5%8F%91%E7%94%B5%E8%B7%AF.webp&#34;
+	width=&#34;1920&#34;
+	height=&#34;879&#34;
+	srcset=&#34;https://example.com/p/computer-booting-process/%E4%B8%BB%E6%9D%BF%E8%A7%A6%E5%8F%91%E7%94%B5%E8%B7%AF_hu_f0e327749c38e163.webp 480w, https://example.com/p/computer-booting-process/%E4%B8%BB%E6%9D%BF%E8%A7%A6%E5%8F%91%E7%94%B5%E8%B7%AF_hu_d222bfac1a88b306.webp 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;218&#34;
+		data-flex-basis=&#34;524px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;我觉得这个触发电路示意图画的很好，抽象并简化了芯片之间的链接和交互信号，对于初学者很友好。&lt;a class=&#34;link&#34; href=&#34;https://www.bilibili.com/video/BV1Wt411j7cA/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;台式电脑主板触发电路原理-成都匠巢维修技术学校&lt;/a&gt; 有了触发电路的知识，我们就可以知道只要插上PSU的插头并打开其开关，主板上就会有+5V的待机信号（专业术语叫做 +5V Stand by，简写为+5VSB）。按下机箱开关会拉低IO芯片的一个引脚，然后IO芯片连接PCH（南桥）的一个引脚同步被拉低，此时PCH检查待机条件，满足就通过同一个引脚发送SLP_S3#信号给IO芯片，这时IO芯片在通过下方红色引脚触发电源的开机信号PWR_ON#，电源开始启动并提供各路电压及向主板发出P.G信号。&lt;/p&gt;
+&lt;h2 id=&#34;主板复位电路&#34;&gt;主板复位电路
+&lt;/h2&gt;&lt;p&gt;复位电路是主板启动过程中非常关键的部分，确保各个组件能够正确初始化。下面是复位电路的基本工作原理及一些关键点：&lt;a class=&#34;link&#34; href=&#34;https://www.lispcode.com/post/zd5s1r699hr0fqpm/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;复位电路工作原理&lt;/a&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;复位信号源：
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;复位信号产生&lt;/strong&gt;：主板上的所有复位信号主要由南桥（ICH, I/O Controller Hub）芯片产生。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;复位信号来源&lt;/strong&gt;：南桥的复位信号来源于ATX电源的灰线（PW_OK），该信号在电源启动时有一个短暂的延迟（通常为100-500毫秒）。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;信号变化&lt;/strong&gt;：灰线在电源启动瞬间从0V跳变为5V，这个0-1的脉冲信号会直接或间接（通过门电路）作用于南桥，使南桥复位。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;南桥复位
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;南桥复位条件&lt;/strong&gt;：南桥在收到稳定的灰线信号后，内部的复位信号产生电路会将5V电位转换成不同的复位信号，分配给主板上的各个需要复位的设备或模块。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;复位信号分配
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;复位信号分配&lt;/strong&gt;：南桥接收到电源良好信号（PWR_GD）后，会产生一个初始的复位信号PCIRST#，并通过复位门电路逻辑转换为多个复位信号。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;PCIRST1#&lt;/strong&gt;：用于复位板载设备，如I/O芯片、BIOS、北桥、1394芯片等。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;PCIRST2#（或DEVRST#、SLOTRST#）&lt;/strong&gt;：用于复位PCI插槽上的设备。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;IDERST#&lt;/strong&gt;：用于复位IDE设备。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;CPU复位
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;CPURST#产生&lt;/strong&gt;：当北桥接收到PCIRST1#信号并且其电压及时钟条件满足后，会通过内部电路转换为CPURST#信号来对CPU进行复位。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;cpu-reset-vector&#34;&gt;CPU Reset Vector
+&lt;/h2&gt;&lt;p&gt;关于CPU复位向量网上有两种解答，0xFFFF_FFF0、0xF_FFF0。当然第一种是对的，这个Intel SDM vol3 chapter9有详细说明(9.1.4 First Instruction Executed)就是第一种。这个地址自从intel发布80386后就延续下来了。第二种地址在早年间也是对的，在intel还在使用16位cpu也就是8086和8088时，地址空间是1M，第一条指令的地址就是0xF_FFF0。回答这种地址应该看的是早年的书，或者是理解错了，认为PC刚开机时是16位实模式，这种模式的地址计算方式是使用CS和IP寄存器中的值($CS \times 16 + IP$)，这么算下来确实是0xF_FFF0。但是复位时并不是使用这种计算方式，&lt;strong&gt;虽然CPU初始确实是16位实模式，但这是在复位后进入16位模式的&lt;/strong&gt;。实际上，Intel规定32位、64位CPU复位向量就是0xFFFF_FFF0，只有CS寄存器中初始值被改变后才进入16位模式。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/computer-booting-process/intel-sdm-first-instruction-exe.webp&#34;
+	width=&#34;1102&#34;
+	height=&#34;431&#34;
+	srcset=&#34;https://example.com/p/computer-booting-process/intel-sdm-first-instruction-exe_hu_e69562ab52605430.webp 480w, https://example.com/p/computer-booting-process/intel-sdm-first-instruction-exe_hu_7ce2cb765a92fec5.webp 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;255&#34;
+		data-flex-basis=&#34;613px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;上图第二段话说CS寄存器有两部分：可见的selector部分（存放在CS寄存器里）和不可见的基地址部分。在实模式里，基地址的值是通过将16位selector的值左移4位产生的20位基地址值。然后在硬件复位期间，位于CS寄存器里的可见selector部分加载的值是F000H，而不可见的基地址部分加载的值是FFFF_0000h，此时EIP寄存器的是FFF0h，所以复位时的开始取值地址就是不可见基地址值+EIP的值（即 FFFF_0000h + FFF0h = FFFF_FFF0h）。&lt;/p&gt;
+&lt;p&gt;上图第三段话说一旦CS寄存器在硬件复位后加载了一个新的值，处理器才会执行实模式的地址计算逻辑（也就是 CS base address = CS segment selector * 16）。所以为了保证在EPROM里的软件初始化代码完全执行之前，代码里都不能包含一个far jump或者far call或者一个中断发生（这些都会导致CS selector的值被改变）。当然这里Intel给的做法并不需要奉为圭臬，我们可以第一条指令就用长跳转（实际BIOS的写法）然后再从16位模式切换到32位或者64位模式。&lt;/p&gt;
+&lt;p&gt;CPU被复位（复位/使能都是电子技术专业术语）后，CPU开始寻址 0xFFFF_FFF0h （这个地址就被叫做reset vector）。该地址位于4GB地址空间之下，这个地址被永久的映射到在&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Serial_Peripheral_Interface&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;SPI&lt;/a&gt; flash memory的一块区域，该区域存储着UEFI的固件。然后CPU从flash memory里开始执行指令然后security phase (UEFI SEC)被初始化。固件在开始的大约20条指令里将CPU切换到64-bit mode（flat protected mode）。Main memory (RAM) 此时还没有被初始化，所以固件会配置CPU caches作为memory使用，此时下一个阶段是 PEI and DXE。注意这些仅仅适用于x86-64平台，在其他系统，例如嵌入式 ARM SoCs，过程会完全不同。&lt;a class=&#34;link&#34; href=&#34;https://www.quora.com/How-exactly-does-the-CPU-read-from-the-BIOS-chip-through-the-chipset-I-know-a-lot-about-this-process-but-not-this-exact-detail&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;ref.&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;BIOS代码存储在EPROM里，通过硬件也就是北桥南桥芯片把EPROM内的程序映射到两个地方，一个是从FFFF_FFFFh（4GB）处向下扩展，另一个是从F_FFFFh（1MB）处向下扩展）。
+第一个映射是因为现代CPU第一条指令在FFFF_FFF0h，所以EPROM必须在那个位置。第二个映射是为兼容16位CPU时代。注意此时内存还无法使用，只是把地址空间分配给了EPROM，CPU访问这段地址就相当于在直接访问EPROM里的数据。这里地址空间受CPU地址线个数控制，不是受RAM的空间限制。&lt;/p&gt;
+&lt;h2 id=&#34;南桥芯片和北桥芯片&#34;&gt;南桥芯片和北桥芯片
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/computer-booting-process/%E5%8D%97%E6%A1%A5%E5%8C%97%E6%A1%A5%E6%9E%B6%E6%9E%84%E5%9B%BE.webp&#34;
+	width=&#34;488&#34;
+	height=&#34;360&#34;
+	srcset=&#34;https://example.com/p/computer-booting-process/%E5%8D%97%E6%A1%A5%E5%8C%97%E6%A1%A5%E6%9E%B6%E6%9E%84%E5%9B%BE_hu_66c9f48d447fcf8f.webp 480w, https://example.com/p/computer-booting-process/%E5%8D%97%E6%A1%A5%E5%8C%97%E6%A1%A5%E6%9E%B6%E6%9E%84%E5%9B%BE_hu_e2e1859f240adc26.webp 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;135&#34;
+		data-flex-basis=&#34;325px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;南桥北桥架构图 &lt;a class=&#34;link&#34; href=&#34;https://www.cnblogs.com/aozhejin/p/16102414.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;ref.&lt;/a&gt; 可以看到南桥是接在北桥下的，南桥要和CPU通信必须要通过北桥，即使后面北桥被放到CPU内部且南桥改成了PCH后依然遵循南桥通过北桥和CPU通信的这个标准。&lt;/p&gt;
+&lt;h3 id=&#34;北桥芯片&#34;&gt;北桥芯片
+&lt;/h3&gt;&lt;p&gt;北桥芯片分为两个部分：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;MCH也就是内存控制器中心，负载连接CPU, AGP总线和内存&lt;/li&gt;
+&lt;li&gt;IOH也就是Input Output Hub&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;南桥芯片&#34;&gt;南桥芯片
+&lt;/h3&gt;&lt;p&gt;南桥芯片就一个部分ICH也就是Input/Output Controller Hub。&lt;/p&gt;
+&lt;h2 id=&#34;什么是总线&#34;&gt;什么是总线
+&lt;/h2&gt;&lt;p&gt;参考 &lt;a class=&#34;link&#34; href=&#34;https://example.com/p/computer-bus/&#34; &gt;计算机总线&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;前端总线&#34;&gt;前端总线
+&lt;/h2&gt;&lt;p&gt;Front Side Bus，缩写FSB。早期计算机北桥的MCH和IOH都在CPU外部，都是是通过FSB和CPU连接，所以此时它是CPU和外界交换数据的主要通道（内存，显卡，还有南桥的一些设备）。现代CPU已经摒弃了FSB，采用HT总线或者QPI总线。&lt;/p&gt;
+&lt;h2 id=&#34;ht总线&#34;&gt;HT总线
+&lt;/h2&gt;&lt;p&gt;Hyper-Transport总线，是AMD为K8平台专门设计的高速串行总线。它的发展历史可回溯到1999年，原名为“LDT总线”(Lightning Data Transport，闪电数据传输)。  2001年7月这项技术正式推出，AMD同时将它更名为Hyper-Transport。随后，Broadcom、Cisco、Sun、NVIDIA、ALI、ATI、Apple等许多企业均决定采用这项新型总线技术，而AMD也借此组建Hyper-Transport技术联盟（HTC），从而将Hyper-Transport推向产业界。Hyper-Transport本质是一种为主板上的集成电路互连而设计的端到端总线技术，目的是加快芯片间的数据传输速度。Hyper-Transport技术在AMD平台上使用后，是指AMD CPU到主板芯片之间的连接总线（如果主板芯片组是南北桥架构，则指CPU到北桥），即HT总线，类似于Intel平台中的前端总线（FSB），但Intel平台目前还没采用。在基础原理上，Hyper-Transport与目前的PCI Express非常相似，都是采用点对点的单双工传输线路，引入抗干扰能力强的LVDS信号技术，命令信号、地址信号和数据信号共享一个数据路径，支持DDR双沿触发技术等等，但两者在用途上截然不同—PCI Express作为计算机的系统总线，而Hyper-Transport则被设计为两枚芯片间的连接，连接对象可以是处理器与处理器、处理器与芯片组、芯片组的南北桥、路由器控制芯片等等，属于计算机系统的内部总线范畴。Hyper-Transport技术从规格上讲已经用HT1.0、HT2.0、HT3.0、HT3.1。&lt;/p&gt;
+&lt;h2 id=&#34;qpi总线&#34;&gt;QPI总线
+&lt;/h2&gt;&lt;p&gt;主板上一般有两个重要的芯片组，一个称谓北桥，一个称南桥。FSB总线是将CPU连接到北桥芯片的总线。由于FSB不够用，设计上先天不足（这个时候的内存控制器在北桥芯片组内，CPU和内存交换数据总要通过北桥，相当于两个人说话，总要通过第三方，很不方便），因此intel想了个办法，把内存控制器做到了CPU内部，让CPU通过QPI总线直接和内存通讯，不再通过北桥芯片组，这很明显加快了速度。(注意官方名字叫做CSI(Common System Interface公共系统界面)，有的资料中会写CSI)。&lt;/p&gt;
+&lt;p&gt;QPI是Intel和AMD的HT总线竞争推出的东西。&lt;/p&gt;
+&lt;h2 id=&#34;dmi总线&#34;&gt;DMI总线
+&lt;/h2&gt;&lt;p&gt;后来intel发现，CPU通过北桥与显卡相连也很麻烦，不如直接通信方便，这样数据交换更加方便，于是干脆把PCI-E控制器也整合了进了CPU内部，这样一来，相当于北桥芯片组整个都集成到了CPU内部，主板上不再需要这个芯片组了，只剩下了南桥，这时CPU直接与“南桥”相连，他们之间的总线叫做DMI。（北桥的MCH和IOH是逐步集成到CPU内部的）DMI取代了以前的Hub-Link总线。DMI采用点对点的连接方式，具有PCI-E总线的优势。&lt;/p&gt;
+&lt;p&gt;Intel CPU 经过FSB—&amp;gt;QPI-&amp;gt;DMI总线的发展，CPU内部集成了内存控制器和PCI-E控制器，实现了直接和内存及显卡进行数据传输，而由于南桥则整合了几乎所有的I/O功能，因此CPU具备的DMI总线有多高频率意义已经不大了，因为磁盘类设备的速率无法跟上，再高的DMI总线也没有用。&lt;/p&gt;
+&lt;p&gt;最后通过一张图来对比这这几种总线之间的构建：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/computer-booting-process/%E5%90%84%E7%A7%8D%E6%80%BB%E7%BA%BF%E5%AF%B9%E6%AF%94.jpg&#34;
+	width=&#34;500&#34;
+	height=&#34;671&#34;
+	srcset=&#34;https://example.com/p/computer-booting-process/%E5%90%84%E7%A7%8D%E6%80%BB%E7%BA%BF%E5%AF%B9%E6%AF%94_hu_d3c86056dc3d3982.jpg 480w, https://example.com/p/computer-booting-process/%E5%90%84%E7%A7%8D%E6%80%BB%E7%BA%BF%E5%AF%B9%E6%AF%94_hu_7498d0605438b485.jpg 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;74&#34;
+		data-flex-basis=&#34;178px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;opi总线&#34;&gt;OPI总线
+&lt;/h2&gt;&lt;p&gt;OPI一般用于Intel的低压CPU（U/Y），全称是 On Package DMI interconnect Interface。OPI有两种，2GT/s * 4 lane （最高理论带宽 2 GB/s）和 4GT/s * 8 lane （最高理论带宽 4 GB/s）。Intel笔记本的H和S系列的CPU需要一个分开的“Platform Controller Hub“， U和Y系列的CPU属于MCP（Multi-Chip Packages），也就是说把PCH集成在了CPU里面在H/S系列的CPU中，CPU和PCH的连接是通过DMI的，U/Y使用的是OPI。OPI相对消耗功率更低，但是如果你是2GT/s * 4 lane的OPI， 你可能会影响一部分SSD的性能。&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

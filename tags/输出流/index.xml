@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>输出流 on Weijie&#39;s Blog Site</title>
+        <link>https://example.com/tags/%E8%BE%93%E5%87%BA%E6%B5%81/</link>
+        <description>Recent content in 输出流 on Weijie&#39;s Blog Site</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Weijie</copyright>
+        <lastBuildDate>Tue, 09 Jul 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/%E8%BE%93%E5%87%BA%E6%B5%81/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Shell重定向符号</title>
+        <link>https://example.com/p/shell-redirection-symbol/</link>
+        <pubDate>Tue, 09 Jul 2024 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/shell-redirection-symbol/</guid>
+        <description>&lt;img src="https://example.com/p/shell-redirection-symbol/cover.jpg" alt="Featured image of post Shell重定向符号" /&gt;&lt;h2 id=&#34;标准流概念和重定向符号语法&#34;&gt;标准流概念和重定向符号语法
+&lt;/h2&gt;&lt;p&gt;在shell脚本中，默认情况下，总是有三个文件处于打开状态，标准输入、标准输出、标准错误，它们分别对应的文件描述符是0，1，2 。这三个文件描述符常和重定向符号一起使用。&lt;/p&gt;
+&lt;p&gt;重定向的输入流和输出流/错误流都是指的执行程序的0，1，2这三个文件描述符，而重定向符号 &lt;code&gt;&amp;gt;&lt;/code&gt; 或者 &lt;code&gt;&amp;lt;&lt;/code&gt; 的左边是一个执行的程序（可能带着参数），右边是一个文件。&lt;/p&gt;
+&lt;h2 id=&#34;输出流包括错误流的重定向符号是-&#34;&gt;输出流（包括错误流）的重定向符号是 &lt;code&gt;&amp;gt;&lt;/code&gt;:
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;&amp;gt;&lt;/code&gt; 是将左边的输出流重定向到右边文件&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;&amp;gt;&amp;gt;&lt;/code&gt; 将左边的输出流以追加的方式重定向到右边&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;1&amp;gt;&lt;/code&gt; 左边的输出流重定向右边，和 &lt;code&gt;&amp;gt;&lt;/code&gt; 等效，中间不能有空格&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;2&amp;gt;&lt;/code&gt; 左边的错误流重定向到右边，中间不能有空格&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;输出流（包括错误流）&lt;strong&gt;合并重定向&lt;/strong&gt; 的操作是&lt;code&gt;&amp;amp;&amp;gt;&lt;/code&gt;和&lt;code&gt;2&amp;gt;&amp;amp;1&lt;/code&gt;，它们都是将标准输出和标准错误合并重定向到一个目标，但是语法和行为上有一些细微区别：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;前者可以直接合并输出和错误到右边的文件；后者需要结合 &lt;code&gt;&amp;gt;&lt;/code&gt; 使用，稍显复杂。&lt;strong&gt;不结合使用时只合并左边程序的输出和错误，右边不能接一个文件&lt;/strong&gt;。总之就是前者用法是直接合并流到文件，而后者自身单独使用表示只合并流。
+&lt;ul&gt;
+&lt;li&gt;例如&lt;code&gt;ls file &amp;amp;&amp;gt; output.log&lt;/code&gt;等价于&lt;code&gt;ls file &amp;gt; output.log 2&amp;gt;&amp;amp;1&lt;/code&gt;。而 &lt;code&gt;ls file 2&amp;gt;&amp;amp;1&lt;/code&gt; 单独使用只表示将错误流合并到输出流，不会重定向到某个文件。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;2&amp;gt;&amp;amp;1&lt;/code&gt; 的使用要注意顺序，要么紧跟在某个命令后面，要么放在命令重定向之后。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;前者是 Bash扩展语法，可能不兼容某些shell终端；后者是POSIX标准语法，兼容性更好。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;输入流的重定向符号是-&#34;&gt;输入流的重定向符号是 &lt;code&gt;&amp;lt;&lt;/code&gt;
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;&amp;lt;&lt;/code&gt; 将右边的文件重定向到左边程序的输入流&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;&amp;lt;&amp;lt;&lt;/code&gt; 这个符号也叫做 &lt;strong&gt;Here Document&lt;/strong&gt;, 在Shell中的含义是允许在脚本中直接嵌入输入数据，直到遇到指定的“分界符”为止。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;用法是 &lt;code&gt;[命令] &amp;lt;&amp;lt; 分界符&lt;/code&gt;：
+&lt;ul&gt;
+&lt;li&gt;左边的命令部分可以省略，如果左边的命令省略，用法相当于Shell脚本中的多行注释&lt;/li&gt;
+&lt;li&gt;当左边命令存在时，会将第一遇到分界符到第二次遇到分界符之间的内容作为多行文本传入左边命令的输入流&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;&amp;lt;&amp;lt;&amp;lt;&lt;/code&gt; 这个符号也叫做 &lt;strong&gt;Here String&lt;/strong&gt;，在Shell中的含义是将一个字符串作为标准输入传递给命令。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;用法：&lt;code&gt;命令 &amp;lt;&amp;lt;&amp;lt; &amp;quot;字符串&amp;quot;&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;对比Here Document和Here String：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;前者适合传入通过键盘键入的多行文本&lt;/li&gt;
+&lt;li&gt;后者适合传入通过键盘键入的单行文本&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;特殊的重定向设备文件-devnull&#34;&gt;特殊的重定向设备文件 /dev/null
+&lt;/h2&gt;&lt;p&gt;/dev/null 是一个特殊的文件，写入到它的内容都会被丢弃；如果尝试从该文件读取内容，那么什么也读不到。/dev/null 这个文件非常有用，将命令的输出重定向到它，会起到&amp;quot;禁止输出&amp;quot;的效果。
+如果希望屏蔽 stdout 和 stderr，可以这样写：&lt;code&gt;command &amp;gt; /dev/null 2&amp;gt;&amp;amp;1&lt;/code&gt;&lt;/p&gt;
+&lt;h2 id=&#34;特殊的重定向设备文件-devzero&#34;&gt;特殊的重定向设备文件 /dev/zero
+&lt;/h2&gt;&lt;p&gt;/dev/zero 也是一个特殊的文件，它是一个只读的零字节流源，它具有如下特点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;当你从 /dev/zero 读取时，它会无限地提供空字符（ASCII 码为 0 的字符，即 \0）&lt;/li&gt;
+&lt;li&gt;向 /dev/zero 写入的任何数据都会被静默丢弃&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="print命令 查看历史变量 GDB会记录之前打印的值，通过 $n 引用：\n1 2 (gdb) p 10 + 20 # 输出: $1 = 30 (gdb) p $1 + 5 # 输出: $2 = 35 查看变量派生的实际类型 如果一个基类指针实际指向的是一个派生类类型，如果想要打印这个具体派生类型，需要借助 set p obj on 或者 typeid() ：\n">
+<title>GDB使用指南</title>
+
+<link rel='canonical' href='https://example.com/p/gdb-use-guide/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="GDB使用指南">
+<meta property='og:description' content="print命令 查看历史变量 GDB会记录之前打印的值，通过 $n 引用：\n1 2 (gdb) p 10 + 20 # 输出: $1 = 30 (gdb) p $1 + 5 # 输出: $2 = 35 查看变量派生的实际类型 如果一个基类指针实际指向的是一个派生类类型，如果想要打印这个具体派生类型，需要借助 set p obj on 或者 typeid() ：\n">
+<meta property='og:url' content='https://example.com/p/gdb-use-guide/'>
+<meta property='og:site_name' content='Weijie&#39;s Blog Site'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='GDB' /><meta property='article:tag' content='GDB指南' /><meta property='article:tag' content='Linux调试器' /><meta property='article:published_time' content='2024-10-25T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-10-25T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/gdb-use-guide/cover.jpg' />
+<meta name="twitter:title" content="GDB使用指南">
+<meta name="twitter:description" content="print命令 查看历史变量 GDB会记录之前打印的值，通过 $n 引用：\n1 2 (gdb) p 10 + 20 # 输出: $1 = 30 (gdb) p $1 + 5 # 输出: $2 = 35 查看变量派生的实际类型 如果一个基类指针实际指向的是一个派生类类型，如果想要打印这个具体派生类型，需要借助 set p obj on 或者 typeid() ：\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://example.com/p/gdb-use-guide/cover.jpg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    <img src="/img/avatar.jpg" width="300" height="300" class="site-logo" loading="lazy" alt="Avatar">
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Weijie&#39;s Blog Site</a></h1>
+            <h2 class="site-description">My Tech Blogs</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#print命令">print命令</a>
+      <ol>
+        <li><a href="#查看历史变量">查看历史变量</a></li>
+        <li><a href="#查看变量派生的实际类型">查看变量派生的实际类型</a></li>
+      </ol>
+    </li>
+    <li><a href="#examine命令">examine命令</a></li>
+    <li><a href="#backtrace命令">backtrace命令</a>
+      <ol>
+        <li><a href="#实现原理">实现原理</a></li>
+        <li><a href="#调试信息的关键作用">调试信息的关键作用</a></li>
+        <li><a href="#特殊情况与增强策略">特殊情况与增强策略</a></li>
+      </ol>
+    </li>
+    <li><a href="#frame命令">frame命令</a></li>
+    <li><a href="#info命令">info命令</a>
+      <ol>
+        <li><a href="#查看虚表">查看虚表</a></li>
+        <li><a href="#查看源代码对应机器指令的内存地址">查看源代码对应机器指令的内存地址</a></li>
+        <li><a href="#查看寄存器">查看寄存器</a></li>
+      </ol>
+    </li>
+    <li><a href="#list命令">list命令</a></li>
+    <li><a href="#disassemble命令">disassemble命令</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/gdb-use-guide/">
+                <img src="/p/gdb-use-guide/cover_hu_d83b1cc3b5a84219.jpg"
+                        srcset="/p/gdb-use-guide/cover_hu_d83b1cc3b5a84219.jpg 800w, /p/gdb-use-guide/cover_hu_bb7381124f5f5243.jpg 1600w"
+                        width="800" 
+                        height="883" 
+                        loading="lazy"
+                        alt="Featured image of post GDB使用指南" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/gdb/" >
+                GDB
+            </a>
+        
+            <a href="/categories/linux%E7%BC%96%E7%A8%8B/" style="background-color: #1aedaf; color: #fff;">
+                Linux编程
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/gdb-use-guide/">GDB使用指南</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Oct 25, 2024</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    6 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="print命令">print命令
+</h2><h3 id="查看历史变量">查看历史变量
+</h3><p>GDB会记录之前打印的值，通过 <code>$n</code> 引用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="o">(</span>gdb<span class="o">)</span> p <span class="m">10</span> + <span class="m">20</span>    <span class="c1"># 输出: $1 = 30</span>
+</span></span><span class="line"><span class="cl"><span class="o">(</span>gdb<span class="o">)</span> p <span class="nv">$1</span> + <span class="m">5</span>     <span class="c1"># 输出: $2 = 35</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="查看变量派生的实际类型">查看变量派生的实际类型
+</h3><p>如果一个基类指针实际指向的是一个派生类类型，如果想要打印这个具体派生类型，需要借助 <code>set p obj on</code> 或者 <code>typeid()</code> ：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">set</span> p obj on
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看是否打开</span>
+</span></span><span class="line"><span class="cl">show p obj
+</span></span><span class="line"><span class="cl"><span class="c1"># 美化打印格式，会分多行，而且有缩进，文本展示更清晰</span>
+</span></span><span class="line"><span class="cl">p *<span class="o">(</span>result-&gt;op<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;out
+</span></span></span><span class="line"><span class="cl"><span class="s"># 第一行开始处括号里的就是派生类的具体类型
+</span></span></span><span class="line"><span class="cl"><span class="s">$16 = (expr::add_operation) {
+</span></span></span><span class="line"><span class="cl"><span class="s">...
+</span></span></span><span class="line"><span class="cl"><span class="s">}
+</span></span></span><span class="line"><span class="cl"><span class="s">out</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 借助 typeid() 函数，typeinfo name for 后面就是具体派生类的名称</span>
+</span></span><span class="line"><span class="cl">p typeid<span class="o">(</span>*result-&gt;op<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;out
+</span></span></span><span class="line"><span class="cl"><span class="s">$17 = {
+</span></span></span><span class="line"><span class="cl"><span class="s">  _vptr.type_info = 0x7f93e5c6bbd0 &lt;vtable for __cxxabiv1::__si_class_type_info+16&gt;,
+</span></span></span><span class="line"><span class="cl"><span class="s">  __name = 0x55cf7b0a8090 &lt;typeinfo name for expr::add_operation&gt; &#34;N4expr13add_operationE&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">}
+</span></span></span><span class="line"><span class="cl"><span class="s">out</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="examine命令">examine命令
+</h2><p>简写 <strong>x</strong>，用于查看指定内存地址内容。</p>
+<p>基本语法：<code>x/[数量][格式][单位] 地址</code>：</p>
+<ul>
+<li>数量：要显示的内存单元数</li>
+<li>格式：
+<ul>
+<li>x：十六进制</li>
+<li>d：十进制</li>
+<li>i：指令（反汇编）</li>
+<li>a：地址</li>
+</ul>
+</li>
+<li>单位：每个内存单元是多少个字节。数量 x 单位就是总共显示的内存字节个数。
+<ul>
+<li>b：字节（byte）</li>
+<li>h：半字（2 字节）</li>
+<li>w：字（4 字节，默认）</li>
+<li>g：双字（8 字节）</li>
+</ul>
+</li>
+</ul>
+<p>注意默认显示4个字节，继续回车（不输入命令）会显示接下来的新的4个字节，这个过程可以一直重复。</p>
+<h2 id="backtrace命令">backtrace命令
+</h2><p>简写 <strong>bt</strong>。</p>
+<h3 id="实现原理">实现原理
+</h3><p>理解 backtrace 的关键是理解栈帧（Stack Frame 也称为活动记录 Activation Record）。每次一个函数被调用时，都会在程序的调用栈（Call Stack）上压入一个新的栈帧。</p>
+<p>一个简化版的栈帧链看起来是这样的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">[ Current Frame (funcC) ]  &lt;- RBP/EBP 寄存器指向这里(Current Frame Pointer)
+</span></span><span class="line"><span class="cl">    | Return Address (in funcB)
+</span></span><span class="line"><span class="cl">    | Previous FP  --&gt; [ Frame (funcB) ]
+</span></span><span class="line"><span class="cl">                           | Return Address (in funcA)
+</span></span><span class="line"><span class="cl">                           | Previous FP  --&gt; [ Frame (funcA) ]
+</span></span><span class="line"><span class="cl">                                                  | ... ...
+</span></span><span class="line"><span class="cl">                                                  | Previous Frame Pointer ......
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>GDB的backtrace命令正是通过遍历上述的栈帧链来实现的，这个过程大致如下：</p>
+<ul>
+<li>获取当前帧指针 (Frame Pointer)：GDB 首先会读取当前线程的 CPU 寄存器，特别是 FP (Frame Pointer) 寄存器。在 x86-64 架构上，这通常是 RBP 寄存器；在 ARM 架构上，是 R11 或 R7 寄存器。这个指针指向当前函数栈帧的底部。</li>
+<li>获取当前指令指针 (Instruction Pointer)：读取 IP (Instruction Pointer) 寄存器（x86-64 上是 RIP，ARM 上是 R15/PC）。这告诉了 GDB 当前正在执行的是哪个函数中的哪条指令。</li>
+<li>解析当前函数：GDB 拿着 RIP 的值，去查询程序的调试信息（如 DWARF 格式）。调试信息像一个“地图”，记录了地址和函数名、源代码行号的对应关系。通过查找，GDB 就能确定 RIP 所在的函数，这就是 backtrace 的第一行 <code>#0</code>。</li>
+<li>遍历栈帧链：
+<ul>
+<li>在当前栈帧中，FP 指向的位置附近就存储着上一个栈帧的指针和返回地址。</li>
+<li>GDB 遵循平台特定的应用程序二进制接口 (ABI) 规则，从当前 FP 指向的内存中取出“上一个 FP”的值和“返回地址”的值。</li>
+<li>返回地址：指向调用函数（caller）中的 call 指令之后的下一条指令。GDB 用这个地址去查询调试信息，找到调用它的函数名和行号，形成 backtrace 的下一行 <code>#1</code>。</li>
+<li>上一个 FP：成为了新的当前 FP，用于查找再上一层的栈帧。</li>
+<li>这个过程循环往复（<code>#2</code>, <code>#3</code>&hellip;），直到到达最外层的 main 函数，它的上一个 FP 通常是 NULL，或者遇到了线程栈的边界，遍历就此结束。</li>
+</ul>
+</li>
+</ul>
+<h3 id="调试信息的关键作用">调试信息的关键作用
+</h3><p>你可能会注意到，仅仅有栈帧遍历只能得到一系列的内存地址。而我们看到的却是清晰的函数名（如 main, foo, bar）和行号（如 main.c:12）。这完全归功于编译时生成的调试信息（通常使用 -g 编译器选项）。这些信息（在 Linux 上通常是 DWARF 格式）存储在可执行文件或独立的调试文件中。它建立了：</p>
+<ul>
+<li>内存地址 &lt;-&gt; 函数名的映射</li>
+<li>内存地址 &lt;-&gt; 源代码文件和行号的映射
+没有调试信息，GDB 只能显示原始地址（如 0x0000555555555169），或者通过反汇编尝试猜测函数名，效果会大打折扣。</li>
+</ul>
+<h3 id="特殊情况与增强策略">特殊情况与增强策略
+</h3><p>实际的实现比上述描述更复杂，需要处理各种情况：</p>
+<ul>
+<li>帧指针省略 (Frame Pointer Omission - FPO)：
+<ul>
+<li>编译器优化（如 -O2, -fomit-frame-pointer）会省略使用 RBP/EBP 作为帧指针，将其用作通用寄存器以提升性能。这会破坏传统的栈帧链。</li>
+<li>解决方案：在这种情况下，GDB 会依赖调试信息中的展开信息 (DWARF Unwind Info)。这些信息提供了如何在任何指令点找到上一个栈帧的明确规则。GDB 使用“虚拟展开表”来一步步回溯，即使没有帧指针也能工作。</li>
+</ul>
+</li>
+<li>信号处理函数 (Signal Handlers)：当程序在信号处理函数中中断时，调用栈会包含从正常执行流到信号处理函数的跳转。GDB 能够识别这种特殊情况并将其正确地显示在 backtrace 中。</li>
+<li>内联函数 (Inline Functions)：被内联的函数没有自己独立的栈帧。GDB 利用调试信息可以识别出当前地址实际上是一个内联函数，并同时显示内联函数和其外部函数的信息。</li>
+<li>不同架构：不同的 CPU 架构（x86, ARM, RISC-V, etc.）有不同的调用约定（Calling Convention）和 ABI。GDB 的实现包含了针对各种架构的特定代码，以正确地解读它们的栈布局。</li>
+</ul>
+<h2 id="frame命令">frame命令
+</h2><p>简写 <strong>f/fr</strong> ，frame命令常常配合backtrace一起使用。backtrack会列出各个stack frame的编号，每行开头紧跟着#后面的数字n。然后将该数字输入命令 <code>frame {n}</code>就可以查看具体栈帧的内容了。</p>
+<h2 id="info命令">info命令
+</h2><h3 id="查看虚表">查看虚表
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">info vtbl [对象实例名字/对象指针]
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="查看源代码对应机器指令的内存地址">查看源代码对应机器指令的内存地址
+</h3><p>可以使用info line命令来查看源代码在内存中的地址。info line后面可以跟“行号”，“函数名”，“文件名:行号”，“文件名:函数名”，这个命令会打印出所指定的源码在运行时的内存地址。</p>
+<h3 id="查看寄存器">查看寄存器
+</h3><ul>
+<li>info register  显示所有的寄存器（会对照显示16进制的值和10进制的值）</li>
+<li>info register 寄存器名字（eax，ebx，esp）</li>
+</ul>
+<h2 id="list命令">list命令
+</h2><ul>
+<li>list 查看当前后前后各5行代码的内容，当前行算作第6行，总共展示10行。</li>
+<li>set listsize 设置一次显示代码的行数</li>
+<li>show listsize 显示listsize的配置</li>
+<li>list可以跟的参数：
+<ul>
+<li>linenum  行号</li>
+<li>beginlinenum, endlinenum  开始行号到结束行号</li>
+<li>beginlinenum,  开始行号到当前行号</li>
+<li>, endlinenum   当前行号到结束行号</li>
+<li>+offset  当前行号的正偏移</li>
+<li>-offset  当前行号的负偏移</li>
+<li>filename:linenum  哪个文件的哪一行</li>
+<li>function  函数名</li>
+<li>filename:function  哪个文件中的哪个函数</li>
+</ul>
+</li>
+</ul>
+<h2 id="disassemble命令">disassemble命令
+</h2><ul>
+<li>后面可以跟的参数：
+<ul>
+<li>函数名：反汇编整个函数</li>
+<li>地址：反汇编包含给定地址的整个函数</li>
+<li>起始地址, 结束地址：反汇编起始地址到结束地址中的内容</li>
+<li>函数名, +length：反汇编函数开始位置到长度为length个字节部分的内存</li>
+<li>地址, +length：反汇编给定内存地址到长度为length个字节部分的内存</li>
+<li>地址 -offset,+offset：反汇编地址前后指定偏移量内的代码，注意如果这段范围没有有效的指令代码部分不会被显示。</li>
+</ul>
+</li>
+<li>后面可以指定的选项：
+<ul>
+<li>/m 其他参数：/m选项会显示与反汇编指令相对应的源代码行。</li>
+<li>/r  显示所有反汇编指令的原始字节值（也就是把指令的机器码显示出来）</li>
+</ul>
+</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/gdb/">GDB</a>
+        
+            <a href="/tags/gdb%E6%8C%87%E5%8D%97/">GDB指南</a>
+        
+            <a href="/tags/linux%E8%B0%83%E8%AF%95%E5%99%A8/">Linux调试器</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/gdb-advance-tips/">
+        
+        
+            <div class="article-image">
+                <img src="/p/gdb-advance-tips/cover.fbb800aca25cac30cb4a425b547b438b_hu_396b4e5c1343b36c.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post GDB高级调试技巧"
+                        data-key="gdb-advance-tips" 
+                        data-hash="md5-&#43;7gArKJcrDDLSkJbVHtDiw==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">GDB高级调试技巧</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/linux-command-daily-learning/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux-command-daily-learning/cover.6f1fc27e7c6dd18f63cb338db59d5c13_hu_d363ddb6ab4eb88d.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 【更新中】每天学习一个Linux命令"
+                        data-key="linux-command-daily-learning" 
+                        data-hash="md5-bx/Cfnxt0Y9jyzONtZ1cEw==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">【更新中】每天学习一个Linux命令</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover.57d396ae66b62365c2ef1e84548d0c2b_hu_fe4953cd27c435fc.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Linux文件IO操作总结"
+                        
+                        data-hash="md5-V9OWrma2I2XC7x6EVI0MKw==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Linux文件IO操作总结</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/linux-epoll-api/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux-epoll-api/cover.ec8e4fac264ca8a7bb92b3774bf3a8a5_hu_f6397f5714a1583.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Linux epoll API"
+                        
+                        data-hash="md5-7I5PrCZMqKe7krN3S/OopQ==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Linux epoll API</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover.8c0b22750436acf837a0e27ebab14500_hu_ffb8773c4963df28.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 程序ELF格式布局初探"
+                        
+                        data-hash="md5-jAsidQQ2rPg3oOJ&#43;urFFAA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">程序ELF格式布局初探</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Weijie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

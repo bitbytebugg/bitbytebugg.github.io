@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="start方法映射为系统线程 1 2 3 ////// minium use demo Thread thread = new Thread(() -&gt; System.out.println(&#34;Thread Run&#34;)); thread.start(); 当我们new出一个Thread的时候，仅仅是创建了一个java层面的线程对象，而只有当Thread的start方法被调用的时候，一个线程才真正开始执行了。所以start方法是我们关注的目标。\n">
+<title>Java线程类</title>
+
+<link rel='canonical' href='https://example.com/p/java-thread-class/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Java线程类">
+<meta property='og:description' content="start方法映射为系统线程 1 2 3 ////// minium use demo Thread thread = new Thread(() -&gt; System.out.println(&#34;Thread Run&#34;)); thread.start(); 当我们new出一个Thread的时候，仅仅是创建了一个java层面的线程对象，而只有当Thread的start方法被调用的时候，一个线程才真正开始执行了。所以start方法是我们关注的目标。\n">
+<meta property='og:url' content='https://example.com/p/java-thread-class/'>
+<meta property='og:site_name' content='Weijie&#39;s Blog Site'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Thread' /><meta property='article:published_time' content='2025-02-16T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-02-16T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/java-thread-class/cover.jpg' />
+<meta name="twitter:title" content="Java线程类">
+<meta name="twitter:description" content="start方法映射为系统线程 1 2 3 ////// minium use demo Thread thread = new Thread(() -&gt; System.out.println(&#34;Thread Run&#34;)); thread.start(); 当我们new出一个Thread的时候，仅仅是创建了一个java层面的线程对象，而只有当Thread的start方法被调用的时候，一个线程才真正开始执行了。所以start方法是我们关注的目标。\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://example.com/p/java-thread-class/cover.jpg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    <img src="/img/avatar.jpg" width="300" height="300" class="site-logo" loading="lazy" alt="Avatar">
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Weijie&#39;s Blog Site</a></h1>
+            <h2 class="site-description">My Tech Blogs</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#start方法映射为系统线程">start方法映射为系统线程</a></li>
+    <li><a href="#run方法回调分析">run方法回调分析</a>
+      <ol>
+        <li><a href="#os_linuxcpp">os_linux.cpp</a></li>
+        <li><a href="#javathreadcpp">javaThread.cpp</a></li>
+        <li><a href="#jvmcpp">jvm.cpp</a></li>
+        <li><a href="#vmsymbolshpp">vmSymbols.hpp</a></li>
+        <li><a href="#简单梳理">简单梳理</a></li>
+      </ol>
+    </li>
+    <li><a href="#interrupt方法">interrupt方法</a>
+      <ol>
+        <li><a href="#threadc">Thread.c</a></li>
+        <li><a href="#jvmcpp-1">jvm.cpp</a></li>
+        <li><a href="#threadcpp">thread.cpp</a></li>
+        <li><a href="#os_posixcpp">os_posix.cpp</a></li>
+        <li><a href="#parkevent对象">ParkEvent对象</a></li>
+        <li><a href="#parker对象">Parker对象</a></li>
+      </ol>
+    </li>
+    <li><a href="#isinterrupted方法">isInterrupted方法</a></li>
+    <li><a href="#interrupted方法">interrupted方法</a></li>
+    <li><a href="#yield方法">yield方法</a></li>
+    <li><a href="#sleep方法">sleep方法</a></li>
+    <li><a href="#join方法">join方法</a></li>
+    <li><a href="#思考与总结">思考与总结</a>
+      <ol>
+        <li><a href="#interrupt方法对不同状态的影响">interrupt方法对不同状态的影响</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/java-thread-class/">
+                <img src="/p/java-thread-class/cover_hu_29ec15b60ed75593.jpg"
+                        srcset="/p/java-thread-class/cover_hu_29ec15b60ed75593.jpg 800w, /p/java-thread-class/cover_hu_3f2912061d8b614.jpg 1600w"
+                        width="800" 
+                        height="400" 
+                        loading="lazy"
+                        alt="Featured image of post Java线程类" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/java/" >
+                Java
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/java-thread-class/">Java线程类</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Feb 16, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    13 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="start方法映射为系统线程">start方法映射为系统线程
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">////// minium use demo</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">Thread</span><span class="w"> </span><span class="n">thread</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Thread</span><span class="p">(()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&#34;Thread Run&#34;</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">thread</span><span class="p">.</span><span class="na">start</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>当我们new出一个Thread的时候，仅仅是创建了一个java层面的线程对象，而只有当Thread的start方法被调用的时候，一个线程才真正开始执行了。所以start方法是我们关注的目标。</p>
+<p><code>start()</code> 内部会调用 <code>start0()</code>，这个是一个native方法。在 <code>src/java.base/share/native/libjava/Thread.c</code> 中可以看到其实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">static</span> <span class="n">JNINativeMethod</span> <span class="n">methods</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// start0 本地函数动态注册为 JVM_StartThread 函数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">{</span><span class="s">&#34;start0&#34;</span><span class="p">,</span>           <span class="s">&#34;()V&#34;</span><span class="p">,</span>        <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">JVM_StartThread</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 2. 在Cpp环境中实现JNI动态注册的逻辑，对应Java环境的Thread::registerNatives()
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">JNIEXPORT</span> <span class="kt">void</span> <span class="n">JNICALL</span>
+</span></span><span class="line"><span class="cl"><span class="nf">Java_java_lang_Thread_registerNatives</span><span class="p">(</span><span class="n">JNIEnv</span> <span class="o">*</span><span class="n">env</span><span class="p">,</span> <span class="n">jclass</span> <span class="n">cls</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">(</span><span class="o">*</span><span class="n">env</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">RegisterNatives</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">cls</span><span class="p">,</span> <span class="n">methods</span><span class="p">,</span> <span class="n">ARRAY_LENGTH</span><span class="p">(</span><span class="n">methods</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>按照标准的JNI实现例子，Thread.c中应该有一个 <code>Java_java_lang_Thread_start0()</code>方法的定义（这种叫做<strong>JNI静态注册</strong>），但是实际上没有。因为这里使用了<strong>JNI动态注册</strong>。动态注册一般是这样玩的：</p>
+<ol>
+<li>java代码里声明动态注册的本地函数</li>
+<li>cpp代码里借助jvm提供的接口实现对应的动态注册逻辑函数</li>
+<li>在java代码里执行本地动态注册函数</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">Thread</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Runnable</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 1. Java代码里声明一个注册逻辑的本地方法，一般是静态成员函数</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">native</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">registerNatives</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 3. 在Java环境中执行本地方法包含的注册逻辑</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">static</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">registerNatives</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>所以 Thread.start0 函数实际对应函数 JVM_StartThread，后者的定义和实现在 src/hotspot/share/prims/jvm.h/.cpp中，可以找到关键代码创建了一个C++级别（也就是OS级别）的线程JavaThread：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">JVM_ENTRY</span><span class="p">(</span><span class="kt">void</span><span class="p">,</span> <span class="n">JVM_StartThread</span><span class="p">(</span><span class="n">JNIEnv</span><span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">jthread</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JVMWrapper</span><span class="p">(</span><span class="s">&#34;JVM_StartThread&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JavaThread</span> <span class="o">*</span><span class="n">native_thread</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">bool</span> <span class="n">throw_illegal_thread_state</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="p">...</span>
+</span></span><span class="line"><span class="cl">      <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">       * 创建一个C++级别的线程
+</span></span></span><span class="line"><span class="cl"><span class="cm">       */</span>
+</span></span><span class="line"><span class="cl">      <span class="n">native_thread</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JavaThread</span><span class="p">(</span><span class="o">&amp;</span><span class="n">thread_entry</span><span class="p">,</span> <span class="n">sz</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="p">...</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="n">JVM_END</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>JavaThread的实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">//////  hotspot/src/share/vm/runtime/thread.cpp in jdk8
+</span></span></span><span class="line"><span class="cl"><span class="c1">//////  src/hotspot/share/runtime/javaThread.hpp/.cpp in jdk21
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">JavaThread</span><span class="o">::</span><span class="n">JavaThread</span><span class="p">(</span><span class="n">ThreadFunction</span> <span class="n">entry_point</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">stack_sz</span><span class="p">)</span> <span class="o">:</span> <span class="n">Thread</span><span class="p">(){</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl">  <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">   * 创建操作系统级别线程
+</span></span></span><span class="line"><span class="cl"><span class="cm">   */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">os</span><span class="o">::</span><span class="n">create_thread</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="n">thr_type</span><span class="p">,</span> <span class="n">stack_sz</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>内部调用操作系统创建线程的接口：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">//////  hotspot/src/os/linux/vm/os_linux.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">bool</span> <span class="n">os</span><span class="o">::</span><span class="n">create_thread</span><span class="p">(</span><span class="n">Thread</span><span class="o">*</span> <span class="kr">thread</span><span class="p">,</span> <span class="n">ThreadType</span> <span class="n">thr_type</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">req_stack_size</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">...</span>
+</span></span><span class="line"><span class="cl">    <span class="n">pthread_t</span> <span class="n">tid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">void</span><span class="o">*</span><span class="p">))</span> <span class="n">thread_native_entry</span><span class="p">,</span> <span class="kr">thread</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>因此java线程start方法的本质其实就是通过jni机制，最终调用系统底层的pthread_create方法，创建了一个系统线程，因此java线程和系统线程是一个一对一的关系。</p>
+<h2 id="run方法回调分析">run方法回调分析
+</h2><p>在java的Thread类中，我们会传入一个执行我们指定任务的Runnable对象，在Thread的run()方法中调用。当java通过jni调用到pthread_create创建完系统线程后，又要如何回调java中的run方法呢？</p>
+<h3 id="os_linuxcpp">os_linux.cpp
+</h3><p>前面的探究我们是从java层开始，从上往下找，此时我们要反过来，从下往上找。在 pthread_create的调用中，最后两个参数就是要回调的任务函数和其参数</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">// thread_native_entry 是线程要执行的回调任务
+</span></span></span><span class="line"><span class="cl"><span class="c1">// thread 是传递给 thread_native_entry() 的参数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">void</span><span class="o">*</span><span class="p">))</span> <span class="n">thread_native_entry</span><span class="p">,</span> <span class="kr">thread</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>thread_native_entry 方法实现如下，内部会调用传入 Thread 类型的 run 方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">// Thread是C++级别线程，定义位于 src/hotspot/share/runtime/thread.hpp 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="kt">void</span> <span class="o">*</span><span class="nf">thread_native_entry</span><span class="p">(</span><span class="n">Thread</span> <span class="o">*</span><span class="kr">thread</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// call one more level start routine
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kr">thread</span><span class="o">-&gt;</span><span class="n">run</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Thread是一个抽象类型，这里传入的 thread参数实际是前面提到过的JavaThread的一个实例对象，JavaThread是Thread的一个实现子类。</p>
+<h3 id="javathreadcpp">javaThread.cpp
+</h3><p>所以我们需要查看JavaThread::run() 方法，其主要执行内容在 thread_main_inner方法中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">//////  hotspot/src/share/vm/runtime/thread.cpp in jdk8
+</span></span></span><span class="line"><span class="cl"><span class="c1">//////  src/hotspot/share/runtime/javaThread.cpp in jdk21
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">JavaThread</span><span class="o">::</span><span class="n">run</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">   * 主要的执行内容
+</span></span></span><span class="line"><span class="cl"><span class="cm">   */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">thread_main_inner</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>查看JavaThread::thread_main_inner()方法，其内部通过entry_point执行回调：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">JavaThread</span><span class="o">::</span><span class="n">thread_main_inner</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl">  <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">   * 调用entry_point，执行外部传入的方法，注意这里的第一个参数是this
+</span></span></span><span class="line"><span class="cl"><span class="cm">   * 即JavaThread对象本身，后面会看到该方法的定义
+</span></span></span><span class="line"><span class="cl"><span class="cm">   */</span>
+</span></span><span class="line"><span class="cl">  <span class="k">this</span><span class="o">-&gt;</span><span class="n">entry_point</span><span class="p">()(</span><span class="k">this</span><span class="p">,</span> <span class="k">this</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 为什么传两个相同的参数，难道是为了重载函数。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>查看JavaThread::JavaThread构造函数，可以看到这里的entry_point是从外部传入的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">JavaThread</span><span class="o">::</span><span class="n">JavaThread</span><span class="p">(</span><span class="n">ThreadFunction</span> <span class="n">entry_point</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">stack_sz</span><span class="p">)</span> <span class="o">:</span> <span class="n">Thread</span><span class="p">(){</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl">  <span class="n">set_entry_point</span><span class="p">(</span><span class="n">entry_point</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="jvmcpp">jvm.cpp
+</h3><p>如果要找到传入entry_point的本体，就必须找到JavaThread构造函数的调用位置，这个位置在 jvm.cpp 中的 JVM_StartThread() 方法，可以看到传给JavaThread的entry_point是thread_entry：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">JVM_ENTRY</span><span class="p">(</span><span class="kt">void</span><span class="p">,</span> <span class="n">JVM_StartThread</span><span class="p">(</span><span class="n">JNIEnv</span><span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">jthread</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JVMWrapper</span><span class="p">(</span><span class="s">&#34;JVM_StartThread&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JavaThread</span> <span class="o">*</span><span class="n">native_thread</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">bool</span> <span class="n">throw_illegal_thread_state</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="p">...</span>
+</span></span><span class="line"><span class="cl">      <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">       * 传给构造函数的entry_point是thread_entry
+</span></span></span><span class="line"><span class="cl"><span class="cm">       */</span>
+</span></span><span class="line"><span class="cl">      <span class="n">native_thread</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JavaThread</span><span class="p">(</span><span class="o">&amp;</span><span class="n">thread_entry</span><span class="p">,</span> <span class="n">sz</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="p">...</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="n">JVM_END</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>查看thread_entry，其中调用了JavaCalls::call_virtual去回调java级别的方法，其实看到它的方法签名就能猜到个大概了：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">void</span> <span class="nf">thread_entry</span><span class="p">(</span><span class="n">JavaThread</span><span class="o">*</span> <span class="kr">thread</span><span class="p">,</span> <span class="n">TRAPS</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">HandleMark</span> <span class="n">hm</span><span class="p">(</span><span class="n">THREAD</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// obj正是根据thread对象获取到的，JavaThread在调用时会传入this
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">Handle</span> <span class="n">obj</span><span class="p">(</span><span class="n">THREAD</span><span class="p">,</span> <span class="kr">thread</span><span class="o">-&gt;</span><span class="n">threadObj</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 返回结果是void
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">JavaValue</span> <span class="n">result</span><span class="p">(</span><span class="n">T_VOID</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 回调java级别的方法
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">JavaCalls</span><span class="o">::</span><span class="n">call_virtual</span><span class="p">(</span><span class="o">&amp;</span><span class="n">result</span><span class="p">,</span><span class="c1">//返回对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                          <span class="c1">//实例对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                          <span class="n">obj</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                          <span class="c1">//类
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                          <span class="n">KlassHandle</span><span class="p">(</span><span class="n">THREAD</span><span class="p">,</span> <span class="n">SystemDictionary</span><span class="o">::</span><span class="n">Thread_klass</span><span class="p">()),</span>
+</span></span><span class="line"><span class="cl">                          <span class="c1">//方法名
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                          <span class="n">vmSymbols</span><span class="o">::</span><span class="n">run_method_name</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">                          <span class="c1">//方法签名
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                          <span class="n">vmSymbols</span><span class="o">::</span><span class="n">void_method_signature</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">                          <span class="n">THREAD</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="vmsymbolshpp">vmSymbols.hpp
+</h3><p>我们查看获取方法名run_method_name和方法签名void_method_signature的部分，可以看到正是获取一个方法名为run，且不获取任何参数，返回值为void的方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// hotspot/src/share/vm/classfiles in jdk8
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">template</span><span class="p">(</span><span class="n">run_method_name</span><span class="p">,</span>                           <span class="s">&#34;run&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="k">template</span><span class="p">(</span><span class="n">void_method_signature</span><span class="p">,</span>                     <span class="s">&#34;()V&#34;</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>于是系统线程就能成功地回调java级别的run方法了！</p>
+<h3 id="简单梳理">简单梳理
+</h3><ul>
+<li>Thread.java
+<ul>
+<li>jvm.cpp</li>
+<li>javaThread.cpp in jdk21 或者 thread.cpp in jdk8</li>
+<li>os_linux.cpp</li>
+<li>pthread_create in linux kernel</li>
+</ul>
+</li>
+</ul>
+<h2 id="interrupt方法">interrupt方法
+</h2><p><strong>线程中断机制</strong>：
+在 Java 中，Thread.stop()方法被标记过时，所以我们不应使用它。而停止一个线程的主要机制是中断，中断并不是强迫终止一个线程，他是一种协作机制，是给线程传递一个取消信号，但是由线程来决定如何以及何时退出。</p>
+<p>interrupt()方法java层实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">////// Thread.java</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">interrupt</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 1. 检查权限：如果不是当前线程调用 interrupt()，需验证调用者是否有权限</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">Thread</span><span class="p">.</span><span class="na">currentThread</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">checkAccess</span><span class="p">();</span><span class="w"> </span><span class="c1">// 检查 SecurityManager 是否允许中断目标线程</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 2. 同步锁：防止并发修改 blocker（Interruptible 对象）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">synchronized</span><span class="w"> </span><span class="p">(</span><span class="n">blockerLock</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	    </span><span class="c1">// blocker 是线程关联的可中断对象（如 NIO 中的 Selector 或 SocketChannel）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	    </span><span class="c1">// 这行代码的作用只是换了个短的名字</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Interruptible</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">blocker</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// 3. 设置中断标志位（底层 native 方法）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">interrupt0</span><span class="p">();</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// 4. 调用关联的 Interruptible 对象的 interrupt() 方法</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">b</span><span class="p">.</span><span class="na">interrupt</span><span class="p">(</span><span class="k">this</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 5. 如果没有关联 Interruptible 对象，仅设置中断标志位</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">interrupt0</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>先不管其他的，我们关注 interrupt0 方法的实现，它是一个本地方法，所以我们接下来要深入JVM的C++代码。</p>
+<h3 id="threadc">Thread.c
+</h3><p>Thread.c 里注册了该Java native方法的C代码实现，采用JNI动态注册的方式：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/jdk/src/share/native/java/lang/Thread.c
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="n">JNINativeMethod</span> <span class="n">methods</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">...</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="s">&#34;interrupt0&#34;</span><span class="p">,</span>       <span class="s">&#34;()V&#34;</span><span class="p">,</span>        <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">JVM_Interrupt</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">	<span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">JNIEXPORT</span> <span class="kt">void</span> <span class="n">JNICALL</span>
+</span></span><span class="line"><span class="cl"><span class="nf">Java_java_lang_Thread_registerNatives</span><span class="p">(</span><span class="n">JNIEnv</span> <span class="o">*</span><span class="n">env</span><span class="p">,</span> <span class="n">jclass</span> <span class="n">cls</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">(</span><span class="o">*</span><span class="n">env</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">RegisterNatives</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">cls</span><span class="p">,</span> <span class="n">methods</span><span class="p">,</span> <span class="n">ARRAY_LENGTH</span><span class="p">(</span><span class="n">methods</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="jvmcpp-1">jvm.cpp
+</h3><p>很明显 <code>JVM_</code> 开头的函数，我们需要在 jvm.cpp里查看其实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/prims/jvm.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">JVM_ENTRY</span><span class="p">(</span><span class="kt">void</span><span class="p">,</span> <span class="n">JVM_Interrupt</span><span class="p">(</span><span class="n">JNIEnv</span><span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">jthread</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">1. env和jthread是JVM_Interrupt的两个参数，其返回值是 void
+</span></span></span><span class="line"><span class="cl"><span class="cm">2. 注意 interrupt() 在java代码里的声明是没有参数。猜测对于JVM会自动为 native 方法的C++函数传入两个参数，第一个参数就是JNIEnv；第二参数非两种情况：
+</span></span></span><span class="line"><span class="cl"><span class="cm">	2.1 如果是实例方法，就传对象的this指针，类型是jobject
+</span></span></span><span class="line"><span class="cl"><span class="cm">	2.2 如果是静态方法，就传元类对象的指针，类型是jclass
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JVMWrapper</span><span class="p">(</span><span class="s">&#34;JVM_Interrupt&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 将java层面Thread对象转换成c++层面对应的oop对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">oop</span> <span class="n">java_thread</span> <span class="o">=</span> <span class="n">JNIHandles</span><span class="o">::</span><span class="n">resolve_non_null</span><span class="p">(</span><span class="n">jthread</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 加锁？
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">MutexLockerEx</span> <span class="nf">ml</span><span class="p">(</span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">threadObj</span><span class="p">()</span> <span class="o">==</span> <span class="n">java_thread</span> <span class="o">?</span> <span class="nb">NULL</span> <span class="o">:</span> <span class="n">Threads_lock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JavaThread</span><span class="o">*</span> <span class="n">thr</span> <span class="o">=</span> <span class="n">java_lang_Thread</span><span class="o">::</span><span class="kr">thread</span><span class="p">(</span><span class="n">JNIHandles</span><span class="o">::</span><span class="n">resolve_non_null</span><span class="p">(</span><span class="n">jthread</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">thr</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Thread</span><span class="o">::</span><span class="n">interrupt</span><span class="p">(</span><span class="n">thr</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">JVM_END</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="threadcpp">thread.cpp
+</h3><p>找到Thread::interrupt()：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// src/share/vm/runtime/thread.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">Thread</span><span class="o">::</span><span class="n">interrupt</span><span class="p">(</span><span class="n">Thread</span><span class="o">*</span> <span class="kr">thread</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//执行os层面的打断
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// thread就是JavaThread的实例对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">os</span><span class="o">::</span><span class="n">interrupt</span><span class="p">(</span><span class="kr">thread</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="os_posixcpp">os_posix.cpp
+</h3><p>找到os::interrupt()方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// src/os/posix/vm/os_posix.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">os</span><span class="o">::</span><span class="n">interrupt</span><span class="p">(</span><span class="n">Thread</span><span class="o">*</span> <span class="kr">thread</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 获得c++线程对应的系统线程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">OSThread</span><span class="o">*</span> <span class="n">osthread</span> <span class="o">=</span> <span class="kr">thread</span><span class="o">-&gt;</span><span class="n">osthread</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 如果系统线程的打断标记是false，意味着还未被打断
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">osthread</span><span class="o">-&gt;</span><span class="n">interrupted</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 将系统线程的打断标记设为true
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">osthread</span><span class="o">-&gt;</span><span class="n">set_interrupted</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 这个涉及到内存屏障，本文不展开
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">OrderAccess</span><span class="o">::</span><span class="n">fence</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 这里获取一个_SleepEvent，并调用其unpark()方法
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">ParkEvent</span> <span class="o">*</span> <span class="k">const</span> <span class="n">slp</span> <span class="o">=</span> <span class="kr">thread</span><span class="o">-&gt;</span><span class="n">_SleepEvent</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">slp</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="n">slp</span><span class="o">-&gt;</span><span class="n">unpark</span><span class="p">()</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// 这里依据JSR166标准，即使打断标记为true，依然要调用下面的2个unpark
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">is_Java_thread</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 如果是一个java线程，这里获取一个parker对象，并调用其unpark()方法
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">((</span><span class="n">JavaThread</span><span class="o">*</span><span class="p">)</span><span class="kr">thread</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">parker</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">unpark</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">ParkEvent</span> <span class="o">*</span> <span class="n">ev</span> <span class="o">=</span> <span class="kr">thread</span><span class="o">-&gt;</span><span class="n">_ParkEvent</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 这里获取一个_ParkEvent，并调用其unpark()方法
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">ev</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="n">ev</span><span class="o">-&gt;</span><span class="n">unpark</span><span class="p">()</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>总之，线程打断的本质做了两件事情：</p>
+<ol>
+<li>将线程的打断标志设置为true</li>
+<li>调用了3个对象的 unpark 方法唤醒线程。</li>
+</ol>
+<p>接下来就详述这3个对象：<code>_SleepEvent</code>, <code>_ParkEvent</code>, <code>JavaThread::parker()</code>。前面两个对象是同一个类型。所以只用分析两种类型的 unpark 方法。</p>
+<h3 id="parkevent对象">ParkEvent对象
+</h3><p>首先我们先看<code>_SleepEvent</code>和<code>_ParkEvent</code>对象，这2个对象的类型是相同的。在thread.cpp里可看到两者定义如下，jvm已经给我们注释了，ParkEven是供synchronized()使用，SleepEvent是供Thread.sleep使用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// hotspot/src/share/vm/runtime/thread.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">ParkEvent</span> <span class="o">*</span> <span class="n">_ParkEvent</span><span class="p">;</span>    <span class="c1">// for synchronized()
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">ParkEvent</span> <span class="o">*</span> <span class="n">_SleepEvent</span><span class="p">;</span>   <span class="c1">// for Thread.sleep
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在 park.hpp里 ParkEvent类型继承自 os::PlatformEvent 类型，后者的定义在 os_linux.hpp里：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// hotspot/src/os/linux/vm/os_linux.hpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">class</span> <span class="nc">PlatformEvent</span> <span class="o">:</span> <span class="k">public</span> <span class="n">CHeapObj</span><span class="o">&lt;</span><span class="n">mtInternal</span><span class="o">&gt;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"> <span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// pthread_mutex_t 是linux互斥锁，确保同一时间只有一个线程能访问临界区，避免数据竞争
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">pthread_mutex_t</span> <span class="n">_mutex</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// pthread_cond_t 是linux条件变量，用于线程间的条件等待和通知，通常和互斥锁配合使用
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">pthread_cond_t</span>  <span class="n">_cond</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">void</span> <span class="n">park</span><span class="p">();</span>  <span class="c1">// 挂起线程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kt">void</span> <span class="nf">unpark</span><span class="p">();</span>  <span class="c1">// 恢复线程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kt">int</span>  <span class="nf">park</span><span class="p">(</span><span class="n">jlong</span> <span class="n">millis</span><span class="p">);</span> <span class="c1">// relative timed-wait only
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们需要到 os_linux.cpp 里查看 park 和 unpark 方法的具体实现，ParkEvent 和 PlatformEvent 代码解析参考 <a class="link" href="OpenJDK.md" >OpenJDK</a></p>
+<h3 id="parker对象">Parker对象
+</h3><p>Thread::park() 返回类型的定义：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// hotspot/src/share/vm/runtime/thread.hpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Parker</span><span class="o">*</span>     <span class="n">parker</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="n">_parker</span><span class="p">;</span> <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Parker 和 ParkformParker 的剖析参考 <a class="link" href="OpenJDK.md" >OpenJDK</a></p>
+<h2 id="isinterrupted方法">isInterrupted方法
+</h2><p>该方法在Java层的实现如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">////// Thread.java</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">isInterrupted</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">isInterrupted</span><span class="p">(</span><span class="kc">false</span><span class="p">);}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kd">native</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">isInterrupted</span><span class="p">(</span><span class="kt">boolean</span><span class="w"> </span><span class="n">ClearInterrupted</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们看下内部调用的native方法的实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/jdk/src/share/native/java/lang/Thread.c
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="n">JNINativeMethod</span> <span class="n">methods</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">...</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="s">&#34;isInterrupted&#34;</span><span class="p">,</span>    <span class="s">&#34;(Z)Z&#34;</span><span class="p">,</span>       <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">JVM_IsInterrupted</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">	<span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/prims/jvm.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">JVM_QUICK_ENTRY</span><span class="p">(</span><span class="n">jboolean</span><span class="p">,</span> <span class="n">JVM_IsInterrupted</span><span class="p">(</span><span class="n">JNIEnv</span><span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">jthread</span><span class="p">,</span> <span class="n">jboolean</span> <span class="n">clear_interrupted</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JVMWrapper</span><span class="p">(</span><span class="s">&#34;JVM_IsInterrupted&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">oop</span> <span class="n">java_thread</span> <span class="o">=</span> <span class="n">JNIHandles</span><span class="o">::</span><span class="n">resolve_non_null</span><span class="p">(</span><span class="n">jthread</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">MutexLockerEx</span> <span class="nf">ml</span><span class="p">(</span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">threadObj</span><span class="p">()</span> <span class="o">==</span> <span class="n">java_thread</span> <span class="o">?</span> <span class="nb">NULL</span> <span class="o">:</span> <span class="n">Threads_lock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JavaThread</span><span class="o">*</span> <span class="n">thr</span> <span class="o">=</span> <span class="n">java_lang_Thread</span><span class="o">::</span><span class="kr">thread</span><span class="p">(</span><span class="n">JNIHandles</span><span class="o">::</span><span class="n">resolve_non_null</span><span class="p">(</span><span class="n">jthread</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">thr</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">JNI_FALSE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">(</span><span class="n">jboolean</span><span class="p">)</span> <span class="n">Thread</span><span class="o">::</span><span class="n">is_interrupted</span><span class="p">(</span><span class="n">thr</span><span class="p">,</span> <span class="n">clear_interrupted</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">JVM_END</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/runtime/thread.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">bool</span> <span class="n">Thread</span><span class="o">::</span><span class="n">is_interrupted</span><span class="p">(</span><span class="n">Thread</span><span class="o">*</span> <span class="kr">thread</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">clear_interrupted</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">trace</span><span class="p">(</span><span class="s">&#34;is_interrupted&#34;</span><span class="p">,</span> <span class="kr">thread</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">debug_only</span><span class="p">(</span><span class="n">check_for_dangling_thread_pointer</span><span class="p">(</span><span class="kr">thread</span><span class="p">);)</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">os</span><span class="o">::</span><span class="n">is_interrupted</span><span class="p">(</span><span class="kr">thread</span><span class="p">,</span> <span class="n">clear_interrupted</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/os/linux/vm/os_linux.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">bool</span> <span class="n">os</span><span class="o">::</span><span class="n">is_interrupted</span><span class="p">(</span><span class="n">Thread</span><span class="o">*</span> <span class="kr">thread</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">clear_interrupted</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">OSThread</span><span class="o">*</span> <span class="n">osthread</span> <span class="o">=</span> <span class="kr">thread</span><span class="o">-&gt;</span><span class="n">osthread</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">bool</span> <span class="n">interrupted</span> <span class="o">=</span> <span class="n">osthread</span><span class="o">-&gt;</span><span class="n">interrupted</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">interrupted</span> <span class="o">&amp;&amp;</span> <span class="n">clear_interrupted</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">osthread</span><span class="o">-&gt;</span><span class="n">set_interrupted</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">interrupted</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>所以 isInterrupted 方法在底层的实现就是把中断标记（一个C++ bool变量）返回，并且不会清除该标记。</p>
+<p>阅读上面的代码，其实我们可以看出==JVM在线程概念的抽象层级了==：</p>
+<ul>
+<li>java.lang.Thread：这是Java代码层面的线程抽象。</li>
+<li>JavaThread：继承自 Thread的 C++ 类，这是C++层面和平台无关的线程抽象。</li>
+<li>OSThread：这是C++层面最底层和平台（操作系统）有关的线程抽象。</li>
+</ul>
+<h2 id="interrupted方法">interrupted方法
+</h2><p>在Java层面实际是调用 Thread.isInterrupted(true)：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">////// Thread.java</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">interrupted</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="c1">// 实际就是 native isInterrupted 方法，该方法上面已经分析过了</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">currentThread</span><span class="p">().</span><span class="na">isInterrupted</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>注意 isInterrupted 方法调用是设置清除中断标记为 false，这里设置清除中断标记为 true，所以该方法的逻辑其实是返回中断标记，并且会清除该标记（如果标记为true就将该标记设置为 false ）。</p>
+<h2 id="yield方法">yield方法
+</h2><p>Java代码里是一个native方法且是静态方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="cm">/* 翻译自JDK注释：
+</span></span></span><span class="line"><span class="cl"><span class="cm">向调度程序提示当前线程愿意让出当前对处理器的占用。调度程序可以自由选择是否忽略此提示。
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">Yield 是一种启发式尝试，旨在改善线程间的相对执行进度，避免某些线程过度占用 CPU 资源。使用该方法时，应当结合详细的分析和基准测试，以确保其确实能产生预期效果。
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">此方法的使用场景较为有限。它可能在调试或测试时有用，有助于复现因竞态条件导致的错误。在设计并发控制结构时（如 java.util.concurrent.locks 包中的实现）也可能有所助益。
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">native</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">yield</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>按照之前的套路找到它的C++代码实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/jdk/src/share/native/java/lang/Thread.c
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="n">JNINativeMethod</span> <span class="n">methods</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="s">&#34;yield&#34;</span><span class="p">,</span>            <span class="s">&#34;()V&#34;</span><span class="p">,</span>        <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">JVM_Yield</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/prims/jvm.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">JVM_ENTRY</span><span class="p">(</span><span class="kt">void</span><span class="p">,</span> <span class="n">JVM_Yield</span><span class="p">(</span><span class="n">JNIEnv</span> <span class="o">*</span><span class="n">env</span><span class="p">,</span> <span class="n">jclass</span> <span class="n">threadClass</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JVMWrapper</span><span class="p">(</span><span class="s">&#34;JVM_Yield&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">::</span><span class="n">dont_yield</span><span class="p">())</span> <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 应该和DontYieldALot一样，是一个JVM flag，默认为false
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">ConvertYieldToSleep</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">os</span><span class="o">::</span><span class="n">sleep</span><span class="p">(</span><span class="kr">thread</span><span class="p">,</span> <span class="n">MinSleepInterval</span><span class="p">,</span> <span class="nb">false</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 按照JVM默认配置，代码执行流应该会到这里
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">os</span><span class="o">::</span><span class="n">yield</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">JVM_END</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/runtime/os_linux.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1">// os是一个类，其定义在 os.hpp 中
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 其实现一小部分平台无关的在 os.cpp 中
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 其实现大部分平台相关的在 os_linux.cpp 中
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">bool</span> <span class="n">os</span><span class="o">::</span><span class="n">dont_yield</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 这应该是一个flag，默认为false，可以通过 -XX:-DontYieldALot 开启
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">return</span> <span class="n">DontYieldALot</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">os</span><span class="o">::</span><span class="n">yield</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">sched_yield</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">os</span><span class="o">::</span><span class="n">sleep</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>按照JVM默认配置的，JVM_Yield 方法是会直接调用 sched_yield 方法，sched_yield 是linux内核提供的API，它会使调用线程放弃CPU使用权，加入到同等优先级队列的末尾。如果调用该方法线程是优先级最高的唯一线程，yield 方法返回后，调用线程会继续运行。所以，对于和调用线程相同或更高优先级的线程来说，yield方法会给予了它们一次运行的机会。</p>
+<h2 id="sleep方法">sleep方法
+</h2><p>Java代码里该方法是一个native方法，而且会抛出中断异常：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">////// Thread.java</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">native</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">sleep</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">millis</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">InterruptedException</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>按照老套路去查看C++代码实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/jdk/src/share/native/java/lang/Thread.c
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="n">JNINativeMethod</span> <span class="n">methods</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="s">&#34;sleep&#34;</span><span class="p">,</span>            <span class="s">&#34;(J)V&#34;</span><span class="p">,</span>       <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">JVM_Sleep</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/prims/jvm.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">JVM_ENTRY</span><span class="p">(</span><span class="kt">void</span><span class="p">,</span> <span class="n">JVM_Sleep</span><span class="p">(</span><span class="n">JNIEnv</span><span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">jclass</span> <span class="n">threadClass</span><span class="p">,</span> <span class="n">jlong</span> <span class="n">millis</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JVMWrapper</span><span class="p">(</span><span class="s">&#34;JVM_Sleep&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 如果睡眠之前中断标记为true，那就直接抛出中断异常
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">Thread</span><span class="o">::</span><span class="n">is_interrupted</span> <span class="p">(</span><span class="n">THREAD</span><span class="p">,</span> <span class="nb">true</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">HAS_PENDING_EXCEPTION</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">THROW_MSG</span><span class="p">(</span><span class="n">vmSymbols</span><span class="o">::</span><span class="n">java_lang_InterruptedException</span><span class="p">(),</span> <span class="s">&#34;sleep interrupted&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// 保存当前线程状态，并在代码块结束时恢复该状态。同时将线程新状态设置为 SLEEPING（睡眠中）。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">JavaThreadSleepState</span> <span class="nf">jtss</span><span class="p">(</span><span class="kr">thread</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">EventThreadSleep</span> <span class="n">event</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">millis</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 这个flag默认为false
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">ConvertSleepToYield</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">os</span><span class="o">::</span><span class="n">yield</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">ThreadState</span> <span class="n">old_state</span> <span class="o">=</span> <span class="kr">thread</span><span class="o">-&gt;</span><span class="n">osthread</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">get_state</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">      <span class="kr">thread</span><span class="o">-&gt;</span><span class="n">osthread</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">set_state</span><span class="p">(</span><span class="n">SLEEPING</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="c1">// 调用OS sleep api 睡眠最小间隔，并且通过第三个参数设置为不可打断
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">os</span><span class="o">::</span><span class="n">sleep</span><span class="p">(</span><span class="kr">thread</span><span class="p">,</span> <span class="n">MinSleepInterval</span><span class="p">,</span> <span class="nb">false</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="kr">thread</span><span class="o">-&gt;</span><span class="n">osthread</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">set_state</span><span class="p">(</span><span class="n">old_state</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ThreadState</span> <span class="n">old_state</span> <span class="o">=</span> <span class="kr">thread</span><span class="o">-&gt;</span><span class="n">osthread</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">get_state</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kr">thread</span><span class="o">-&gt;</span><span class="n">osthread</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">set_state</span><span class="p">(</span><span class="n">SLEEPING</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 这里第三个参数true表示让OS sleep api的睡眠时是可打断的
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">::</span><span class="n">sleep</span><span class="p">(</span><span class="kr">thread</span><span class="p">,</span> <span class="n">millis</span><span class="p">,</span> <span class="nb">true</span><span class="p">)</span> <span class="o">==</span> <span class="n">OS_INTRPT</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">HAS_PENDING_EXCEPTION</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">event</span><span class="p">.</span><span class="n">should_commit</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="n">event</span><span class="p">.</span><span class="n">set_time</span><span class="p">(</span><span class="n">millis</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">          <span class="n">event</span><span class="p">.</span><span class="n">commit</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">THROW_MSG</span><span class="p">(</span><span class="n">vmSymbols</span><span class="o">::</span><span class="n">java_lang_InterruptedException</span><span class="p">(),</span> <span class="s">&#34;sleep interrupted&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="kr">thread</span><span class="o">-&gt;</span><span class="n">osthread</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">set_state</span><span class="p">(</span><span class="n">old_state</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">event</span><span class="p">.</span><span class="n">should_commit</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">event</span><span class="p">.</span><span class="n">set_time</span><span class="p">(</span><span class="n">millis</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">event</span><span class="p">.</span><span class="n">commit</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">JVM_END</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里的逻辑可以总结为：</p>
+<ul>
+<li>保存旧的线程状态</li>
+<li>设置线程状态为 SLEEPING</li>
+<li>调用os::sleep()</li>
+<li>恢复线程旧的状态</li>
+</ul>
+<h2 id="join方法">join方法
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">////// Thread.java </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kd">synchronized</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">join</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">millis</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">InterruptedException</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="kt">long</span><span class="w"> </span><span class="n">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">currentTimeMillis</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="kt">long</span><span class="w"> </span><span class="n">now</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">millis</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IllegalArgumentException</span><span class="p">(</span><span class="s">&#34;timeout value is negative&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">millis</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">isAlive</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">			</span><span class="n">wait</span><span class="p">(</span><span class="n">0</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">isAlive</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">			</span><span class="kt">long</span><span class="w"> </span><span class="n">delay</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">millis</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">now</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">			</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">delay</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">				</span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">			</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">			</span><span class="n">wait</span><span class="p">(</span><span class="n">delay</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">			</span><span class="n">now</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">currentTimeMillis</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">base</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>翻译自JDK注释：
+最多等待millis毫秒让该线程终止。超时时间为0表示无限期等待。此实现使用了基于this.isAlive条件判断的this.wait调用循环。当线程终止时，会自动调用this.notifyAll方法。建议应用程序不要在Thread实例上使用wait、notify或notifyAll方法。</p>
+<h2 id="思考与总结">思考与总结
+</h2><h3 id="interrupt方法对不同状态的影响">interrupt方法对不同状态的影响
+</h3><p>首先如前所述，interrupt执行了两个主要的操作：</p>
+<ol>
+<li>将线程的中断标志设置为 true</li>
+<li>调用三个对象上的 unpark 方法
+<ol>
+<li><code>_SleepEvent-&gt;unpark()</code> 会唤醒因 sleep() 阻塞的线程</li>
+<li><code>_ParkEvent-&gt;unpark()</code> 会唤醒因 wait() 阻塞的线程</li>
+<li><code>parker-&gt;unpark()</code></li>
+</ol>
+</li>
+</ol>
+<p>针对线程的不同状态，interrupt方法的影响如下：</p>
+<ul>
+<li>RUNNABLE：仅设置标志位，线程需主动检查（如 <code>while(!Thread.interrupted()){...}</code>）</li>
+<li>BLOCKED：设置标志位，但不会抛出异常（需等待获取锁后检查）</li>
+<li>WAITING/TIMED_WAITING：立即抛出 InterruptedException，并清除中断状态</li>
+<li>TERMINATED：无任何效果</li>
+</ul>
+<p>线程状态注解：</p>
+<ul>
+<li>RUNNABLE（可运行）：线程可能在执行或等待CPU时间片
+<ul>
+<li>子状态：
+<ul>
+<li>Ready：等待系统调度（未真正执行）</li>
+<li>Running：正在占用CPU执行</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>BLOCKED（阻塞）：线程因竞争锁失败而阻塞。
+<ul>
+<li>触发代码如 <code>synchronized(lock) { // 临界区}</code></li>
+</ul>
+</li>
+<li>WAITING（无限等待）：线程主动放弃CPU，需外部唤醒
+<ul>
+<li>触发方法有：
+<ul>
+<li><code>object.wait();  // 释放锁等待</code></li>
+<li><code>thread.join(); // 等待目标线程结束</code></li>
+<li><code>LockSupport.park();  // 停用当前线程</code></li>
+</ul>
+</li>
+<li>对应的唤醒方法有：
+<ul>
+<li><code>notify()/notifyAll()</code></li>
+<li>目标线程终止（针对 <code>join()</code>引起的阻塞）</li>
+<li><code>LockSupport.unpark()</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>TIMED_WAITING（限时等待）：带超时机制的等待
+<ul>
+<li>触发方法有：
+<ul>
+<li><code>Thread.sleep(1000);</code></li>
+<li><code>object.wait(500);</code></li>
+<li><code>thread.join(300);</code></li>
+<li><code>LockSupport.parkNanos(200);</code></li>
+</ul>
+</li>
+<li>退出条件：
+<ul>
+<li>超时时间到</li>
+<li>被提前唤醒（规则同WAITING）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>TERMINATED（终止）：线程执行完毕或异常终止
+<ul>
+<li>重要限制：终止的线程不能再次启动</li>
+</ul>
+</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/thread/">Thread</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/java-socket%E5%AE%9E%E7%8E%B0/">
+        
+        
+            <div class="article-image">
+                <img src="/p/java-socket%E5%AE%9E%E7%8E%B0/cover.eba4032b0527da85fbc27a3726674f16_hu_29e22d640e17c46b.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Java Socket实现"
+                        
+                        data-hash="md5-66QDKwUn2oX7wno3JmdPFg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Java Socket实现</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/java%E5%8E%9F%E7%94%9F%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/">
+        
+        
+            <div class="article-image">
+                <img src="/p/java%E5%8E%9F%E7%94%9F%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/cover.f6fccedd4d36f77cd2677c4c40a56254_hu_56ba4d277977d259.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Java原生动态代理"
+                        
+                        data-hash="md5-9vzO3U0293zSZ3xMQKViVA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Java原生动态代理</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/object-root-class-method-impl-logic/">
+        
+        
+            <div class="article-image">
+                <img src="/p/object-root-class-method-impl-logic/cover.ee5c3e082148d356cc97a79165e59495_hu_ab4f62b3ee9eda98.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Object根类方法实现逻辑"
+                        data-key="object-root-class-method-impl-logic" 
+                        data-hash="md5-7lw&#43;CCFI01bMl6eRZeWUlQ==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Object根类方法实现逻辑</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%9B%B4%E6%96%B0%E4%B8%ADjvm%E5%AD%97%E8%8A%82%E7%A0%81%E8%A7%84%E8%8C%83/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%9B%B4%E6%96%B0%E4%B8%ADjvm%E5%AD%97%E8%8A%82%E7%A0%81%E8%A7%84%E8%8C%83/cover.633e76883eb4f055266dc4da70c5449d_hu_a44eb0164350df41.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 【更新中】JVM字节码规范"
+                        
+                        data-hash="md5-Yz52iD608FUmbcTacMVEnQ==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">【更新中】JVM字节码规范</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/">
+        
+        
+            <div class="article-image">
+                <img src="/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.fd57e9a9172850e018e721e0eddfb08e_hu_a9f08728de3c381d.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post OpenJDK代码初探"
+                        
+                        data-hash="md5-/VfpqRcoUOAY5yHg7d&#43;wjg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">OpenJDK代码初探</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Weijie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

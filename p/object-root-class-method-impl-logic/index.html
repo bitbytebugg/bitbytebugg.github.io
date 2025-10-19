@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Object类定义的方法非常重要，因为其他对象都是继承自该类，会默认继承这些方法的实现。所以Object类定义的方法几乎影响一切对象的行为。虽然native成员方法可以被重写为java成员方法，但是性能上可能会达不到要求，而且Java程序员几乎是不会去写C++本地方法的，所以很少有Java代码会出现重写Object父类的本地成员方法的情况。可以把Object类的native成员方法看作是Java世界中所有对象的典型的模板化的逻辑。\n">
+<title>Object根类方法实现逻辑</title>
+
+<link rel='canonical' href='https://example.com/p/object-root-class-method-impl-logic/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Object根类方法实现逻辑">
+<meta property='og:description' content="Object类定义的方法非常重要，因为其他对象都是继承自该类，会默认继承这些方法的实现。所以Object类定义的方法几乎影响一切对象的行为。虽然native成员方法可以被重写为java成员方法，但是性能上可能会达不到要求，而且Java程序员几乎是不会去写C++本地方法的，所以很少有Java代码会出现重写Object父类的本地成员方法的情况。可以把Object类的native成员方法看作是Java世界中所有对象的典型的模板化的逻辑。\n">
+<meta property='og:url' content='https://example.com/p/object-root-class-method-impl-logic/'>
+<meta property='og:site_name' content='Weijie&#39;s Blog Site'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Object' /><meta property='article:tag' content='根类方法' /><meta property='article:published_time' content='2025-02-10T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-02-10T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/object-root-class-method-impl-logic/cover.jpg' />
+<meta name="twitter:title" content="Object根类方法实现逻辑">
+<meta name="twitter:description" content="Object类定义的方法非常重要，因为其他对象都是继承自该类，会默认继承这些方法的实现。所以Object类定义的方法几乎影响一切对象的行为。虽然native成员方法可以被重写为java成员方法，但是性能上可能会达不到要求，而且Java程序员几乎是不会去写C++本地方法的，所以很少有Java代码会出现重写Object父类的本地成员方法的情况。可以把Object类的native成员方法看作是Java世界中所有对象的典型的模板化的逻辑。\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://example.com/p/object-root-class-method-impl-logic/cover.jpg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    <img src="/img/avatar.jpg" width="300" height="300" class="site-logo" loading="lazy" alt="Avatar">
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Weijie&#39;s Blog Site</a></h1>
+            <h2 class="site-description">My Tech Blogs</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#getclass方法">getClass方法</a></li>
+    <li><a href="#hashcode方法">hashCode方法</a>
+      <ol>
+        <li><a href="#jvm存储对象hash位置">JVM存储对象hash位置</a></li>
+        <li><a href="#get_next_hash方法">get_next_hash方法</a></li>
+      </ol>
+    </li>
+    <li><a href="#equals方法">equals方法</a></li>
+    <li><a href="#clone方法">clone方法</a></li>
+    <li><a href="#tostring方法">toString方法</a></li>
+    <li><a href="#wait方法">wait方法</a></li>
+    <li><a href="#notify方法">notify方法</a></li>
+    <li><a href="#notifyall方法">notifyAll方法</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/object-root-class-method-impl-logic/">
+                <img src="/p/object-root-class-method-impl-logic/cover_hu_89af38fc1e7c71df.jpg"
+                        srcset="/p/object-root-class-method-impl-logic/cover_hu_89af38fc1e7c71df.jpg 800w, /p/object-root-class-method-impl-logic/cover_hu_c2f1ea677ad71cb2.jpg 1600w"
+                        width="800" 
+                        height="400" 
+                        loading="lazy"
+                        alt="Featured image of post Object根类方法实现逻辑" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/java/" >
+                Java
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/object-root-class-method-impl-logic/">Object根类方法实现逻辑</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Feb 10, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    16 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>Object类定义的方法非常重要，因为其他对象都是继承自该类，会默认继承这些方法的实现。所以Object类定义的方法几乎影响一切对象的行为。虽然native成员方法可以被重写为java成员方法，但是性能上可能会达不到要求，而且Java程序员几乎是不会去写C++本地方法的，所以很少有Java代码会出现重写Object父类的本地成员方法的情况。可以把Object类的native成员方法看作是Java世界中所有对象的典型的模板化的逻辑。</p>
+<h2 id="getclass方法">getClass方法
+</h2><p>Java代码实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">////// Object.java</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">返回该对象的runtime class object（运行时类对象，也被称为元类对象）
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kd">native</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">getClass</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>注意这里声明为final表示不允许子类重写该方法。</p>
+<p>C++代码实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/jdk/src/share/native/java/lang/Object.c
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 其他Object native 方法都是采用JNI动态注册的方式，唯独getClass方法采用JNI静态注册的方式
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">JNIEXPORT</span> <span class="n">jclass</span> <span class="n">JNICALL</span>
+</span></span><span class="line"><span class="cl"><span class="nf">Java_java_lang_Object_getClass</span><span class="p">(</span><span class="n">JNIEnv</span> <span class="o">*</span><span class="n">env</span><span class="p">,</span> <span class="n">jobject</span> <span class="k">this</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="k">this</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">JNU_ThrowNullPointerException</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">env</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">GetObjectClass</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="k">this</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/prims/jni.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">JNI_ENTRY</span><span class="p">(</span><span class="n">jclass</span><span class="p">,</span> <span class="n">jni_GetObjectClass</span><span class="p">(</span><span class="n">JNIEnv</span> <span class="o">*</span><span class="n">env</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">obj</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 这里JNI_ENTRY的第一个参数是返回类型，对应Java native方法方法返回的Class类型。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">JNIWrapper</span><span class="p">(</span><span class="s">&#34;GetObjectClass&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// USDT2宏是为性能监控设计的，可以忽略
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// 关键逻辑在这，返回的是JVM内部Klass类型实例
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">Klass</span><span class="o">*</span> <span class="n">k</span> <span class="o">=</span> <span class="n">JNIHandles</span><span class="o">::</span><span class="n">resolve_non_null</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">klass</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 通过 java_mirror() 返回对应到Java层面的Class对象。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">jclass</span> <span class="n">ret</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">    <span class="p">(</span><span class="n">jclass</span><span class="p">)</span> <span class="n">JNIHandles</span><span class="o">::</span><span class="n">make_local</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">k</span><span class="o">-&gt;</span><span class="n">java_mirror</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">JNI_END</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="hashcode方法">hashCode方法
+</h2><p>Java代码实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">////// Object.java</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">native</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">hashCode</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在JDK的注释中对hashCode方法有如下约定：</p>
+<ul>
+<li>在 Java 应用程序的一次执行期间，对同一对象多次调用 hashCode 方法时，只要对象在 equals 比较中使用的信息未被修改，该方法必须始终返回相同的整数。该整数在不同应用程序执行间不必保持一致。</li>
+<li>如果两个对象通过 equals(Object) 方法判断相等，那么对这两个对象分别调用 hashCode 方法必须产生相同的整数结果。</li>
+<li>如果两个对象通过 equals(Object) 方法判断不相等，不要求对这两个对象调用 hashCode 方法必须产生不同的整数结果。但程序员应当意识到，为不相等的对象生成不同的哈希码可以提高哈希表的性能。</li>
+<li>在合理可行的范围内，Object 类定义的 hashCode 方法确实会为不同的对象返回不同的整数。（典型的实现方式是将对象的内部地址转换为整数，但 Java编程语言并不强制要求采用这种实现技术。）</li>
+</ul>
+<p>在 Java 中，hashCode() 方法的主要作用就是为了配合哈希表使用的。像 Java 中的 HashSet、Hashtable（注意是小写的 t）、HashMap 都是基于哈希表的具体实现。其中的 HashMap 就是最典型的代表。拿 HashMap 来说吧。当我们要在它里面添加对象时，先调用这个对象的 hashCode() 方法，得到对应的哈希值，然后将哈希值和对象一起放到 HashMap 中。当我们要再添加一个新的对象时：</p>
+<ol>
+<li>获取对象的哈希值；</li>
+<li>和之前已经存在的哈希值进行比较，如果不相等，直接存进去；</li>
+<li>如果有相等的，再调用 equals() 方法进行对象之间的比较，如果相等，不存了；</li>
+<li>如果不等，说明哈希冲突了，增加一个链表，存放新的对象；</li>
+<li>如果链表的长度大于 8，转为红黑树来处理。</li>
+</ol>
+<p>我们可以这样描述 <code>hashCode()</code> 和 <code>equals()</code> 之间的关系：</p>
+<ul>
+<li>如果两个对象调用 equals() 方法得到的结果为 true，调用 hashCode() 方法得到的结果必定相等；</li>
+<li>如果两个对象调用 equals() 方法得到的结果为 false，调用 hashCode() 方法得到的结果不一定不相等；</li>
+<li>如果两个对象调用 hashCode() 方法得到的结果不相等，调用 equals() 方法得到的结果必定为 false；</li>
+<li>如果两个对象调用 hashCode() 方法得到的结果相等，调用 equals() 方法得到的结果不一定为 true；</li>
+</ul>
+<p>C++代码实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/jdk/src/share/native/java/lang/Object.c
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="n">JNINativeMethod</span> <span class="n">methods</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span><span class="s">&#34;hashCode&#34;</span><span class="p">,</span>    <span class="s">&#34;()I&#34;</span><span class="p">,</span>                    <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">JVM_IHashCode</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">JNIEXPORT</span> <span class="kt">void</span> <span class="n">JNICALL</span>
+</span></span><span class="line"><span class="cl"><span class="nf">Java_java_lang_Object_registerNatives</span><span class="p">(</span><span class="n">JNIEnv</span> <span class="o">*</span><span class="n">env</span><span class="p">,</span> <span class="n">jclass</span> <span class="n">cls</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">(</span><span class="o">*</span><span class="n">env</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">RegisterNatives</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">cls</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                            <span class="n">methods</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">methods</span><span class="p">)</span><span class="o">/</span><span class="k">sizeof</span><span class="p">(</span><span class="n">methods</span><span class="p">[</span><span class="mi">0</span><span class="p">]));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/prims/jvm.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">JVM_ENTRY</span><span class="p">(</span><span class="n">jint</span><span class="p">,</span> <span class="n">JVM_IHashCode</span><span class="p">(</span><span class="n">JNIEnv</span><span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">handle</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JVMWrapper</span><span class="p">(</span><span class="s">&#34;JVM_IHashCode&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 如果对象为空，就返回0，否则返回对象的handle经过运算的值。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">return</span> <span class="n">handle</span> <span class="o">==</span> <span class="nb">NULL</span> <span class="o">?</span> <span class="mi">0</span> <span class="o">:</span> <span class="n">ObjectSynchronizer</span><span class="o">::</span><span class="n">FastHashCode</span> <span class="p">(</span><span class="n">THREAD</span><span class="p">,</span> <span class="n">JNIHandles</span><span class="o">::</span><span class="n">resolve_non_null</span><span class="p">(</span><span class="n">handle</span><span class="p">))</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">JVM_END</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/runtime/synchronizer.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">intptr_t</span> <span class="n">ObjectSynchronizer</span><span class="o">::</span><span class="n">FastHashCode</span> <span class="p">(</span><span class="n">Thread</span> <span class="o">*</span> <span class="n">Self</span><span class="p">,</span> <span class="n">oop</span> <span class="n">obj</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 0. 偏向锁情况处理
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">UseBiasedLocking</span><span class="p">)</span> <span class="p">{...}</span>
+</span></span><span class="line"><span class="cl">  <span class="n">ObjectMonitor</span><span class="o">*</span> <span class="n">monitor</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">markOop</span> <span class="n">temp</span><span class="p">,</span> <span class="n">test</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">intptr_t</span> <span class="n">hash</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 读取对象的 mark word
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">markOop</span> <span class="n">mark</span> <span class="o">=</span> <span class="n">ReadStableMark</span> <span class="p">(</span><span class="n">obj</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 1. 无锁状态处理
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">mark</span><span class="o">-&gt;</span><span class="n">is_neutral</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">hash</span> <span class="o">=</span> <span class="n">mark</span><span class="o">-&gt;</span><span class="n">hash</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">hash</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// 已有哈希码直接返回
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="k">return</span> <span class="n">hash</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">hash</span> <span class="o">=</span> <span class="n">get_next_hash</span><span class="p">(</span><span class="n">Self</span><span class="p">,</span> <span class="n">obj</span><span class="p">);</span>  <span class="c1">// 没有的情况计算hash值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">temp</span> <span class="o">=</span> <span class="n">mark</span><span class="o">-&gt;</span><span class="n">copy_set_hash</span><span class="p">(</span><span class="n">hash</span><span class="p">);</span> <span class="c1">// hash值写入mark word
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">test</span> <span class="o">=</span> <span class="p">(</span><span class="n">markOop</span><span class="p">)</span> <span class="n">Atomic</span><span class="o">::</span><span class="n">cmpxchg_ptr</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">obj</span><span class="o">-&gt;</span><span class="n">mark_addr</span><span class="p">(),</span> <span class="n">mark</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">test</span> <span class="o">==</span> <span class="n">mark</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="n">hash</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 2. 重量级锁处理
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">mark</span><span class="o">-&gt;</span><span class="n">has_monitor</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">monitor</span> <span class="o">=</span> <span class="n">mark</span><span class="o">-&gt;</span><span class="n">monitor</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">temp</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">assert</span> <span class="p">(</span><span class="n">temp</span><span class="o">-&gt;</span><span class="n">is_neutral</span><span class="p">(),</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">hash</span> <span class="o">=</span> <span class="n">temp</span><span class="o">-&gt;</span><span class="n">hash</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">hash</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="n">hash</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 3. 轻量级锁处理（当前线程持有）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">Self</span><span class="o">-&gt;</span><span class="n">is_lock_owned</span><span class="p">((</span><span class="n">address</span><span class="p">)</span><span class="n">mark</span><span class="o">-&gt;</span><span class="n">locker</span><span class="p">()))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">temp</span> <span class="o">=</span> <span class="n">mark</span><span class="o">-&gt;</span><span class="n">displaced_mark_helper</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">assert</span> <span class="p">(</span><span class="n">temp</span><span class="o">-&gt;</span><span class="n">is_neutral</span><span class="p">(),</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">hash</span> <span class="o">=</span> <span class="n">temp</span><span class="o">-&gt;</span><span class="n">hash</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">hash</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="n">hash</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// 前述路径失败时膨胀为重量级锁
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">monitor</span> <span class="o">=</span> <span class="n">ObjectSynchronizer</span><span class="o">::</span><span class="n">inflate</span><span class="p">(</span><span class="n">Self</span><span class="p">,</span> <span class="n">obj</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">mark</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="n">assert</span> <span class="p">(</span><span class="n">mark</span><span class="o">-&gt;</span><span class="n">is_neutral</span><span class="p">(),</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">hash</span> <span class="o">=</span> <span class="n">mark</span><span class="o">-&gt;</span><span class="n">hash</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">hash</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">hash</span> <span class="o">=</span> <span class="n">get_next_hash</span><span class="p">(</span><span class="n">Self</span><span class="p">,</span> <span class="n">obj</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">temp</span> <span class="o">=</span> <span class="n">mark</span><span class="o">-&gt;</span><span class="n">copy_set_hash</span><span class="p">(</span><span class="n">hash</span><span class="p">);</span> <span class="c1">// merge hash code into header
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">assert</span> <span class="p">(</span><span class="n">temp</span><span class="o">-&gt;</span><span class="n">is_neutral</span><span class="p">(),</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">test</span> <span class="o">=</span> <span class="p">(</span><span class="n">markOop</span><span class="p">)</span> <span class="n">Atomic</span><span class="o">::</span><span class="n">cmpxchg_ptr</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">monitor</span><span class="p">,</span> <span class="n">mark</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">test</span> <span class="o">!=</span> <span class="n">mark</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">hash</span> <span class="o">=</span> <span class="n">test</span><span class="o">-&gt;</span><span class="n">hash</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">      <span class="n">assert</span> <span class="p">(</span><span class="n">test</span><span class="o">-&gt;</span><span class="n">is_neutral</span><span class="p">(),</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="n">assert</span> <span class="p">(</span><span class="n">hash</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Trivial unexpected object/monitor header usage.&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">hash</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>总之，已经计算出hash的情况下直接返回（存储地方在哪里？），否则调用 get_next_hash 方法计算hash。</p>
+<h3 id="jvm存储对象hash位置">JVM存储对象hash位置
+</h3><p>另外在JVM底层，对象哈希码的存储位置与对象当前的同步状态密切相关，其存储策略体现了极致的性能优化。</p>
+<p><em><strong>1.无锁状态存储</strong></em></p>
+<p>无锁状态下计算的hash直接存储到Mark Word的31位哈希域，逻辑见如下代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">// hotspot/share/oops/markWord.hpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">64位Mark Word空间布局：
+</span></span></span><span class="line"><span class="cl"><span class="cm">| unused:25 | hash:31 | unused:1 | age:4 | biased_lock:1 | lock:01 |
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span><span class="line"><span class="cl"><span class="kr">inline</span> <span class="n">uintptr_t</span> <span class="nf">hash</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">mask_bits</span><span class="p">(</span><span class="n">value</span><span class="p">()</span> <span class="o">&gt;&gt;</span> <span class="n">hash_shift</span><span class="p">,</span> <span class="n">hash_mask</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>一旦进入加锁状态，哈希码必须迁移</p>
+<p><em><strong>2.重量级锁存储</strong></em></p>
+<p>当对象经历锁膨胀时，ObjectMonitor的<code>_header</code>字段保存原始Mark Word（含哈希码），逻辑见：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">// hotspot/share/runtime/objectMonitor.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">ObjectMonitor</span><span class="o">::</span><span class="n">set_header</span><span class="p">(</span><span class="n">markOop</span> <span class="n">hdr</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">_header</span> <span class="o">=</span> <span class="n">hdr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><em><strong>3.轻量级锁的特殊处理</strong></em></p>
+<p>原Mark Word备份到线程栈，线程栈上的Displaced Mark Word不可修改，线程栈上若无哈希码则必须触发锁膨胀。逻辑如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">// hotspot/share/runtime/synchronizer.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">if</span> <span class="p">(</span><span class="n">Self</span><span class="o">-&gt;</span><span class="n">is_lock_owned</span><span class="p">((</span><span class="n">address</span><span class="p">)</span><span class="n">mark</span><span class="o">-&gt;</span><span class="n">locker</span><span class="p">()))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">temp</span> <span class="o">=</span> <span class="n">mark</span><span class="o">-&gt;</span><span class="n">displaced_mark_helper</span><span class="p">();</span> <span class="c1">// 获取备份的原始mark
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">hash</span> <span class="o">=</span> <span class="n">temp</span><span class="o">-&gt;</span><span class="n">hash</span><span class="p">();</span> <span class="c1">// 尝试读取备份中的哈希码
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="get_next_hash方法">get_next_hash方法
+</h3><p>计算对象hash的逻辑是通过 get_next_hash 方法实现的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/runtime/synchronizer.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="kr">inline</span> <span class="n">intptr_t</span> <span class="nf">get_next_hash</span><span class="p">(</span><span class="n">Thread</span><span class="o">*</span> <span class="n">current</span><span class="p">,</span> <span class="n">oop</span> <span class="n">obj</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">intptr_t</span> <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// hashCode变量是JVM启动时的一个全局参数，可以通过设置它来切换哈希值生成的策略，默认值是5
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">hashCode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 调用操作系统 OS 的 random() 方法返回随机数。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">value</span> <span class="o">=</span> <span class="n">os</span><span class="o">::</span><span class="n">random</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">hashCode</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">intptr_t</span> <span class="n">addr_bits</span> <span class="o">=</span> <span class="n">cast_from_oop</span><span class="o">&lt;</span><span class="n">intptr_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">3</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">value</span> <span class="o">=</span> <span class="n">addr_bits</span> <span class="o">^</span> <span class="p">(</span><span class="n">addr_bits</span> <span class="o">&gt;&gt;</span> <span class="mi">5</span><span class="p">)</span> <span class="o">^</span> <span class="n">GVars</span><span class="p">.</span><span class="n">stw_random</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">hashCode</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">value</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="c1">// 某些情况下的测试
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">hashCode</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 从 0 开始计算哈希值，不是线程安全的，多个线程可能会得到相同的哈希值。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">value</span> <span class="o">=</span> <span class="o">++</span><span class="n">GVars</span><span class="p">.</span><span class="n">hc_sequence</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">hashCode</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 与创建对象的内存位置有关，原样输出。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">value</span> <span class="o">=</span> <span class="n">cast_from_oop</span><span class="o">&lt;</span><span class="n">intptr_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="cm">/* 该策略是默认值，支持多线程，使用了 Marsaglia 的 xor-shift 算法产生伪随机数。
+</span></span></span><span class="line"><span class="cl"><span class="cm">     所谓的 xor-shift 算法，简单来说，看起来就是一个移位寄存器，每次移入的位由寄存器
+</span></span></span><span class="line"><span class="cl"><span class="cm">     中若干位取异或生成。所谓的伪随机数，不是完全随机的，但是真随机生成比较困难，所以
+</span></span></span><span class="line"><span class="cl"><span class="cm">     只要能通过一定的随机数统计检测，就可以当作真随机数来使用。
+</span></span></span><span class="line"><span class="cl"><span class="cm">    */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="n">t</span> <span class="o">=</span> <span class="n">current</span><span class="o">-&gt;</span><span class="n">_hashStateX</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">t</span> <span class="o">^=</span> <span class="p">(</span><span class="n">t</span> <span class="o">&lt;&lt;</span> <span class="mi">11</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">current</span><span class="o">-&gt;</span><span class="n">_hashStateX</span> <span class="o">=</span> <span class="n">current</span><span class="o">-&gt;</span><span class="n">_hashStateY</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">current</span><span class="o">-&gt;</span><span class="n">_hashStateY</span> <span class="o">=</span> <span class="n">current</span><span class="o">-&gt;</span><span class="n">_hashStateZ</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">current</span><span class="o">-&gt;</span><span class="n">_hashStateZ</span> <span class="o">=</span> <span class="n">current</span><span class="o">-&gt;</span><span class="n">_hashStateW</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="n">v</span> <span class="o">=</span> <span class="n">current</span><span class="o">-&gt;</span><span class="n">_hashStateW</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">v</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span> <span class="o">^</span> <span class="p">(</span><span class="n">v</span> <span class="o">&gt;&gt;</span> <span class="mi">19</span><span class="p">))</span> <span class="o">^</span> <span class="p">(</span><span class="n">t</span> <span class="o">^</span> <span class="p">(</span><span class="n">t</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">current</span><span class="o">-&gt;</span><span class="n">_hashStateW</span> <span class="o">=</span> <span class="n">v</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">value</span> <span class="o">=</span> <span class="n">v</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">value</span> <span class="o">&amp;=</span> <span class="n">markWord</span><span class="o">::</span><span class="n">hash_mask</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="n">value</span> <span class="o">=</span> <span class="mh">0xBAD</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">assert</span><span class="p">(</span><span class="n">value</span> <span class="o">!=</span> <span class="n">markWord</span><span class="o">::</span><span class="n">no_hash</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">value</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>可以看到默认策略（hashCode = 5）不再显式混合对象地址，而是完全依赖 Xorshift 的随机性。如果完全依靠xorshift的随机性可能会想到一个问题：重复调用同一个对象的hashCode()会得到不同的返回值吗？答案是不会，因为Java 语言规范对 hashCode() 的强制性约定要求同一对象得到的hashCode()返回值一定相同。</p>
+<p>这个不变性保证的实现原理是调用 <code>get_next_hash()</code> 只会计算一次对象hash，后面都会缓存该值。不过缓存的地方非常复杂，会根据加锁状态变化，这是JVM优化策略决定的。</p>
+<h2 id="equals方法">equals方法
+</h2><p>这不是一个native方法，也是被继承对象经常重写的方法。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">////// Object.java</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">equals</span><span class="p">(</span><span class="n">Object</span><span class="w"> </span><span class="n">obj</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">obj</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>以下翻译自JDK注释：
+判断其他对象是否&quot;等于&quot;当前对象。equals 方法在非空对象引用上实现等价关系：</p>
+<ul>
+<li>自反性：对于任何非空引用值 x，x.equals(x) 都应返回 true。</li>
+<li>对称性：对于任何非空引用值 x 和 y，当且仅当 y.equals(x) 返回 true 时，x.equals(y) 才应返回 true。</li>
+<li>传递性：对于任何非空引用值 x、y 和 z，如果 x.equals(y) 返回 true 且 y.equals(z) 返回 true，那么 x.equals(z) 也应返回 true。</li>
+<li>一致性：对于任何非空引用值 x 和 y，在对象上用于 equals 比较的信息未被修改的前提下，多次调用 x.equals(y) 应一致地返回 true 或 false。</li>
+<li>非空性：对于任何非空引用值 x，x.equals(null) 都应返回 false。
+Object 类的 equals 方法实现了对象上最具区分性的等价关系；即对于任何非空引用值 x 和 y，当且仅当 x 和 y 引用同一对象（x == y 的值为 true）时，该方法才返回 true。</li>
+</ul>
+<p>请注意，在重写此方法时，通常需要同时重写 <code>hashCode</code> 方法，以维护 <code>hashCode</code> 方法的通用约定，该约定声明相等的对象必须具有相等的哈希码。</p>
+<h2 id="clone方法">clone方法
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">////// Object.java</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">protected</span><span class="w"> </span><span class="kd">native</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="nf">clone</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">CloneNotSupportedException</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>翻译自JDK注释：
+创建并返回此对象的副本。&ldquo;副本&quot;的具体含义取决于对象的类。通常的意图是，对于任何对象 x，表达式：<code>x.clone() != x</code> 将为 true ；且表达式：<code>x.clone().getClass() == x.getClass()</code> 将为 true，但这些并非绝对要求。</p>
+<p>按照约定，返回的对象应通过调用 super.clone 获得。如果一个类及其所有超类（Object 除外）都遵守此约定，则将满足 x.clone().getClass() == x.getClass()。</p>
+<p>按照约定，此方法返回的对象应独立于被克隆的对象。为实现这种独立性，可能需要在返回前修改 super.clone() 返回对象的一个或多个字段。这通常意味着复制构成被克隆对象内部&quot;深层结构&quot;的任何可变对象，并将对这些对象的引用替换为对副本的引用。如果类仅包含基本类型字段或对不可变对象的引用，则通常不需要修改 super.clone() 返回对象中的任何字段。</p>
+<p>Object 类的 clone 方法执行特定的克隆操作。首先，如果此对象的类未实现 Cloneable 接口，则抛出 CloneNotSupportedException。请注意，所有数组都被视为实现了 Cloneable 接口，且数组类型 <code>T[]</code> 的 clone 方法返回类型为 T[]，其中 T 是任何引用或基本类型。否则，此方法会创建此对象类的新实例，并通过赋值的方式完全初始化其所有字段为被克隆对象对应字段的内容；字段内容本身不会被克隆。因此，此方法执行的是此对象的&quot;浅拷贝&rdquo;，而非&quot;深拷贝&quot;操作。</p>
+<p>Object 类本身并未实现 Cloneable 接口，因此在 Object 类实例上调用 clone 方法将在运行时抛出异常。</p>
+<p>正因为不能直接调用Object上的clone方法（因为Object没有实现Cloneable接口，直接调会抛出异常），所以上面Java代码里clone方法是被 protected 修饰的，只能被其子类在内部调用。</p>
+<p>按照老套路找到对应的C++实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/jdk/src/share/native/java/lang/Object.c
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="n">JNINativeMethod</span> <span class="n">methods</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span><span class="s">&#34;clone&#34;</span><span class="p">,</span>       <span class="s">&#34;()Ljava/lang/Object;&#34;</span><span class="p">,</span>   <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">JVM_Clone</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// JNI动态注册
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">JNIEXPORT</span> <span class="kt">void</span> <span class="n">JNICALL</span>
+</span></span><span class="line"><span class="cl"><span class="nf">Java_java_lang_Object_registerNatives</span><span class="p">(</span><span class="n">JNIEnv</span> <span class="o">*</span><span class="n">env</span><span class="p">,</span> <span class="n">jclass</span> <span class="n">cls</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">(</span><span class="o">*</span><span class="n">env</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">RegisterNatives</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">cls</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                            <span class="n">methods</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">methods</span><span class="p">)</span><span class="o">/</span><span class="k">sizeof</span><span class="p">(</span><span class="n">methods</span><span class="p">[</span><span class="mi">0</span><span class="p">]));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/prims/jvm.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">JVM_ENTRY</span><span class="p">(</span><span class="n">jobject</span><span class="p">,</span> <span class="n">JVM_Clone</span><span class="p">(</span><span class="n">JNIEnv</span><span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">handle</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JVMWrapper</span><span class="p">(</span><span class="s">&#34;JVM_Clone&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Handle</span> <span class="nf">obj</span><span class="p">(</span><span class="n">THREAD</span><span class="p">,</span> <span class="n">JNIHandles</span><span class="o">::</span><span class="n">resolve_non_null</span><span class="p">(</span><span class="n">handle</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="k">const</span> <span class="n">KlassHandle</span> <span class="nf">klass</span> <span class="p">(</span><span class="n">THREAD</span><span class="p">,</span> <span class="n">obj</span><span class="o">-&gt;</span><span class="n">klass</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JvmtiVMObjectAllocEventCollector</span> <span class="n">oam</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 1. 检查是否实现了Cloneable接口，没有直接抛出异常
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">klass</span><span class="o">-&gt;</span><span class="n">is_cloneable</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ResourceMark</span> <span class="nf">rm</span><span class="p">(</span><span class="n">THREAD</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">THROW_MSG_0</span><span class="p">(</span><span class="n">vmSymbols</span><span class="o">::</span><span class="n">java_lang_CloneNotSupportedException</span><span class="p">(),</span> <span class="n">klass</span><span class="o">-&gt;</span><span class="n">external_name</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 2. 分配复制对象的内存（二分模型中oop所占用的内存）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">const</span> <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="n">obj</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="n">oop</span> <span class="n">new_obj</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">obj</span><span class="o">-&gt;</span><span class="n">is_array</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="p">((</span><span class="n">arrayOop</span><span class="p">)</span><span class="n">obj</span><span class="p">())</span><span class="o">-&gt;</span><span class="n">length</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">new_obj</span> <span class="o">=</span> <span class="n">CollectedHeap</span><span class="o">::</span><span class="n">array_allocate</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">CHECK_NULL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">new_obj</span> <span class="o">=</span> <span class="n">CollectedHeap</span><span class="o">::</span><span class="n">obj_allocate</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">CHECK_NULL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 3. 执行浅复制。下面的函数可以看作是内存块的复制操作。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">Copy</span><span class="o">::</span><span class="n">conjoint_jlongs_atomic</span><span class="p">((</span><span class="n">jlong</span><span class="o">*</span><span class="p">)</span><span class="n">obj</span><span class="p">(),</span> <span class="p">(</span><span class="n">jlong</span><span class="o">*</span><span class="p">)</span><span class="n">new_obj</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                               <span class="p">(</span><span class="n">size_t</span><span class="p">)</span><span class="n">align_object_size</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="o">/</span> <span class="n">HeapWordsPerLong</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 初始化新对象的Mark Word对象头
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">new_obj</span><span class="o">-&gt;</span><span class="n">init_mark</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 内存写屏障设置，确保对象初始化对其他线程可见
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">BarrierSet</span><span class="o">*</span> <span class="n">bs</span> <span class="o">=</span> <span class="n">Universe</span><span class="o">::</span><span class="n">heap</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">barrier_set</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="n">bs</span><span class="o">-&gt;</span><span class="n">write_region</span><span class="p">(</span><span class="n">MemRegion</span><span class="p">((</span><span class="n">HeapWord</span><span class="o">*</span><span class="p">)</span><span class="n">new_obj</span><span class="p">,</span> <span class="n">size</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 注册finalizer，看起来不是主逻辑
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">klass</span><span class="o">-&gt;</span><span class="n">has_finalizer</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">assert</span><span class="p">(</span><span class="n">obj</span><span class="o">-&gt;</span><span class="n">is_instance</span><span class="p">(),</span> <span class="s">&#34;should be instanceOop&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">new_obj</span> <span class="o">=</span> <span class="n">InstanceKlass</span><span class="o">::</span><span class="n">register_finalizer</span><span class="p">(</span><span class="n">instanceOop</span><span class="p">(</span><span class="n">new_obj</span><span class="p">),</span> <span class="n">CHECK_NULL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 返回浅拷贝的对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">return</span> <span class="n">JNIHandles</span><span class="o">::</span><span class="n">make_local</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">oop</span><span class="p">(</span><span class="n">new_obj</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="n">JVM_END</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>总结Object的clone方法就是对两个Java对象在JVM底层的二分模型中的oop部分数据做内存块的复制。这就是浅拷贝的含义。基本数据类型字段做了独立拷贝，引用数据类型字段则实际是指向同一个对象地址。</p>
+<h2 id="tostring方法">toString方法
+</h2><p>这应该是最简单的一个方法了</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">////// Object.java</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">toString</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">getClass</span><span class="p">().</span><span class="na">getName</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34;@&#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Integer</span><span class="p">.</span><span class="na">toHexString</span><span class="p">(</span><span class="n">hashCode</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>翻译自JDK注释：返回该对象的字符串表示形式。通常，toString 方法会返回一个&quot;文本化表示&quot;此对象的字符串。结果应当是简洁但信息丰富的表示形式，便于人们阅读。建议所有子类都重写此方法。</p>
+<h2 id="wait方法">wait方法
+</h2><p>从Java代码里可以看出这又是一个native方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">////// Object.java</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kd">native</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">timeout</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">InterruptedException</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>翻译自JDK注释：
+使当前线程进入等待状态，直到以下任一情况发生：</p>
+<ol>
+<li>其他线程调用此对象的 notify() 方法</li>
+<li>其他线程调用此对象的 notifyAll() 方法</li>
+<li>指定的等待时间已到</li>
+</ol>
+<p>当前线程必须持有该对象的监视器锁。此方法会使当前线程（称为 T）将自己置于该对象的等待集中，并释放对该对象的所有同步声明。线程 T 将被禁用线程调度，并处于休眠状态，直到发生以下四种情况之一：</p>
+<ul>
+<li>其他线程调用此对象的 notify 方法，且线程 T 被随机选中唤醒</li>
+<li>其他线程调用此对象的 notifyAll 方法</li>
+<li>其他线程中断线程 T（通过调用 T.interrupt() ）</li>
+<li>指定的实时等待时间已到（允许一定误差）。若 timeout 为零，则不考虑时间因素，线程将一直等待直到被通知</li>
+</ul>
+<p>随后线程 T 将从该对象的等待集中移除，并重新启用线程调度。之后它将与其他线程以常规方式竞争对该对象的同步权；一旦重新获得对象的控制权，它对该对象的所有同步声明都将恢复到调用 wait 方法之前的状态 - 即恢复到调用 wait 方法时的状态。随后线程 T 从 wait 方法调用中返回。因此，从 wait 方法返回时，对象和线程 T 的同步状态与调用 wait 方法时完全相同。</p>
+<p>线程也可能在没有收到通知、中断或超时的情况下被唤醒，这种现象称为&quot;虚假唤醒&quot;(spurious wakeup)。虽然实践中很少发生，但应用程序必须通过检查本应使线程唤醒的条件来防范这种情况，如果条件不满足则应继续等待。换句话说，wait 操作应始终放在循环中，如下所示：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">synchronized</span><span class="w"> </span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">&lt;</span><span class="n">条件不满足</span><span class="o">&gt;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">obj</span><span class="p">.</span><span class="na">wait</span><span class="p">(</span><span class="n">timeout</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 执行条件满足后的操作</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>（更多信息请参阅 Doug Lea 所著《Java 并发编程（第二版）》（Addison-Wesley，2000）第 3.2.3 节，或 Joshua Bloch 所著《Effective Java 编程语言指南》（Addison-Wesley，2001）第 50 条）</p>
+<p>如果当前线程在等待前或等待期间被任何线程中断，则会抛出 InterruptedException。在对象的锁状态按上述描述恢复前，不会抛出此异常。</p>
+<p>注意 wait 方法只会释放当前对象的锁，当前线程可能持有的其他对象锁在线程等待期间仍保持锁定状态。</p>
+<p>只有持有该对象监视器锁的线程才能调用此方法。关于线程如何成为监视器锁的所有者，请参阅 notify 方法的说明。</p>
+<p>接下来查看对应的C++代码实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/jdk/src/share/native/java/lang/Object.c
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="n">JNINativeMethod</span> <span class="n">methods</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span><span class="s">&#34;wait&#34;</span><span class="p">,</span>        <span class="s">&#34;(J)V&#34;</span><span class="p">,</span>                   <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">JVM_MonitorWait</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">JNIEXPORT</span> <span class="kt">void</span> <span class="n">JNICALL</span>
+</span></span><span class="line"><span class="cl"><span class="nf">Java_java_lang_Object_registerNatives</span><span class="p">(</span><span class="n">JNIEnv</span> <span class="o">*</span><span class="n">env</span><span class="p">,</span> <span class="n">jclass</span> <span class="n">cls</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">(</span><span class="o">*</span><span class="n">env</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">RegisterNatives</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">cls</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                            <span class="n">methods</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">methods</span><span class="p">)</span><span class="o">/</span><span class="k">sizeof</span><span class="p">(</span><span class="n">methods</span><span class="p">[</span><span class="mi">0</span><span class="p">]));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/prims/jvm.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">JVM_ENTRY</span><span class="p">(</span><span class="kt">void</span><span class="p">,</span> <span class="n">JVM_MonitorWait</span><span class="p">(</span><span class="n">JNIEnv</span><span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">handle</span><span class="p">,</span> <span class="n">jlong</span> <span class="n">ms</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JVMWrapper</span><span class="p">(</span><span class="s">&#34;JVM_MonitorWait&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Handle</span> <span class="nf">obj</span><span class="p">(</span><span class="n">THREAD</span><span class="p">,</span> <span class="n">JNIHandles</span><span class="o">::</span><span class="n">resolve_non_null</span><span class="p">(</span><span class="n">handle</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">JavaThreadInObjectWaitState</span> <span class="nf">jtiows</span><span class="p">(</span><span class="kr">thread</span><span class="p">,</span> <span class="n">ms</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// jvmti相关的，可以忽略
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">JvmtiExport</span><span class="o">::</span><span class="n">should_post_monitor_wait</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">JvmtiExport</span><span class="o">::</span><span class="n">post_monitor_wait</span><span class="p">((</span><span class="n">JavaThread</span> <span class="o">*</span><span class="p">)</span><span class="n">THREAD</span><span class="p">,</span> <span class="p">(</span><span class="n">oop</span><span class="p">)</span><span class="n">obj</span><span class="p">(),</span> <span class="n">ms</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// wait的关键逻辑
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">ObjectSynchronizer</span><span class="o">::</span><span class="n">wait</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ms</span><span class="p">,</span> <span class="n">CHECK</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">JVM_END</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/runtime/synchronizer.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">ObjectSynchronizer</span><span class="o">::</span><span class="n">wait</span><span class="p">(</span><span class="n">Handle</span> <span class="n">obj</span><span class="p">,</span> <span class="n">jlong</span> <span class="n">millis</span><span class="p">,</span> <span class="n">TRAPS</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 偏向锁？
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">UseBiasedLocking</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">BiasedLocking</span><span class="o">::</span><span class="n">revoke_and_rebias</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">false</span><span class="p">,</span> <span class="n">THREAD</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">assert</span><span class="p">(</span><span class="o">!</span><span class="n">obj</span><span class="o">-&gt;</span><span class="n">mark</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">has_bias_pattern</span><span class="p">(),</span> <span class="s">&#34;biases should be revoked by now&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 1. 参数不合法，抛出异常
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">millis</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TEVENT</span> <span class="p">(</span><span class="n">wait</span> <span class="o">-</span> <span class="k">throw</span> <span class="n">IAX</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">THROW_MSG</span><span class="p">(</span><span class="n">vmSymbols</span><span class="o">::</span><span class="n">java_lang_IllegalArgumentException</span><span class="p">(),</span> <span class="s">&#34;timeout value is negative&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 2. 下面方法是 OpenJDK 中实现锁膨胀的核心方法，负责将轻量级锁升级为重量级锁。返回的monitor就是监视器锁，也就是重量级锁。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">ObjectMonitor</span><span class="o">*</span> <span class="n">monitor</span> <span class="o">=</span> <span class="n">ObjectSynchronizer</span><span class="o">::</span><span class="n">inflate</span><span class="p">(</span><span class="n">THREAD</span><span class="p">,</span> <span class="n">obj</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// DTrace是一个动态跟踪框架，用于JVM内部行为的实时诊断和性能分析，忽略相关代码
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// 3. 在监视器锁上调用wait方法
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">monitor</span><span class="o">-&gt;</span><span class="n">wait</span><span class="p">(</span><span class="n">millis</span><span class="p">,</span> <span class="nb">true</span><span class="p">,</span> <span class="n">THREAD</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/runtime/objectMonitor.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 以下是deepseek基于JDK17代码精简后的核心逻辑
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">ObjectMonitor</span><span class="o">::</span><span class="n">wait</span><span class="p">(</span><span class="n">jlong</span> <span class="n">millis</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">interruptible</span><span class="p">,</span> <span class="n">TRAPS</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Thread</span><span class="o">*</span> <span class="k">const</span> <span class="n">self</span> <span class="o">=</span> <span class="n">THREAD</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 1. 检查当前线程是否持有锁
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">THREAD</span> <span class="o">!=</span> <span class="n">_owner</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">THREAD</span><span class="o">-&gt;</span><span class="n">is_lock_owned</span><span class="p">((</span><span class="n">address</span><span class="p">)</span><span class="n">_owner</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">_owner</span> <span class="o">=</span> <span class="n">THREAD</span><span class="p">;</span> <span class="c1">// 处理锁重入
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">THROW_MSG</span><span class="p">(</span><span class="n">vmSymbols</span><span class="o">::</span><span class="n">java_lang_IllegalMonitorStateException</span><span class="p">(),</span> 
+</span></span><span class="line"><span class="cl">               <span class="s">&#34;current thread not owner&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 2. 创建 WaitNode 并加入等待队列
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">WaitNode</span> <span class="nf">node</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">millis</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">AddWaiter</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_WaitSet</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">node</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 3. 释放锁并退出监视器
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">exit</span><span class="p">(</span><span class="nb">true</span><span class="p">,</span> <span class="n">self</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 4. 线程挂起（可响应中断）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">_ParkEvent</span><span class="o">-&gt;</span><span class="n">park</span><span class="p">(</span><span class="n">millis</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 5. 唤醒后重新竞争锁
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">enter</span><span class="p">(</span><span class="n">self</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 6. 处理中断
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">interruptible</span> <span class="o">&amp;&amp;</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">is_interrupted</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">THROW</span><span class="p">(</span><span class="n">vmSymbols</span><span class="o">::</span><span class="n">java_lang_InterruptedException</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="notify方法">notify方法
+</h2><p>Java代码实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">////// Object.java</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kd">native</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">notify</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>翻译自JDK注释：
+唤醒在此对象监视器上等待的单个线程。如果有多个线程正在等待该对象，则会选择其中一个线程唤醒。选择是任意的，具体由实现决定。线程通过调用 wait 方法在对象的监视器上等待。</p>
+<p>被唤醒的线程将无法继续执行，直到当前线程释放此对象的锁。被唤醒的线程将以常规方式与其他可能正在竞争同步此对象的线程进行竞争；例如，被唤醒的线程在成为下一个锁定此对象的线程时，既不享有可靠的特权，也不会处于不利地位。</p>
+<p>只有持有此对象监视器所有权的线程才能调用此方法。线程可以通过以下三种方式之一成为对象监视器的所有者：</p>
+<ul>
+<li>执行该对象的同步实例方法（synchronized修饰的实例方法）</li>
+<li>执行同步在该对象上的 synchronized 语句块</li>
+<li>对于 Class 类型的对象，执行该类的同步静态方法</li>
+</ul>
+<p>一个对象的监视器在同一时间只能被一个线程拥有。</p>
+<p>C++代码路径和【wait方法】中的代码路径一致，这里不重复写了，直接到达最核心的C++逻辑：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/runtime/synchronizer.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">ObjectSynchronizer</span><span class="o">::</span><span class="n">notify</span><span class="p">(</span><span class="n">Handle</span> <span class="n">obj</span><span class="p">,</span> <span class="n">TRAPS</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="n">UseBiasedLocking</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">BiasedLocking</span><span class="o">::</span><span class="n">revoke_and_rebias</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">false</span><span class="p">,</span> <span class="n">THREAD</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">assert</span><span class="p">(</span><span class="o">!</span><span class="n">obj</span><span class="o">-&gt;</span><span class="n">mark</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">has_bias_pattern</span><span class="p">(),</span> <span class="s">&#34;biases should be revoked by now&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">markOop</span> <span class="n">mark</span> <span class="o">=</span> <span class="n">obj</span><span class="o">-&gt;</span><span class="n">mark</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">mark</span><span class="o">-&gt;</span><span class="n">has_locker</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">THREAD</span><span class="o">-&gt;</span><span class="n">is_lock_owned</span><span class="p">((</span><span class="n">address</span><span class="p">)</span><span class="n">mark</span><span class="o">-&gt;</span><span class="n">locker</span><span class="p">()))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 核心逻辑在这
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">ObjectSynchronizer</span><span class="o">::</span><span class="n">inflate</span><span class="p">(</span><span class="n">THREAD</span><span class="p">,</span> <span class="n">obj</span><span class="p">())</span><span class="o">-&gt;</span><span class="n">notify</span><span class="p">(</span><span class="n">THREAD</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/runtime/objectMonitor.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1">// deepseek生成
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">ObjectMonitor</span><span class="o">::</span><span class="n">notify</span><span class="p">(</span><span class="n">TRAPS</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 1. 检查当前线程是否持有锁
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">THREAD</span> <span class="o">!=</span> <span class="n">_owner</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">THREAD</span><span class="o">-&gt;</span><span class="n">is_lock_owned</span><span class="p">((</span><span class="n">address</span><span class="p">)</span><span class="n">_owner</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">_owner</span> <span class="o">=</span> <span class="n">THREAD</span><span class="p">;</span> <span class="c1">// 处理锁重入情况
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">THROW_MSG</span><span class="p">(</span><span class="n">vmSymbols</span><span class="o">::</span><span class="n">java_lang_IllegalMonitorStateException</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">               <span class="s">&#34;current thread not owner&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  
+</span></span><span class="line"><span class="cl">  <span class="c1">// 2. 如果等待集为空则直接返回
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">_WaitSet</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  
+</span></span><span class="line"><span class="cl">  <span class="c1">// 3. 从等待集（LIFO链表）头部取出一个线程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">ObjectWaiter</span><span class="o">*</span> <span class="n">iterator</span> <span class="o">=</span> <span class="n">_WaitSet</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">_WaitSet</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// 4. 根据策略将线程转移到EntryList或cxq
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// 通过-XX:MonitorPolicy设置
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">Policy</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>       <span class="c1">// 插入EntryList头部（默认策略）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">_EntryList</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">_EntryList</span> <span class="o">=</span> <span class="n">iterator</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">Policy</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// 插入EntryList尾部
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// ...遍历链表到尾部插入
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">Policy</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// 插入cxq头部
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">_cxq</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">_cxq</span> <span class="o">=</span> <span class="n">iterator</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>                 <span class="c1">// 插入cxq尾部（Policy == 3）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// ...遍历cxq链表到尾部插入
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// 5. 设置线程状态标记
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">=</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_ENTER</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// 6. 实际唤醒线程，唤醒线程后在ObjectMonitor::wait()里重新获取锁。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// 也就是ObjectMonitor::wait 函数返回前的 enter(self) 语句。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">ParkEvent</span> <span class="o">*</span> <span class="n">ev</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_event</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">ev</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ev</span><span class="o">-&gt;</span><span class="n">unpark</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="notifyall方法">notifyAll方法
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">////// Object.java</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kd">native</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">notifyAll</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>翻译自JDK：
+唤醒在此对象监视器上等待的所有线程。线程通过调用 wait 方法在对象的监视器上等待。</p>
+<p>被唤醒的线程将无法继续执行，直到当前线程释放此对象的锁。被唤醒的线程将以常规方式与其他可能正在竞争同步此对象的线程进行竞争；例如，被唤醒的线程在成为下一个锁定此对象的线程时，既不享有可靠的特权，也不会处于不利地位。</p>
+<p>只有持有此对象监视器所有权的线程才能调用此方法。关于线程如何成为监视器所有者的描述，请参阅 notify 方法的说明。</p>
+<p>直击C++代码的核心实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">////// jdk8-b120/hotspot/src/share/vm/runtime/objectMonitor.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">ObjectMonitor</span><span class="o">::</span><span class="n">notifyAll</span><span class="p">(</span><span class="n">TRAPS</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 1. 检查当前线程是否是该锁的拥有者
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">CHECK_OWNER</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="n">ObjectWaiter</span><span class="o">*</span> <span class="n">iterator</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">_WaitSet</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">TEVENT</span> <span class="p">(</span><span class="n">Empty</span><span class="o">-</span><span class="n">NotifyAll</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">Policy</span> <span class="o">=</span> <span class="n">Knob_MoveNotifyee</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">Tally</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Thread</span><span class="o">::</span><span class="n">SpinAcquire</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">_WaitSetLock</span><span class="p">,</span> <span class="s">&#34;WaitSet - notifyall&#34;</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">  
+</span></span><span class="line"><span class="cl">  <span class="c1">// 2. 遍历等待线程队列，唤醒其中的每个线程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">     <span class="n">iterator</span> <span class="o">=</span> <span class="n">DequeueWaiter</span> <span class="p">()</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="k">if</span> <span class="p">(</span><span class="n">iterator</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="k">break</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="n">TEVENT</span> <span class="p">(</span><span class="n">NotifyAll</span> <span class="o">-</span> <span class="n">Transfer1</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="o">++</span><span class="n">Tally</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     <span class="n">guarantee</span> <span class="p">(</span><span class="n">iterator</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">==</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_WAIT</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="n">guarantee</span> <span class="p">(</span><span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_notified</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_notified</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="c1">// 通过宏获取当前线程实例对象（类型是JavaThread）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>     <span class="n">Thread</span> <span class="o">*</span> <span class="n">Self</span> <span class="o">=</span> <span class="n">THREAD</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_notifier_tid</span> <span class="o">=</span> <span class="n">Self</span><span class="o">-&gt;</span><span class="n">osthread</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">thread_id</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">     <span class="k">if</span> <span class="p">(</span><span class="n">Policy</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">=</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_ENTER</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">List</span> <span class="o">=</span> <span class="n">_EntryList</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="c1">// 根据不同策略选择唤醒线程的方式
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>     <span class="k">if</span> <span class="p">(</span><span class="n">Policy</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>       <span class="c1">// prepend to EntryList
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>         <span class="k">if</span> <span class="p">(</span><span class="n">List</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="n">_EntryList</span> <span class="o">=</span> <span class="n">iterator</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">List</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="n">iterator</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">List</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="n">_EntryList</span> <span class="o">=</span> <span class="n">iterator</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span> <span class="k">else</span>
+</span></span><span class="line"><span class="cl">     <span class="nf">if</span> <span class="p">(</span><span class="n">Policy</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>      <span class="c1">// append to EntryList
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>         <span class="k">if</span> <span class="p">(</span><span class="n">List</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="n">_EntryList</span> <span class="o">=</span> <span class="n">iterator</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// CONSIDER:  finding the tail currently requires a linear-time walk of
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="c1">// the EntryList.  We can make tail access constant-time by converting to
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="c1">// a CDLL instead of using our current DLL.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">Tail</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="p">(</span><span class="n">Tail</span> <span class="o">=</span> <span class="n">List</span> <span class="p">;</span> <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">!=</span> <span class="nb">NULL</span> <span class="p">;</span> <span class="n">Tail</span> <span class="o">=</span> <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">assert</span> <span class="p">(</span><span class="n">Tail</span> <span class="o">!=</span> <span class="nb">NULL</span> <span class="o">&amp;&amp;</span> <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">iterator</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="n">Tail</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span> <span class="k">else</span>
+</span></span><span class="line"><span class="cl">     <span class="nf">if</span> <span class="p">(</span><span class="n">Policy</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>      <span class="c1">// prepend to cxq
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>         <span class="c1">// prepend to cxq
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>         <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">=</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_CXQ</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">Front</span> <span class="o">=</span> <span class="n">_cxq</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">Front</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="k">if</span> <span class="p">(</span><span class="n">Atomic</span><span class="o">::</span><span class="n">cmpxchg_ptr</span> <span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">_cxq</span><span class="p">,</span> <span class="n">Front</span><span class="p">)</span> <span class="o">==</span> <span class="n">Front</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                 <span class="k">break</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="p">}</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span> <span class="k">else</span>
+</span></span><span class="line"><span class="cl">     <span class="nf">if</span> <span class="p">(</span><span class="n">Policy</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>      <span class="c1">// append to cxq
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">=</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_CXQ</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">Tail</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Tail</span> <span class="o">=</span> <span class="n">_cxq</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="p">(</span><span class="n">Tail</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="p">(</span><span class="n">Atomic</span><span class="o">::</span><span class="n">cmpxchg_ptr</span> <span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">_cxq</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">)</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                   <span class="k">break</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">while</span> <span class="p">(</span><span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="n">Tail</span> <span class="o">=</span> <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">iterator</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="n">Tail</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="k">break</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ParkEvent</span> <span class="o">*</span> <span class="n">ev</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_event</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">=</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_RUN</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">OrderAccess</span><span class="o">::</span><span class="n">fence</span><span class="p">()</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 3. 唤醒当前遍历到的线程，被唤醒额线程在ObjectMonitor::wait方法中继续竞争锁。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">ev</span><span class="o">-&gt;</span><span class="n">unpark</span><span class="p">()</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     <span class="k">if</span> <span class="p">(</span><span class="n">Policy</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">       <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">wait_reenter_begin</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>  <span class="c1">// end for loop
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">  <span class="n">Thread</span><span class="o">::</span><span class="n">SpinRelease</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">_WaitSetLock</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">Tally</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">ObjectMonitor</span><span class="o">::</span><span class="n">_sync_Notifications</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">     <span class="n">ObjectMonitor</span><span class="o">::</span><span class="n">_sync_Notifications</span><span class="o">-&gt;</span><span class="n">inc</span><span class="p">(</span><span class="n">Tally</span><span class="p">)</span> <span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/object/">Object</a>
+        
+            <a href="/tags/%E6%A0%B9%E7%B1%BB%E6%96%B9%E6%B3%95/">根类方法</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/java-socket%E5%AE%9E%E7%8E%B0/">
+        
+        
+            <div class="article-image">
+                <img src="/p/java-socket%E5%AE%9E%E7%8E%B0/cover.eba4032b0527da85fbc27a3726674f16_hu_29e22d640e17c46b.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Java Socket实现"
+                        
+                        data-hash="md5-66QDKwUn2oX7wno3JmdPFg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Java Socket实现</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/java%E5%8E%9F%E7%94%9F%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/">
+        
+        
+            <div class="article-image">
+                <img src="/p/java%E5%8E%9F%E7%94%9F%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/cover.f6fccedd4d36f77cd2677c4c40a56254_hu_56ba4d277977d259.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Java原生动态代理"
+                        
+                        data-hash="md5-9vzO3U0293zSZ3xMQKViVA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Java原生动态代理</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/java-thread-class/">
+        
+        
+            <div class="article-image">
+                <img src="/p/java-thread-class/cover.9599fda7c55af42b47b9c43dd8f0bc7c_hu_22c55da75a48e9bb.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Java线程类"
+                        data-key="java-thread-class" 
+                        data-hash="md5-lZn9p8Va9CtHucQ92PC8fA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Java线程类</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%9B%B4%E6%96%B0%E4%B8%ADjvm%E5%AD%97%E8%8A%82%E7%A0%81%E8%A7%84%E8%8C%83/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%9B%B4%E6%96%B0%E4%B8%ADjvm%E5%AD%97%E8%8A%82%E7%A0%81%E8%A7%84%E8%8C%83/cover.633e76883eb4f055266dc4da70c5449d_hu_a44eb0164350df41.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 【更新中】JVM字节码规范"
+                        
+                        data-hash="md5-Yz52iD608FUmbcTacMVEnQ==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">【更新中】JVM字节码规范</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/">
+        
+        
+            <div class="article-image">
+                <img src="/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.fd57e9a9172850e018e721e0eddfb08e_hu_a9f08728de3c381d.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post OpenJDK代码初探"
+                        
+                        data-hash="md5-/VfpqRcoUOAY5yHg7d&#43;wjg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">OpenJDK代码初探</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Weijie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

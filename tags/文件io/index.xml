@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>文件IO on Weijie&#39;s Blog Site</title>
+        <link>https://example.com/tags/%E6%96%87%E4%BB%B6io/</link>
+        <description>Recent content in 文件IO on Weijie&#39;s Blog Site</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Weijie</copyright>
+        <lastBuildDate>Fri, 02 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/%E6%96%87%E4%BB%B6io/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Linux文件IO操作总结</title>
+        <link>https://example.com/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/</link>
+        <pubDate>Fri, 02 Aug 2024 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/</guid>
+        <description>&lt;img src="https://example.com/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover.jpg" alt="Featured image of post Linux文件IO操作总结" /&gt;&lt;h2 id=&#34;linux-api&#34;&gt;Linux API
+&lt;/h2&gt;&lt;p&gt;Linux中所有执行IO操作的系统调用都围绕着文件描述符来进行，文件描述符是一个非负整数，来指代打开的文件。这里&amp;quot;打开的文件&amp;quot;包括管道、FIFO、socket、终端、设备和普通文件。针对每个进程，文件描述符都自成一套：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;#include &amp;lt;unistd.h&amp;gt;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;STDIN_FILENO&lt;/code&gt;  标准输入流的文件描述符 0&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;STDOUT_FILENO&lt;/code&gt;  标准输出流的文件描述符 1&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;STDERR_FILENO&lt;/code&gt;  标准错误流的文件描述符 2&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;fd = open(pathname, flags, mode)&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;numread = read(fd, buffer, count)&lt;/code&gt; 如何读到文件结束符EOF（Linux终端为CTRL+D），会返回0&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;numwritten = write(fd, buffer, count)&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;status = close(fd)&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;c标准库api&#34;&gt;C标准库API
+&lt;/h2&gt;&lt;p&gt;C标准库中所有执行IO操作的库函数围绕文件指针 &lt;code&gt;FILE*&lt;/code&gt;来进行：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;#include &amp;lt;stdio.h&amp;gt;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;stdin&lt;/code&gt;  标准输入流的文件指针&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;stdout&lt;/code&gt;  标准输出流的文件指针&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;stderr&lt;/code&gt;  标准错误流的文件指针&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;FILE* = fopen(filepath, mode)&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;rnum = fread(buf, 5,/*每个数据的字节数*/ 2,/*数据的个数*/ FILE* stream);&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;wnum = fwrite(buf, 5, 2, FILE* stream);&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;fclose()&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;对比&#34;&gt;对比
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;是否带缓冲：
+&lt;ul&gt;
+&lt;li&gt;操作文件描述符的Linux API默认无缓冲（除非手动设置，如 setbuf() 或使用 read()/write() 结合缓冲区），适合需要精细控制 I/O 的场景（如网络编程、底层设备操作）。&lt;/li&gt;
+&lt;li&gt;操作文件指针的C API 默认带缓冲（全缓冲、行缓冲或无缓冲，可通过 setvbuf() 设置）。缓冲机制减少系统调用次数，提高效率（例如 fprintf() 先写入缓冲区，满后再调用 write()）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;有无缓冲造成性能和其他方面影响：
+&lt;ul&gt;
+&lt;li&gt;每次 read()/write() 都会触发系统调用，频繁操作时开销较大。适合小数据量或需要实时响应的场景。&lt;/li&gt;
+&lt;li&gt;fread()/fwrite() 缓冲机制减少系统调用，适合批量数据读写（如文件解析、日志写入）。但缓冲可能导致数据延迟写入（如需立即写入，需调用 fflush()）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;功能差异
+&lt;ul&gt;
+&lt;li&gt;操作文件描述符的Linux API 支持更多底层操作（如 fcntl() 设置非阻塞 I/O、ioctl() 设备控制）。可用于操作非文件类资源（如套接字、管道、设备文件）。&lt;/li&gt;
+&lt;li&gt;操作&lt;code&gt;FILE*&lt;/code&gt; 的C API 提供更丰富的格式化 I/O 函数（如 fprintf()、fscanf()）。不支持直接操作套接字或设备（需先转换为文件描述符 fileno()）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;如何理解open write之类Linux API是无缓冲的&lt;/strong&gt;：&lt;/p&gt;
+&lt;p&gt;在Linux系统编程中，open()和write()等系统调用通常被称为&amp;quot;无缓冲&amp;quot;(unbuffered)的I/O操作，这是与标准I/O库函数(如fopen(), fwrite())相比较而言的。以下是详细解释：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;直接系统调用：
+&lt;ul&gt;
+&lt;li&gt;open()和write()是直接与内核交互的系统调用&lt;/li&gt;
+&lt;li&gt;每次调用都会直接进入内核空间，不经过用户空间的缓冲层&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;无用户空间缓冲：
+&lt;ul&gt;
+&lt;li&gt;标准I/O库(如glibc)会在用户空间维护缓冲区&lt;/li&gt;
+&lt;li&gt;而系统调用级别的I/O不提供这种缓冲机制&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;文件描述符和文件指针的互相转换&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;fileno(FILE*)&lt;/code&gt;：从 &lt;code&gt;FILE*&lt;/code&gt; 获取文件描述符。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;fdopen(int fd, const char *mode)&lt;/code&gt;：从文件描述符创建 &lt;code&gt;FILE*&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;线程安全性&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;read/write等系统调用本身是原子操作，但多线程操作同一 fd 需额外同步。&lt;/li&gt;
+&lt;li&gt;C 标准库函数（如 fprintf()）通常是线程安全的（内部有锁机制）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;c-api&#34;&gt;C++ API
+&lt;/h2&gt;&lt;p&gt;C++标准库提供三种类，实现C++对文件的操作：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;include &amp;lt;fstream&amp;gt;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ofstream&lt;/code&gt;  写文件类，由 ostream 引申而来&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ifstream&lt;/code&gt;  读文件类，由 istream 引申而来&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;fstream&lt;/code&gt;  同时读写文件类，由iostream 引申而来&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

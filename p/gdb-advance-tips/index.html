@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="gdb启用/禁用ASLR 为了防范缓冲区溢出攻击等安全漏洞，操作系统会在每次程序启动时随机化进程的地址空间布局，这一机制称为地址空间布局随机化（ASLR）。\n在Linux系统中，可以通过 cat /proc/sys/kernel/randomize_va_space 检查当前系统的ASLR是否启用。默认情况下是启用状态（值为2）；若为0则表示被禁用。\n">
+<title>GDB高级调试技巧</title>
+
+<link rel='canonical' href='https://example.com/p/gdb-advance-tips/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="GDB高级调试技巧">
+<meta property='og:description' content="gdb启用/禁用ASLR 为了防范缓冲区溢出攻击等安全漏洞，操作系统会在每次程序启动时随机化进程的地址空间布局，这一机制称为地址空间布局随机化（ASLR）。\n在Linux系统中，可以通过 cat /proc/sys/kernel/randomize_va_space 检查当前系统的ASLR是否启用。默认情况下是启用状态（值为2）；若为0则表示被禁用。\n">
+<meta property='og:url' content='https://example.com/p/gdb-advance-tips/'>
+<meta property='og:site_name' content='Weijie&#39;s Blog Site'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='GDB' /><meta property='article:tag' content='GDB高级' /><meta property='article:tag' content='Linux调试器' /><meta property='article:published_time' content='2024-10-30T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-10-30T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/gdb-advance-tips/cover.jpg' />
+<meta name="twitter:title" content="GDB高级调试技巧">
+<meta name="twitter:description" content="gdb启用/禁用ASLR 为了防范缓冲区溢出攻击等安全漏洞，操作系统会在每次程序启动时随机化进程的地址空间布局，这一机制称为地址空间布局随机化（ASLR）。\n在Linux系统中，可以通过 cat /proc/sys/kernel/randomize_va_space 检查当前系统的ASLR是否启用。默认情况下是启用状态（值为2）；若为0则表示被禁用。\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://example.com/p/gdb-advance-tips/cover.jpg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    <img src="/img/avatar.jpg" width="300" height="300" class="site-logo" loading="lazy" alt="Avatar">
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Weijie&#39;s Blog Site</a></h1>
+            <h2 class="site-description">My Tech Blogs</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#gdb启用禁用aslr">gdb启用/禁用ASLR</a></li>
+    <li><a href="#发生segment-fault时的调试方法">发生segment fault时的调试方法</a>
+      <ol>
+        <li><a href="#1dmesg--nm">1.dmesg + nm</a></li>
+        <li><a href="#2利用signal-handler">2.利用signal handler</a></li>
+        <li><a href="#3利用coredump文件">3.利用coredump文件</a></li>
+      </ol>
+    </li>
+    <li><a href="#自定义gdb展示样式">自定义GDB展示样式</a></li>
+    <li><a href="#根据文件描述符找到对应的文件路径">根据文件描述符找到对应的文件路径</a>
+      <ol>
+        <li><a href="#1借助shell查看proc文件系统">1.借助shell查看/proc文件系统</a></li>
+        <li><a href="#2使用call命令调用系统函数">2.使用call命令调用系统函数</a></li>
+        <li><a href="#封装gdb命令方便调用">封装gdb命令方便调用</a></li>
+      </ol>
+    </li>
+    <li><a href="#查看全局变量所在的文件">查看全局变量所在的文件</a></li>
+    <li><a href="#调试宏">调试宏</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/gdb-advance-tips/">
+                <img src="/p/gdb-advance-tips/cover_hu_dbf1dc4147fc0d9.jpg"
+                        srcset="/p/gdb-advance-tips/cover_hu_dbf1dc4147fc0d9.jpg 800w, /p/gdb-advance-tips/cover_hu_bf4190e8eec1dea8.jpg 1600w"
+                        width="800" 
+                        height="619" 
+                        loading="lazy"
+                        alt="Featured image of post GDB高级调试技巧" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/gdb/" >
+                GDB
+            </a>
+        
+            <a href="/categories/linux%E7%BC%96%E7%A8%8B/" style="background-color: #1aedaf; color: #fff;">
+                Linux编程
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/gdb-advance-tips/">GDB高级调试技巧</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Oct 30, 2024</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    4 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="gdb启用禁用aslr">gdb启用/禁用ASLR
+</h2><p>为了防范缓冲区溢出攻击等安全漏洞，操作系统会在每次程序启动时随机化进程的地址空间布局，这一机制称为地址空间布局随机化（ASLR）。</p>
+<p>在Linux系统中，可以通过 <code>cat /proc/sys/kernel/randomize_va_space</code> 检查当前系统的ASLR是否启用。默认情况下是启用状态（值为2）；若为0则表示被禁用。</p>
+<p>之前在使用GDB调试时观察到固定内存地址，是因为GDB默认会禁用ASLR，以便在调试过程中更容易复现问题。你可以通过GDB启用ASLR，使调试环境更接近实际运行环境。启动GDB后，可通过以下命令启用地址空间随机化：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="o">(</span>gdb<span class="o">)</span> <span class="nb">set</span> disable-randomization off
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="发生segment-fault时的调试方法">发生segment fault时的调试方法
+</h2><h3 id="1dmesg--nm">1.dmesg + nm
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># dmesg命令可以在应用程序crash时，显示内核中保存的相关信息</span>
+</span></span><span class="line"><span class="cl">dmesg
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;out
+</span></span></span><span class="line"><span class="cl"><span class="s">[ 4966.415660] qemu[13242]: segfault at 0 ip 0000000000000000 sp 00000000ffc370fc error 14 in qemu[5661f000+26000]
+</span></span></span><span class="line"><span class="cl"><span class="s">[ 4966.415672] Code: Unable to access opcode bytes at RIP 0xffffffffffffffd6.
+</span></span></span><span class="line"><span class="cl"><span class="s">out</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 然后使用nm查看其指针信息，主要是确定所在函数的范围</span>
+</span></span><span class="line"><span class="cl">nm
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;out
+</span></span></span><span class="line"><span class="cl"><span class="s">0000000000400570 T __libc_csu_fini
+</span></span></span><span class="line"><span class="cl"><span class="s">0000000000400500 T __libc_csu_init
+</span></span></span><span class="line"><span class="cl"><span class="s">                 U __libc_start_main@@GLIBC_2.2.5
+</span></span></span><span class="line"><span class="cl"><span class="s">00000000004004ed T main
+</span></span></span><span class="line"><span class="cl"><span class="s">0000000000400460 t register_tm_clones
+</span></span></span><span class="line"><span class="cl"><span class="s">0000000000400400 T _start
+</span></span></span><span class="line"><span class="cl"><span class="s">0000000000601038 D __TMC_END__
+</span></span></span><span class="line"><span class="cl"><span class="s">out</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="2利用signal-handler">2.利用signal handler
+</h3><p>产生段错误时会产生一个SIGSEGV信号。我们可以添加SIGSEGV的处理函数在程序发生段错误退出之前做一些事情，我们甚至可以使用backtrace(3)函数来保存当前栈内容。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">dump</span><span class="p">(</span><span class="kt">int</span> <span class="n">signo</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s">&#34;catch Segmentation fault!!!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#define SIZE 100         FILE *fh;
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>        <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">fh</span> <span class="o">=</span> <span class="n">fopen</span><span class="p">(</span><span class="s">&#34;/tmp/dbg_msg.log&#34;</span><span class="p">,</span> <span class="s">&#34;w+&#34;</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">                <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="o">*</span><span class="n">buffer</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">nptrs</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">nptrs</span> <span class="o">=</span> <span class="n">backtrace</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="n">SIZE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">backtrace_symbols_fd</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">nptrs</span><span class="p">,</span> <span class="n">fileno</span><span class="p">(</span><span class="n">fh</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">fflush</span><span class="p">(</span><span class="n">fh</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">signal</span><span class="p">(</span><span class="n">SIGSEGV</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">dump</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">*</span><span class="p">((</span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="nb">NULL</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="3利用coredump文件">3.利用coredump文件
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 启用核心转储</span>
+</span></span><span class="line"><span class="cl"><span class="nb">ulimit</span> -c unlimited
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 运行程序，生成核心文件</span>
+</span></span><span class="line"><span class="cl">./program
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 使用 GDB 分析核心文件</span>
+</span></span><span class="line"><span class="cl">gdb program core.&lt;pid&gt;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>定位coredump文件位置的方法</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">cat /proc/sys/kernel/core_pattern
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>常见值及其含义：
+<ul>
+<li>core_pattern值 含义</li>
+<li>core 当前目录，文件名为 core</li>
+<li>core.%p 当前目录，文件名包含 PID</li>
+<li>/var/coredumps/core.%e.%p 指定目录，包含程序名和PID</li>
+</ul>
+</li>
+<li>模式说明符：
+<ul>
+<li>%p：PID（进程 ID）</li>
+<li>%u：UID（用户 ID）</li>
+<li>%g：GID（组 ID）</li>
+<li>%s：信号编号</li>
+<li>%t：时间戳</li>
+<li>%e：可执行文件名</li>
+<li>%h：主机名</li>
+</ul>
+</li>
+</ul>
+<p><strong>配置coredump文件位置的方法</strong>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 设置core_pattern，注意这只是临时修改，重启后失效</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;/tmp/core.%e.%p&#34;</span> &gt; /proc/sys/kernel/core_pattern
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="自定义gdb展示样式">自定义GDB展示样式
+</h2><p>主要通过<code>set style</code>命令来实现，该命令的语法结构为：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nb">set</span> style TextStyle Attr Value
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>TextStyle：要设置颜色的字符类型
+<ul>
+<li>source 表示源码</li>
+<li>address 表示地址</li>
+<li>filename 表示文件名</li>
+<li>function 表示函数</li>
+<li>variable 表示变量</li>
+</ul>
+</li>
+<li>Attr 颜色属性：
+<ul>
+<li>background 背景颜色</li>
+<li>foreground 字体颜色</li>
+<li>intensity  字体粗细</li>
+</ul>
+</li>
+<li>Value 颜色值：
+<ul>
+<li>green</li>
+<li>red</li>
+<li>yellow</li>
+<li>bold 加粗</li>
+</ul>
+</li>
+</ul>
+<h2 id="根据文件描述符找到对应的文件路径">根据文件描述符找到对应的文件路径
+</h2><h3 id="1借助shell查看proc文件系统">1.借助shell查看/proc文件系统
+</h3><ul>
+<li><code>p (int)getpid()</code>  获取被调试目标进程的进程ID</li>
+<li><code>shell ls -la /proc/{进程ID}/fd/{文件描述符ID}</code> 输出内容-&gt;右边的就是该文件描述符对应的文件路径</li>
+</ul>
+<h3 id="2使用call命令调用系统函数">2.使用call命令调用系统函数
+</h3><ul>
+<li>p (char*) malloc(256)  分配一块内存用于存储文件路径字符串的值。记住该命令返回的变量<code>${N}</code></li>
+<li><code>call (int) readlink(&quot;/proc/self/fd/3&quot;, ${N}, 256)</code> 把3替换成要查看的文件描述符ID，该函数可以通过 <code>man 2 readlink</code> 查看具体的帮助信息。该函数的返回值是路径字符串的长度</li>
+<li><code>p (char*) ${N}</code> 查看路径字符串的值</li>
+</ul>
+<h3 id="封装gdb命令方便调用">封装gdb命令方便调用
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 查看文件描述符对应的文件路径的命令
+</span></span><span class="line"><span class="cl">define showfd
+</span></span><span class="line"><span class="cl">	# 传递给showfd命令的参数个数
+</span></span><span class="line"><span class="cl">	if $argc == 1
+</span></span><span class="line"><span class="cl">		# GDB 中用户自定义变量的命名必须以 $ 开头
+</span></span><span class="line"><span class="cl">		set $inferior_pid = (int)getpid()
+</span></span><span class="line"><span class="cl">		# 借助eval传递$inferior_pid参数，因为直接使用shell命令无法传递gdb里的变量。
+</span></span><span class="line"><span class="cl">		# $arg0为传递给showfd命令的第一个参数
+</span></span><span class="line"><span class="cl">		eval &#34;shell readlink /proc/%d/fd/%d&#34;, $inferior_pid, $arg0
+</span></span><span class="line"><span class="cl">	else
+</span></span><span class="line"><span class="cl">		echo &#34;Usage: showfd &lt;fd_number&gt;\n&#34;
+</span></span><span class="line"><span class="cl">	end
+</span></span><span class="line"><span class="cl">end
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>将上面的代码写入到<code>~/.gdbinit</code> 文件里，启动gdb程序时会自动注册该命令，在gdb环境里通过执行 <code>showfd N</code> 来显示文件描述符N对应的文件路径。</p>
+<h2 id="查看全局变量所在的文件">查看全局变量所在的文件
+</h2><ul>
+<li><code>set print symbol-filename on</code> ：打开显示符号所在文件的配置开关</li>
+<li><code>info variables</code>：显示所有全局变量和静态变量符号以及所在的定义文件</li>
+</ul>
+<h2 id="调试宏">调试宏
+</h2><p>默认的gcc -g选项等同于-g2，如果需要调试宏信息，需要使用-g3选项。使用-g3选项后在EFL文件中会产生一个<code>.debug_macro</code>的节，该节包含了文件信息、行号信息、以及宏定义具体内容。</p>
+<p><strong>调试宏的方法</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 查看宏定义</span>
+</span></span><span class="line"><span class="cl">p M_FOO
+</span></span><span class="line"><span class="cl"><span class="c1"># 执行宏代码</span>
+</span></span><span class="line"><span class="cl">p M_FOO<span class="o">(</span>1, 2<span class="o">)</span>
+</span></span><span class="line"><span class="cl">call M_FOO<span class="o">(</span>1, 2<span class="o">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/gdb/">GDB</a>
+        
+            <a href="/tags/gdb%E9%AB%98%E7%BA%A7/">GDB高级</a>
+        
+            <a href="/tags/linux%E8%B0%83%E8%AF%95%E5%99%A8/">Linux调试器</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/gdb-use-guide/">
+        
+        
+            <div class="article-image">
+                <img src="/p/gdb-use-guide/cover.cecdc30ee1ccb2f69fe667fcf8489e2b_hu_f58864ec373a3d7a.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post GDB使用指南"
+                        data-key="gdb-use-guide" 
+                        data-hash="md5-zs3DDuHMsvaf5mf8&#43;EieKw==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">GDB使用指南</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/linux-command-daily-learning/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux-command-daily-learning/cover.6f1fc27e7c6dd18f63cb338db59d5c13_hu_d363ddb6ab4eb88d.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 【更新中】每天学习一个Linux命令"
+                        data-key="linux-command-daily-learning" 
+                        data-hash="md5-bx/Cfnxt0Y9jyzONtZ1cEw==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">【更新中】每天学习一个Linux命令</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover.57d396ae66b62365c2ef1e84548d0c2b_hu_fe4953cd27c435fc.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Linux文件IO操作总结"
+                        
+                        data-hash="md5-V9OWrma2I2XC7x6EVI0MKw==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Linux文件IO操作总结</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/linux-epoll-api/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux-epoll-api/cover.ec8e4fac264ca8a7bb92b3774bf3a8a5_hu_f6397f5714a1583.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Linux epoll API"
+                        
+                        data-hash="md5-7I5PrCZMqKe7krN3S/OopQ==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Linux epoll API</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover.8c0b22750436acf837a0e27ebab14500_hu_ffb8773c4963df28.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 程序ELF格式布局初探"
+                        
+                        data-hash="md5-jAsidQQ2rPg3oOJ&#43;urFFAA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">程序ELF格式布局初探</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Weijie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

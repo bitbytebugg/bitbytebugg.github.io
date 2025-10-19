@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>文件系统 on Weijie&#39;s Blog Site</title>
+        <link>https://example.com/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/</link>
+        <description>Recent content in 文件系统 on Weijie&#39;s Blog Site</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Weijie</copyright>
+        <lastBuildDate>Wed, 20 Nov 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Linux中几个特殊文件系统</title>
+        <link>https://example.com/p/linux-proc-file-system/</link>
+        <pubDate>Wed, 20 Nov 2024 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/linux-proc-file-system/</guid>
+        <description>&lt;img src="https://example.com/p/linux-proc-file-system/cover.png" alt="Featured image of post Linux中几个特殊文件系统" /&gt;&lt;h2 id=&#34;procfs&#34;&gt;ProcFS
+&lt;/h2&gt;&lt;p&gt;通过 &lt;code&gt;mount | grep proc&lt;/code&gt; 查看procfs的挂载情况。&lt;/p&gt;
+&lt;p&gt;procfs 的核心工作原理是：将内核数据结构、进程信息和系统运行状态，以“文件”和“目录”的抽象形式动态地暴露给用户空间。 这些“文件”并不存在于磁盘上；当读取或写入它们时，内核会动态地生成内容或触发相应的内核函数。&lt;/p&gt;
+&lt;p&gt;可以把它理解为一个只存在于内存中的、动态的、交互式的内核状态报告和配置界面。它的挂载点通常是 /proc。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;动态虚拟文件是如何实现的&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;当用户空间程序（如 cat, ps, top）尝试访问 /proc 下的一个文件（例如 /proc/cpuinfo）时，会发生一系列精妙的操作：
+&lt;ul&gt;
+&lt;li&gt;（1）内核拦截请求：VFS（虚拟文件系统）层会拦截到这次文件访问请求。VFS 发现这个路径指向 procfs，于是它将控制权交给 procfs 自己实现的文件操作例程。&lt;/li&gt;
+&lt;li&gt;（2）根据路径调用相应的回调函数：procfs 在内核中维护了一个巨大的“路由表”。这个表将不同的文件路径映射到专门用于生成其内容的内核函数上。例如：当访问 /proc/cpuinfo 时，映射的函数会去调用 cpuinfo_open() 和 cpuinfo_read() 这类具体的操作函数。当访问 /proc/1234/status（PID为1234的进程状态）时，映射的函数会找到内核中管理该进程的 task_struct 结构体，从中提取信息，并格式化成文本。&lt;/li&gt;
+&lt;li&gt;（3）动态生成内容（对于读取操作）：内核中的对应函数被执行。这个函数会：
+&lt;ul&gt;
+&lt;li&gt;实时查询当前的内核数据结构（如 CPU 寄存器、进程描述符、内存统计信息等）。&lt;/li&gt;
+&lt;li&gt;将这些二进制数据格式化成对人类和程序可读的纯文本格式。&lt;/li&gt;
+&lt;li&gt;将这些格式化的文本作为“文件内容”返回给 VFS，最终传递给发出请求的用户程序。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;（4）触发配置变更（对于写入操作）：对于某些可写的 /proc 文件（通常是 /proc/sys/ 下的内核参数），写入操作会触发另一个内核函数。比如 &lt;code&gt;echo 1 &amp;gt; /proc/sys/net/ipv4/ip_forward&lt;/code&gt; 这个写入操作不会改变一个磁盘文件，而是会调用一个内核函数，该函数会直接修改内核中控制 IP 转发的变量值，从而立即改变系统的网络行为。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;sysfs&#34;&gt;SysFS
+&lt;/h2&gt;&lt;p&gt;sysfs 是 Linux 系统中一个至关重要且基础的内核虚拟文件系统。简单来说，可以将它理解为：一个反映内核设备模型（Kernel Device Model）的窗口，通过一个层次化的文件目录结构，向用户空间（User Space）直观地展示系统中所连接的设备、驱动、模块以及内核配置信息。它的核心作用是统一和标准化了内核与用户空间关于设备信息的交互方式。&lt;/p&gt;
+&lt;p&gt;sysfs 是在开发 Linux 2.6内核时，与新的统一设备模型（Unified Device Model）一同引入的。在它之前，设备信息杂乱地分布在 /proc（procfs）和各个特定目录下，缺乏统一的结构。sysfs 的诞生就是为了解决这个问题，它将所有设备、驱动等内核对象以一种清晰、有组织的方式暴露给用户。&lt;/p&gt;
+&lt;p&gt;通过 &lt;code&gt;mount | grep sysfs&lt;/code&gt; 可以看到sysfs几乎总是被自动挂载到/sys目录下。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;block 包含系统上所有的块设备（如硬盘、分区、USB 存储设备）。每个设备都是一个符号链接，指向 devices/ 目录下的实际设备对象。&lt;/li&gt;
+&lt;li&gt;bus  包含系统支持的各种总线类型。进入每种总线（如 /sys/bus/pci/），你会看到：
+&lt;ul&gt;
+&lt;li&gt;devices/： 连接到该总线上的所有设备。&lt;/li&gt;
+&lt;li&gt;drivers/： 注册到该总线上的所有驱动程序。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&amp;hellip;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;工作原理&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;sysfs 中的文件通常不是普通的磁盘文件，而是内核中相应对象的属性（Attributes）。&lt;/li&gt;
+&lt;li&gt;读取文件（cat）： 相当于查询该内核对象的某个属性（如设备名称、电源状态、驱动版本等）。&lt;/li&gt;
+&lt;li&gt;写入文件（echo）： 相当于修改或配置该内核对象的某个属性（如改变设备状态、设置参数等）。
+&lt;ul&gt;
+&lt;li&gt;注意：写入操作通常需要 root 权限，且操作有风险。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;debugfs&#34;&gt;DebugFS
+&lt;/h2&gt;&lt;p&gt;debugfs 是内核专门为调试场景设计的文件系统，相比 sysfs 的 “结构化设备管理” 和 procfs 的 “进程 / 系统信息”，它的优势在于：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;轻量灵活：内核模块可快速创建/删除文件或者目录，无需遵循严格的对象模型（如 sysfs 的 kobject 机制）；&lt;/li&gt;
+&lt;li&gt;数据直观：文件内容多为纯文本格式，直接 cat 即可查看内核内部数据（如变量值、状态标志），无需复杂解析；&lt;/li&gt;
+&lt;li&gt;无持久化：debugfs 数据完全在内存中，重启后所有内容消失，不会占用磁盘空间。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;为避免普通用户误操作影响内核稳定性，/sys/kernel/debug 的默认权限为 drwx&amp;mdash;&amp;mdash;（仅root可读可写），且多数文件的权限也限制为root专属。这是因为目录下的部分操作（如修改内核调试开关、触发跟踪）可能直接影响内核运行，甚至导致系统崩溃。&lt;/p&gt;
+&lt;h3 id=&#34;syskerneldebug&#34;&gt;/sys/kernel/debug
+&lt;/h3&gt;&lt;p&gt;/sys/kernel/debug一般就是DebugFS的挂载目录，如果该文件夹下存在内容，那么debugfs一般是挂载了的。Ubuntu22.04默认是挂载的。当然也可以通过下面的命令检查debugfs是否挂载到某个目录下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;mount | grep debugfs&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;cat /proc/mounts | grep debugfs&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;默认情况下，debugfs 通常挂载在 /sys/kernel/debug。你可以直接检查这个目录是否存在，以及它是否是一个独立的挂载点。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;df -T /sys/kernel/debug&lt;/code&gt; 查看这个目录的文件系统类型，如果显示debugfs就表示已挂载。未挂载显示&lt;code&gt;sysfs&lt;/code&gt; 文件系统类型。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;手动挂载debugfs方法 &lt;code&gt;sudo mount -t debugfs debugfs /sys/kernel/debug&lt;/code&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;-t 是type的缩写，用于指定要挂载的文件系统类型&lt;/li&gt;
+&lt;li&gt;第一个debugfs是-t参数的值&lt;/li&gt;
+&lt;li&gt;第二个debugfs参数在mount命令中是指源设备，对于物理设备（如硬盘），这里会写设备路径（如 /dev/sda1）。但对于 debugfs 这种内核虚拟文件系统，它并不对应一个实际的硬件设备。按照惯例，这里通常再次写上文件系统类型的名字 debugfs 作为一个占位符，也可以写成 none。内核看到这个类型后会自行处理，无需实际设备。&lt;/li&gt;
+&lt;li&gt;/sys/kernel/debug 这是挂载点。是一个目录的路径。mount 命令会将 debugfs 文件系统的内容“映射”到这个目录下。&lt;strong&gt;之后，所有对 /sys/kernel/debug 目录的读写操作，实际上都是在与内核的调试接口进行交互&lt;/strong&gt;。这个路径是 Linux 系统中约定俗成的、专门用于挂载 debugfs 的标准位置。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;syskerneldebugtracing&#34;&gt;/sys/kernel/debug/tracing
+&lt;/h3&gt;&lt;p&gt;ftrace 工具的核心目录，可通过修改 current_tracer 选择跟踪类型（如函数调用、上下文切换），通过 trace 文件查看跟踪结果，常用于定位 “内核函数耗时过长”“任务调度卡顿” 等问题。&lt;/p&gt;
+&lt;p&gt;一种触发ftrace的方法是读写该目录下的文件，另一种方法怎是使用 Ubuntu平台上的 &lt;code&gt;linux-tools&lt;/code&gt; 软件包的 &lt;code&gt;trace-cmd&lt;/code&gt;命令。后者代替手动修改 /sys/kernel/debug/tracing 下的文件，通过命令行快速配置跟踪规则（如跟踪内核调度、中断延迟）&lt;/p&gt;
+&lt;h3 id=&#34;syskerneldebugdmesg&#34;&gt;/sys/kernel/debug/dmesg
+&lt;/h3&gt;&lt;p&gt;部分内核版本会在此处同步内核日志（与 dmesg 命令输出一致），方便实时查看内核报错信息。&lt;/p&gt;
+&lt;h3 id=&#34;syskerneldebugkprobes&#34;&gt;/sys/kernel/debug/kprobes
+&lt;/h3&gt;&lt;p&gt;查看 kprobes（内核动态探针）的状态，可通过 kprobes 在不修改内核代码的情况下，在指定函数处插入 “钩子”，跟踪参数和返回值，定位函数调用异常。&lt;/p&gt;
+&lt;h2 id=&#34;tracefs&#34;&gt;TraceFS
+&lt;/h2&gt;&lt;p&gt;TraceFS 是 Linux 内核专为 事件跟踪（tracing） 设计的内存文件系统，核心作用是为 ftrace（内核跟踪框架）提供标准化的用户态接口，方便开发者监控内核函数调用、进程调度、中断处理等底层行为。它与 DebugFS 既有关联（均服务于内核调试），又有明确分工（定位和用途不同）。&lt;/p&gt;
+&lt;p&gt;TraceFS 是内核跟踪功能的 “前端”，所有文件和目录都围绕 ftrace 的需求设计，提供了一套结构化的接口用于：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;配置跟踪规则（如选择跟踪哪些内核事件、函数）；&lt;/li&gt;
+&lt;li&gt;启动 / 停止跟踪；&lt;/li&gt;
+&lt;li&gt;读取跟踪结果（如函数调用顺序、事件发生时间戳）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;最初，ftrace 的所有接口都位于 debugfs 的挂载点下（通常是 /sys/kernel/debug/tracing）。这在一开始是合理的，因为 ftrace 本质上就是一种内核调试工具。然而，随着时间推移，跟踪（Tracing）的概念逐渐从单纯的“调试”（Debugging）中分离出来：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;调试 (Debugging)： 更侧重于发现和修复错误，通常是间歇性的、非持续的行为。debugfs 包含了各种杂项的调试接口（如 GPIO、USB 设备状态等）。&lt;/li&gt;
+&lt;li&gt;跟踪 (Tracing)： 更侧重于持续地收集和分析系统运行时的大量数据，以进行性能剖析、瓶颈定位和行为分析。它通常是系统性的、长时间运行的。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;为了体现这种功能上的区分，并让跟踪子系统更加独立，内核开发者将 ftrace 的接口从 debugfs 中抽象出来，创建了专门的 tracefs。&lt;/p&gt;
+&lt;p&gt;旧版内核中tracefs被自动挂载在debugfs挂载的目录点之下 &lt;code&gt;/sys/kernel/debug/tracing&lt;/code&gt;。新版内核tracefs 拥有自己独立的挂载点（如 /sys/kernel/tracing），同时为了保持向后兼容，仍然在 /sys/kernel/debug/tracing 下创建一个挂载。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mount &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; grep tracefs
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;tracefs on /sys/kernel/tracing &lt;span class=&#34;nb&#34;&gt;type&lt;/span&gt; tracefs &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;rw,nosuid,nodev,noexec,relatime&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;tracefs on /sys/kernel/debug/tracing &lt;span class=&#34;nb&#34;&gt;type&lt;/span&gt; tracefs &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;rw,nosuid,nodev,noexec,relatime&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 这意味着你可以通过 /sys/kernel/tracing 或 /sys/kernel/debug/tracing 这两个路径访问完全相同的内容。前者更为简洁和独立。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;</description>
+        </item>
+        
+    </channel>
+</rss>

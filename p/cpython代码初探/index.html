@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="\r下推自动机PDA 理论介绍 Chomsky把文法分为4类，这四类文法从0到3的限制依次增多，表达能力依次减弱：\n0型文法：也叫短语文法，能力对应（等价）图灵机。 1型文法：也叫上下文有关文法，能力对应线性有界自动机。 2型文法：也叫上下文无关文法，能力对应下推自动机。 3型文法：正规文法（正则文法），能力对应有限状态自动机（包括NFA和DFA两类，DFA和NFA在计算能力上是等价的，任何可被NFA识别的语言也可以被DFA识别，反之亦然，这种等价性是形式语言理论中的一个重要结论。） ">
+<title>CPython代码初探</title>
+
+<link rel='canonical' href='https://example.com/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="CPython代码初探">
+<meta property='og:description' content="\r下推自动机PDA 理论介绍 Chomsky把文法分为4类，这四类文法从0到3的限制依次增多，表达能力依次减弱：\n0型文法：也叫短语文法，能力对应（等价）图灵机。 1型文法：也叫上下文有关文法，能力对应线性有界自动机。 2型文法：也叫上下文无关文法，能力对应下推自动机。 3型文法：正规文法（正则文法），能力对应有限状态自动机（包括NFA和DFA两类，DFA和NFA在计算能力上是等价的，任何可被NFA识别的语言也可以被DFA识别，反之亦然，这种等价性是形式语言理论中的一个重要结论。） ">
+<meta property='og:url' content='https://example.com/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/'>
+<meta property='og:site_name' content='Weijie&#39;s Blog Site'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='CPython' /><meta property='article:tag' content='虚拟机' /><meta property='article:published_time' content='2024-12-15T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-12-15T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.jpg' />
+<meta name="twitter:title" content="CPython代码初探">
+<meta name="twitter:description" content="\r下推自动机PDA 理论介绍 Chomsky把文法分为4类，这四类文法从0到3的限制依次增多，表达能力依次减弱：\n0型文法：也叫短语文法，能力对应（等价）图灵机。 1型文法：也叫上下文有关文法，能力对应线性有界自动机。 2型文法：也叫上下文无关文法，能力对应下推自动机。 3型文法：正规文法（正则文法），能力对应有限状态自动机（包括NFA和DFA两类，DFA和NFA在计算能力上是等价的，任何可被NFA识别的语言也可以被DFA识别，反之亦然，这种等价性是形式语言理论中的一个重要结论。） "><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://example.com/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.jpg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    <img src="/img/avatar.jpg" width="300" height="300" class="site-logo" loading="lazy" alt="Avatar">
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Weijie&#39;s Blog Site</a></h1>
+            <h2 class="site-description">My Tech Blogs</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#下推自动机pda">下推自动机PDA</a>
+      <ol>
+        <li><a href="#理论介绍">理论介绍</a></li>
+        <li><a href="#算法细节">算法细节</a></li>
+      </ol>
+    </li>
+    <li><a href="#pda-in-cpython">PDA in CPython</a>
+      <ol>
+        <li><a href="#file_input的dfa状态图">file_input的DFA状态图</a></li>
+        <li><a href="#eval_input的dfa状态图">eval_input的DFA状态图</a></li>
+        <li><a href="#fpdef的dfa状态图">fpdef的DFA状态图</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/">
+                <img src="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover_hu_6da73544f34a52c4.jpg"
+                        srcset="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover_hu_6da73544f34a52c4.jpg 800w, /p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover_hu_157238c75d7fbfd6.jpg 1600w"
+                        width="800" 
+                        height="400" 
+                        loading="lazy"
+                        alt="Featured image of post CPython代码初探" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/python/" style="background-color: #7a9d8d; color: #fff;">
+                Python
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/">CPython代码初探</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Dec 15, 2024</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    8 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <!-- KaTeX -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+<h2 id="下推自动机pda">下推自动机PDA
+</h2><h3 id="理论介绍">理论介绍
+</h3><p>Chomsky把文法分为4类，这四类文法从0到3的限制依次增多，表达能力依次减弱：</p>
+<ul>
+<li>0型文法：也叫短语文法，能力对应（等价）<strong>图灵机</strong>。</li>
+<li>1型文法：也叫上下文有关文法，能力对应<strong>线性有界自动机</strong>。</li>
+<li>2型文法：也叫上下文无关文法，能力对应<strong>下推自动机</strong>。</li>
+<li>3型文法：正规文法（正则文法），能力对应<strong>有限状态自动机</strong>（包括NFA和DFA两类，DFA和NFA在计算能力上是等价的，任何可被NFA识别的语言也可以被DFA识别，反之亦然，这种等价性是形式语言理论中的一个重要结论。）</li>
+</ul>
+<p><img src="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/%E4%B8%8B%E6%8E%A8%E8%87%AA%E5%8A%A8%E6%9C%BA%E5%AE%9A%E4%B9%89.webp"
+	width="1556"
+	height="875"
+	srcset="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/%E4%B8%8B%E6%8E%A8%E8%87%AA%E5%8A%A8%E6%9C%BA%E5%AE%9A%E4%B9%89_hu_bb13b839181cce9a.webp 480w, /p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/%E4%B8%8B%E6%8E%A8%E8%87%AA%E5%8A%A8%E6%9C%BA%E5%AE%9A%E4%B9%89_hu_d288eca35bc9abe5.webp 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="177"
+		data-flex-basis="426px"
+	
+></p>
+<p>这里状态转移函数就是PDA不断执行的动作，对应算法中的逻辑。解释如下：</p>
+<ul>
+<li>其输入有三个维度：
+<ul>
+<li>1）当前的状态，Q中的一个元素。</li>
+<li>2）接受的0个字符或者1个输入序列中的符号， \( \Sigma \cup {\epsilon} \) 中的一个元素。</li>
+<li>3）栈顶的符号， \( \Gamma \) 中的一个元素。所以是这三个维度的叉乘。</li>
+</ul>
+</li>
+<li>根据三个输入执行的动作：修改内部状态和向栈顶压入符号串。</li>
+</ul>
+<p>定理：PDA以终态方式接受语言和以空栈方式接受语言是等价的。</p>
+<h3 id="算法细节">算法细节
+</h3><p>输入序列的读取指针会根据栈顶符号来决定是否向后移动。栈顶符号的处理依赖栈顶符号的类型来处理。</p>
+<ol>
+<li>栈顶是非终结符A，对应的产生式是BCD，那么我们不会消耗一个输入字符（等价消耗的是空字符），将栈顶的非终结符A弹出，然后按照DCB的顺序将这三个非终结符压入到符号栈里。</li>
+</ol>
+<p><img src="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/pda-algo-1.webp"
+	width="854"
+	height="480"
+	srcset="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/pda-algo-1_hu_88e1f10fb47c200d.webp 480w, /p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/pda-algo-1_hu_9b9c4a0a63fb575c.webp 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="177"
+		data-flex-basis="427px"
+	
+></p>
+<ol start="2">
+<li>栈顶是非终结符A，对应的产生式是0102B3C，产生式右边的终结符部分和输入序列的字符依次匹配，输入序列读指针依次后移，直到消耗完左边的所有非终结符，然后将栈顶的非终结符A弹出，然后按照顺序C3B压栈。</li>
+</ol>
+<p><img src="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/pda-algo-2.webp"
+	width="854"
+	height="480"
+	srcset="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/pda-algo-2_hu_230677f9e7a82599.webp 480w, /p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/pda-algo-2_hu_668d9495ea920ebd.webp 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="177"
+		data-flex-basis="427px"
+	
+></p>
+<ol start="3">
+<li>总结整个PDA中的转移动作</li>
+</ol>
+<p><img src="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/pda-algo-3.webp"
+	width="854"
+	height="480"
+	srcset="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/pda-algo-3_hu_cd7fd9ea7c23f25b.webp 480w, /p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/pda-algo-3_hu_484f56d6d73500f2.webp 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="177"
+		data-flex-basis="427px"
+	
+></p>
+<p>首先每条边上的转移动作是用一个三元组表示的，例如 \( a, X \rightarrow Y \) ：</p>
+<ul>
+<li>元素 \( a\) 表示消耗掉输入序列里的字符，如果用 \( \epsilon \) 表示就是消耗空字符。</li>
+<li>元素 \( X\) 表示需要压到符号栈里的元素，可以是终结符也可以是非终结符，如果用 \( \epsilon \) 表示就是说不执行push操作。</li>
+<li>元素 \( Y\) 表示需要从符号栈弹出的元素，可以是终结符也可以是非终结符，如果用 \( \epsilon \) 表示就是说不执行pop操作。</li>
+</ul>
+<p><strong>四组转换函数的意义</strong>：</p>
+<ol>
+<li>\( \epsilon, \epsilon \rightarrow Z_0 \) ：Z0表示空栈状态</li>
+<li>\( \epsilon, \epsilon \rightarrow S \) ：S是文法的开始符号，在处理输入序列之前会压到栈里。</li>
+<li>中间的这一组操作继续细分：
+<ol>
+<li>\( a, a \rightarrow \epsilon \) 多余的，删掉这个表示</li>
+<li>\( x, x \rightarrow \epsilon \quad for\quad x \in \Sigma \) ：对于栈顶符号是终结符，且和输入序列符号可以匹配，就弹出栈顶符号并消耗输入字符，不用做压栈操作。</li>
+<li>\( \epsilon , A \rightarrow BCD \) ：对于栈顶符号是非终结符，消耗输入序列中的空字符，将栈顶非终结符A弹出，然后按照DCB顺序将右部分符号（终结符和非终结符）依次压栈。</li>
+</ol>
+</li>
+<li>\( \epsilon, Z_0 \rightarrow \epsilon \) ：空栈作为接受状态。</li>
+</ol>
+<h2 id="pda-in-cpython">PDA in CPython
+</h2><p>Python的语法是LL(1)的，但是cpython并没有使用递归下降算法来解析，cpython用了一个基于DFA的解析器（准确的说是一个下推自动机PDA）。cpython代码里有一个pgen程序，这其实是一个 parser generator。可以通过这条命令生成这个程序：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">make regen-grammar
+</span></span><span class="line"><span class="cl">gcc -g -O0 -Wall  -L/usr/local/opt/llvm/lib   Parser/acceler.o Parser/grammar1.o Parser/listnode.o Parser/node.o Parser/parser.o Parser/bitset.o Parser/metagrammar.o Parser/firstsets.o Parser/grammar.o Parser/token.o Parser/pgen.o Objects/obmalloc.o Python/dynamic_annotations.o Python/mysnprintf.o Python/pyctype.o Parser/tokenizer_pgen.o Parser/printgrammar.o Parser/parsetok_pgen.o Parser/pgenmain.o -ldl   -framework CoreFoundation -o Parser/pgen
+</span></span><span class="line"><span class="cl"><span class="c1"># Regenerate Include/graminit.h and Python/graminit.c</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># from Grammar/Grammar using pgen</span>
+</span></span><span class="line"><span class="cl">Parser/pgen ./Grammar/Grammar <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>                ./Include/graminit.h.new <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>                ./Python/graminit.c.new
+</span></span><span class="line"><span class="cl">Translating labels ...
+</span></span><span class="line"><span class="cl">python3 ./Tools/scripts/update_file.py ./Include/graminit.h ./Include/graminit.h.new
+</span></span><span class="line"><span class="cl">python3 ./Tools/scripts/update_file.py ./Python/graminit.c ./Python/graminit.c.new
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>程序pgen的输入是一个语法文件，生成的是一个语法解析器的代码graminit.h和graminit.cc文件。DFA涉及的数据结构（图节点，边，状态）的定义在grammar.h里。其实在第一个有公开源代码的版本python-0.9里就实现了pgen程序，看起来和python3里的代码没有多少变化。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">//////  DFA依赖的结构体定义
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span>      <span class="n">lb_type</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span>    <span class="o">*</span><span class="n">lb_str</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">label</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// arc的标签，记录arc的信息，也就是状态图中有向边的信息。lb_type的取值有两种类型：1.token，也就是token.h中定义的哪些枚举值。lb_str，对lb_type的补充信息，大部分arc的该字段是空，有些lb_type例如token中的NAME表示标识符，需要额外知道标识符的值，所以会有&#34;print&#34;, &#34;del&#34;, &#34;break&#34;等这些额外的值，这些值就存放在lb_str中。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span>      <span class="n">ll_nlabels</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">label</span>   <span class="o">*</span><span class="n">ll_label</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">labellist</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// graminit.c
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="n">label</span> <span class="n">labels</span><span class="p">[</span><span class="mi">168</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#34;EMPTY&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#34;def&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// labels将DFA状态图中的所有有向边上的label信息集中定义在一个数组里。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">short</span>   <span class="n">a_lbl</span><span class="p">;</span>      <span class="cm">/* Label of this arc */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">short</span>   <span class="n">a_arrow</span><span class="p">;</span>    <span class="cm">/* State where this arc goes to */</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">arc</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 弧，也就是状态图中的有向边包含两部分信息，a_lbl表示arc上的信息，a_arrow表示arc指向的状态序号。注意这里并不是将label结构体直接存储在a_lbl里，而是用一个用于上面labels数组的索引也就是a_lbl字段，如果需要访问arc的标签信息，可以通过labels[a_lbl]来访问。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span>      <span class="n">s_narcs</span><span class="p">;</span>  <span class="c1">// 有多少条发射出去的有向边，也是下面s_arc数组的长度
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">arc</span>     <span class="o">*</span><span class="n">s_arc</span><span class="p">;</span>  <span class="c1">// 发射出去的有向边的数组
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    
+</span></span><span class="line"><span class="cl">    <span class="cm">/* Optional accelerators */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span>      <span class="n">s_lower</span><span class="p">;</span>   <span class="cm">/* Lowest label index */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span>      <span class="n">s_upper</span><span class="p">;</span>   <span class="cm">/* Highest label index */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span>     <span class="o">*</span><span class="n">s_accel</span><span class="p">;</span>   <span class="cm">/* Accelerator */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span>      <span class="n">s_accept</span><span class="p">;</span>  <span class="cm">/* Nonzero for accepting state */</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">state</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 状态定义。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span>      <span class="n">d_type</span><span class="p">;</span>    <span class="cm">/* Non-terminal this represents */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span>    <span class="o">*</span><span class="n">d_name</span><span class="p">;</span>    <span class="cm">/* For printing */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span>      <span class="n">d_initial</span><span class="p">;</span> <span class="cm">/* Initial state */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span>      <span class="n">d_nstates</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">state</span>   <span class="o">*</span><span class="n">d_state</span><span class="p">;</span>   <span class="cm">/* Array of states */</span>
+</span></span><span class="line"><span class="cl">    <span class="n">bitset</span>   <span class="n">d_first</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">dfa</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// DFA状态图结构。
+</span></span></span><span class="line"><span class="cl"><span class="c1">// d_type 指明这个状态图属于哪条文法，用那条文法左边的非终结符的枚举来指明。
+</span></span></span><span class="line"><span class="cl"><span class="c1">// d_name 用来打印信息便于人阅读。
+</span></span></span><span class="line"><span class="cl"><span class="c1">// d_initial 这个DFA的初始状态，每个DFA的状态按照从0开始依次递增编号
+</span></span></span><span class="line"><span class="cl"><span class="c1">// d_nstates 这个DFA中状态的个数，也就是下面d_state数组的长度
+</span></span></span><span class="line"><span class="cl"><span class="c1">// d_state 状态数组
+</span></span></span><span class="line"><span class="cl"><span class="c1">// d_first 这个位字段暂时不清楚作用是什么，好像是计算first集合用的
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>有了DFA涉及结构体的了解后，接下来详细分析graminit.h/.c中的DFA是怎么样的。主要需要分析<code>dfas[84]</code>这个数组里的信息。首先这个数组长度是84，也就是有84个dfa状态图。可以用下面的程序统计Grammar中也有84个文法产生式，而且每个文法产生式中冒号左边的非终结符都是不同的。从而我们就可以知道Grammar中文法的一些特点：每个非终结符用一条文法来定义（一条文法就是A: B这样的一个文法规则）。每个Grammar中的非终结符对应在graminit.c中变量dfas的一个元素，也就是一个DFA状态图。</p>
+<h3 id="file_input的dfa状态图">file_input的DFA状态图
+</h3><p>这里以file_input这个作为开始的非终结符来分析对应的DFA状态图。在python-2.5里file_input的枚举值是257，可以找到静态变量<code>dfas</code>中的第二个元素就是它的DFA图：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">////// graminit.c
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="n">dfa</span> <span class="n">dfas</span><span class="p">[</span><span class="mi">84</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span><span class="mi">256</span><span class="p">,</span> <span class="s">&#34;single_input&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">states_0</span><span class="p">,</span> <span class="s">&#34;</span><span class="se">\004\050\014\000\000\000\000\025\074\005\023\310\011\020\004\000\300\020\222\006\201</span><span class="s">&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span><span class="mi">257</span><span class="p">,</span> <span class="s">&#34;file_input&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">states_1</span><span class="p">,</span> <span class="s">&#34;</span><span class="se">\204\050\014\000\000\000\000\025\074\005\023\310\011\020\004\000\300\020\222\006\201</span><span class="s">&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span><span class="err">；</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">////// file_input对应DFA的状态定义和弧定义
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="n">state</span> <span class="n">states_1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span><span class="mi">3</span><span class="p">,</span> <span class="n">arcs_1_0</span><span class="p">},</span>  <span class="c1">// 第一个状态有3个弧，弧数组是arcs_1_0，因为arcs_x_y是全局定义，第一个数字x表示第几个DFA图结构中，第二个数字y表示这个DFA图结构的第y个状态的arc数组。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="n">arcs_1_1</span><span class="p">},</span>  <span class="c1">// 所以file_input的DFA有两个状态
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//////  file_input对应DFA的0号state节点发出的弧定义
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="n">arc</span> <span class="n">arcs_1_0</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">},</span>  <span class="c1">// labels[2] = {4, 0}; 4的token表示（在token.h）NEWLINE
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">{</span><span class="mi">6</span><span class="p">,</span> <span class="mi">0</span><span class="p">},</span>  <span class="c1">// labels[6] = {266, 0}; 266表示token是无效的，是stmt对应的枚举。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">{</span><span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span>  <span class="c1">// labels[7] = {0, 0}; 0的token表示ENDMARKER
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 第一条arc上的label放在labels[2]里，指向第0号状态
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 第二条arc上的label放在labels[6]里，指向第0号状态
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 第三条arc上的label放在labels[7]里，指向第1号状态
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="c1">//////  file_input对应DFA的1号state节点发出的弧定义
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="n">arc</span> <span class="n">arcs_1_1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span>  <span class="c1">// labels[0] = {0, &#34;EMPTY&#34;}; 0的token表示ENDMARKER
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 第一条arc上的label放在labels[0]里，指向第1号状态
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>需要注意的在token.h中定义的有效token的枚举范围为<code>[0, 256)</code> ，在graminit.h中定义的有效非终结符枚举范围为 \([256,\infty)\) 。所以弧上的信息可以表示token也就是终结符，也可以用来表示非终结符。在Grammar文件里可以找到file_input对应的文法产生式为 <code>file_input: (NEWLINE | stmt)* ENDMARKER</code>。画出上面的DFA图如下：
+<img src="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/file_input-state-graph.png"
+	width="2076"
+	height="1102"
+	srcset="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/file_input-state-graph_hu_32c38f7855e4d753.png 480w, /p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/file_input-state-graph_hu_14bcd040fac2d4b4.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="188"
+		data-flex-basis="452px"
+	
+></p>
+<h3 id="eval_input的dfa状态图">eval_input的DFA状态图
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">static</span> <span class="n">dfa</span> <span class="n">dfas</span><span class="p">[</span><span class="mi">84</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{...},</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{...},</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="mi">258</span><span class="p">,</span> <span class="s">&#34;eval_input&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">states_2</span><span class="p">,</span>	 <span class="c1">// 初始状态是0，状态个数是3
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	 <span class="s">&#34;</span><span class="se">\000\040\010\000\000\000\000\000\000\000\000\000\000\020\004\000\300\020\222\006\000</span><span class="s">&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">	<span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="n">state</span> <span class="n">states_2</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="n">arcs_2_0</span><span class="p">},</span>  <span class="c1">// 该DFA里0号state节点有1个弧
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="n">arcs_2_1</span><span class="p">},</span>  <span class="c1">// 该DFA里1号state节点有2个弧
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="n">arcs_2_2</span><span class="p">},</span>  <span class="c1">// 该DFA里1号state节点有1个弧
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="n">arc</span> <span class="n">arcs_2_0</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span>  <span class="c1">// labels[9]={326, 0}; 326号是非终结符testlist
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="n">arc</span> <span class="n">arcs_2_1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span>  <span class="c1">// labels[2]={4, 0}; 4号是NEWLINE
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="p">{</span><span class="mi">7</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span>  <span class="c1">// labels[7]={0, 0}; 0号是EMDMARKER
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="n">arc</span> <span class="n">arcs_2_2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span>  <span class="c1">// labels[0]={0, &#34;EMPTY&#34;}; 0号是ENDMARKER
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>eval_input的文法产生式为 <code>eval_input: testlist NEWLINE* ENDMARKER</code>。对应的 eval_input的DFA状态转化图如下：
+<img src="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/eval_input-state-graph.png"
+	width="2076"
+	height="1102"
+	srcset="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/eval_input-state-graph_hu_bc0a749777834126.png 480w, /p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/eval_input-state-graph_hu_da3d0b1c75833c7d.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="188"
+		data-flex-basis="452px"
+	
+></p>
+<h3 id="fpdef的dfa状态图">fpdef的DFA状态图
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">static</span> <span class="n">dfa</span> <span class="n">dfas</span><span class="p">[</span><span class="mi">84</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">...</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="mi">264</span><span class="p">,</span> <span class="s">&#34;fpdef&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">states_8</span><span class="p">,</span>  <span class="c1">// 初始状态是0号节点，共有4个state节点
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	 <span class="s">&#34;</span><span class="se">\000\040\010\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000</span><span class="s">&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">	<span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="n">state</span> <span class="n">states_8</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="n">arcs_8_0</span><span class="p">},</span>  <span class="c1">// 0号节点有2条弧
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="n">arcs_8_1</span><span class="p">},</span>  <span class="c1">// 1号节点有1条弧
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="n">arcs_8_2</span><span class="p">},</span>  <span class="c1">// 2号节点有1条弧
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="n">arcs_8_3</span><span class="p">},</span>  <span class="c1">// 3号节点有1条弧
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="n">arc</span> <span class="n">arcs_8_0</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="mi">19</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span>  <span class="c1">// labels[19]={1,0}; 接受NAME，从0号节点指向1号状态节点
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="p">{</span><span class="mi">13</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span>  <span class="c1">// labels[13]={7,0}; 接受LPAR，从0号节点指向2号节点
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="n">arc</span> <span class="n">arcs_8_1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span>  <span class="c1">// labels[0]={0,&#34;EMPTY&#34;}; 接受ENDMARKER，从1号节点指向1号节点
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="n">arc</span> <span class="n">arcs_8_2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="mi">30</span><span class="p">,</span> <span class="mi">3</span><span class="p">},</span>  <span class="c1">// labels[30]={265,0}; 接受fplist，从2号节点指向3号节点
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="n">arc</span> <span class="n">arcs_8_3</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span><span class="mi">15</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span>  <span class="c1">// labels[15]={8,0}; 接受RPAR，从3号节点指向1号节点
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>fpdef的文法产生式为 <code>fpdef: NAME | '(' fplist ')'</code>。DFA图示如下：
+<img src="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/fpdef-state-graph.png"
+	width="2076"
+	height="1102"
+	srcset="/p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/fpdef-state-graph_hu_e417f57a73872bf6.png 480w, /p/cpython%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/fpdef-state-graph_hu_ef98f03e32dcb8a3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="188"
+		data-flex-basis="452px"
+	
+></p>
+<p><strong>总结以上三个示例的规律</strong>：
+每个DFA的结束状态上都有一个指向自身的弧，接受的token是<code>ENDMARKER'</code>。<code>ENDMARKER'</code>的字段<code>char *lb_str</code>是&quot;empty&quot;，而表示<code>ENDMARKER</code>(不带单引号)的token的 <code>char *lb_str</code> 字段是0（空指针）。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/cpython/">CPython</a>
+        
+            <a href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/">虚拟机</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/pdf%E7%94%B5%E5%AD%90%E4%B9%A6%E6%B7%BB%E5%8A%A0%E4%B9%A6%E7%AD%BE%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A2%E7%B4%A2/">
+        
+        
+            <div class="article-image">
+                <img src="/p/pdf%E7%94%B5%E5%AD%90%E4%B9%A6%E6%B7%BB%E5%8A%A0%E4%B9%A6%E7%AD%BE%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A2%E7%B4%A2/cover.c702eb5f0cb01c189eab376c1b38b179_hu_494dc3eb8a80ef5b.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post PDF电子书添加书签的自动化探索"
+                        
+                        data-hash="md5-xwLrXwywHBieqzdsGzixeQ==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">PDF电子书添加书签的自动化探索</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/torrent%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90%E5%AE%9E%E8%B7%B5/">
+        
+        
+            <div class="article-image">
+                <img src="/p/torrent%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90%E5%AE%9E%E8%B7%B5/cover.e4af479ea3e6f5963d9f91cbcc4ac07a_hu_e38949e212a134ed.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Torrent格式解析实践"
+                        
+                        data-hash="md5-5K9HnqPm9ZY9n5HLzErAeg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Torrent格式解析实践</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Weijie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

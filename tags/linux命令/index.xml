@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Linux命令 on Weijie&#39;s Blog Site</title>
+        <link>https://example.com/tags/linux%E5%91%BD%E4%BB%A4/</link>
+        <description>Recent content in Linux命令 on Weijie&#39;s Blog Site</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Weijie</copyright>
+        <lastBuildDate>Tue, 12 Nov 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/linux%E5%91%BD%E4%BB%A4/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>【更新中】每天学习一个Linux命令</title>
+        <link>https://example.com/p/linux-command-daily-learning/</link>
+        <pubDate>Tue, 12 Nov 2024 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/linux-command-daily-learning/</guid>
+        <description>&lt;img src="https://example.com/p/linux-command-daily-learning/cover.jpg" alt="Featured image of post 【更新中】每天学习一个Linux命令" /&gt;&lt;h2 id=&#34;readelf&#34;&gt;READELF
+&lt;/h2&gt;&lt;p&gt;除了 -v 和 -H 之外，必须至少提供一个选项。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;-a -all  相当于指定 &amp;ndash;file-header &amp;ndash;program-headers &amp;ndash;sections &amp;ndash;symbols &amp;ndash;relocs &amp;ndash;dynamic &amp;ndash;notes和&amp;ndash;version-info&lt;/li&gt;
+&lt;li&gt;-h &amp;ndash;file-header 显示文件开头的ELF头中包含的信息&lt;/li&gt;
+&lt;li&gt;-l &amp;ndash;program-headers &amp;ndash;segments 显示文件的segment头中包含的信息（如果有）。&lt;/li&gt;
+&lt;li&gt;-S &amp;ndash;sections &amp;ndash;section-headers 显示文件的section头中包含的信息（如果有）。&lt;/li&gt;
+&lt;li&gt;-g &amp;ndash;section-groups 显示文件的section group中包含的信息（如果有）。&lt;/li&gt;
+&lt;li&gt;-t &amp;ndash;section-details 显示详细的section信息。意味着-S。&lt;/li&gt;
+&lt;li&gt;-s &amp;ndash;symbols &amp;ndash;syms 显示文件的symbol table section中的条目（如果有）。&lt;/li&gt;
+&lt;li&gt;-e &amp;ndash;headers 显示文件中的所有headers。相当于-h -l -S。&lt;/li&gt;
+&lt;li&gt;-n &amp;ndash;notes 显示NOTE segment(和/或)section的内容（如果有）。&lt;/li&gt;
+&lt;li&gt;-r &amp;ndash;relocs 显示文件relocation section的内容（如果有）。&lt;/li&gt;
+&lt;li&gt;-u &amp;ndash;unwind 显示文件的unwind section的内容（如果有）。目前仅支持IA64 ELF文件的unwind section&lt;/li&gt;
+&lt;li&gt;-d &amp;ndash;dynamic 显示文件dynamic section的内容（如果有）。&lt;/li&gt;
+&lt;li&gt;-V &amp;ndash;version-info 显示文件中version section的内容，如果存在。&lt;/li&gt;
+&lt;li&gt;-A &amp;ndash;arch-specific 显示文件中特定于体系结构的信息（如果有）。&lt;/li&gt;
+&lt;li&gt;-D &amp;ndash;use-dynamic 显示符号时，此选项使readelf使用文件dynamic section中的符号表，而不是symbol section中的符号&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-x &amp;lt;number or name&amp;gt; --hex-dump=&amp;lt;number or name&amp;gt;&lt;/code&gt; 以十六进制字节显示indecated section的内容。一个数字通过索引section表标识一个特定的section;任何其他string标识目标文件中具有该名称的所有section。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-R &amp;lt;number or name&amp;gt; --relocated-dump=&amp;lt;number or name&amp;gt;&lt;/code&gt; 以十六进制字节显示indecated section的内容。一个数字通过索引section表标识一个特定的section;任何其他string标识目标文件中具有该名称的所有section。该section的内容将在显示之前重新定位。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-p &amp;lt;number or name&amp;gt; --string-dump=&amp;lt;number or name&amp;gt;&lt;/code&gt; 将indicated section的内容显示为可打印字符串。一个数字通过索引section表标识一个特定的section;任何其他string标识目标文件中具有该名称的所有section。&lt;/li&gt;
+&lt;li&gt;-c &amp;ndash;archive-index 显示二进制归档的header部分中包含的文件符号索引信息。对ar执行与t命令相同的功能，但不使用BFD库。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-w[lLiaprmfFsoR] --debug-dump[=rawline,=decodedline,=info,=abbrev,=pubnames,=aranges,=macro,=frames,=frames-interp,=str,=loc,=Ranges]&lt;/code&gt; 显示文件中debug section的内容（如果存在）。 如果后面有一个可选的字母或单词，则只会转储在这些特定部分中找到的数据。注意：=codedline选项将显示.debug_line section解释后的内容，而=rawline选项将以原始格式转储内容。&lt;/li&gt;
+&lt;li&gt;-I &amp;ndash;histogram 显示符号表的内容时，显示桶列表长度的直方图。&lt;/li&gt;
+&lt;li&gt;-v &amp;ndash;version 显示readelf的版本号。&lt;/li&gt;
+&lt;li&gt;-W &amp;ndash;wide 不破坏输出线以适应80列。 默认情况下，readelf会断开64位ELF文件的section header和segment 列表行，以便它们适合80列。 此选项使readelf打印每个节标题resp。 每个segment只有一行，在80列以上的终端上可读性更高。&lt;/li&gt;
+&lt;li&gt;-H &amp;ndash;help 显示readelf理解的命令行选项。&lt;/li&gt;
+&lt;li&gt;@file 从文件中读取命令行选项。读取的选项将替换原始@file选项。 如果文件不存在或无法读取，则该选项将按字面处理，而不会被删除。文件中的选项由空格分隔。通过用单引号或双引号括起整个选项，可以在选项中包含空格字符。可以通过在字符前加上反斜杠来包含任何字符（包括反斜杠）。该文件本身可能包含其他@file选项; 任何此类选项将以递归方式处理。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;ps&#34;&gt;PS
+&lt;/h2&gt;&lt;p&gt;ps meaning: process snapshot&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;ps&lt;/code&gt;默认展示属于当前用户的当前控制台下的进程。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-f &lt;/code&gt; full format输出。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-e/-A&lt;/code&gt; everything, All&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ps aux/-aux&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-F&lt;/code&gt; extra full format输出&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-p&lt;/code&gt; 指定pid&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-o [pid,ppid,cmd,sid]&lt;/code&gt; 指定输出特定的列&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;fg&#34;&gt;FG
+&lt;/h2&gt;&lt;p&gt;foreground前台和background后台是linux中用于控制作业运行方式的命令。它们管理进程在终端的前台和后台运行状态。&lt;/p&gt;
+&lt;p&gt;在linux中，作业控制是指：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;将命令或进程在前后台之间切换&lt;/li&gt;
+&lt;li&gt;暂停和恢复进程执行&lt;/li&gt;
+&lt;li&gt;通过shell管理多个并行任务&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;使用场景：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;恢复暂停的作业到前台（如用Ctrl+Z暂停后）&lt;/li&gt;
+&lt;li&gt;将后台作业调回前台（如用&amp;amp;启动或bg转后台的作业）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;语法：&lt;code&gt;fg {作业编号}&lt;/code&gt;，将后台作业或暂停的作业切换到前台运行，作业编号可以通过 &lt;code&gt;jobs&lt;/code&gt; 命令查出来。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;###### fg case 1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;raymond@ray-vm:~$ sleep &lt;span class=&#34;m&#34;&gt;60&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;amp;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;1&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;8464&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;raymond@ray-vm:~$ &lt;span class=&#34;nb&#34;&gt;jobs&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;1&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;+  Running                 sleep &lt;span class=&#34;m&#34;&gt;60&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;amp;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;raymond@ray-vm:~$ &lt;span class=&#34;nb&#34;&gt;fg&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sleep &lt;span class=&#34;m&#34;&gt;60&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;###### fg case 2&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;raymond@ray-vm:~$ sleep &lt;span class=&#34;m&#34;&gt;60&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# entry后，按键 ctrl + z，此时作业状态变为暂停&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;^Z
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;1&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;+  Stopped                 sleep &lt;span class=&#34;m&#34;&gt;60&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;raymond@ray-vm:~$ &lt;span class=&#34;nb&#34;&gt;jobs&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;1&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;+  Stopped                 sleep &lt;span class=&#34;m&#34;&gt;60&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;raymond@ray-vm:~$ &lt;span class=&#34;nb&#34;&gt;fg&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# 将作业切换到前台并继续运行&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sleep &lt;span class=&#34;m&#34;&gt;60&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;bg&#34;&gt;BG
+&lt;/h2&gt;&lt;p&gt;后台 background。&lt;/p&gt;
+&lt;p&gt;语法：&lt;code&gt;bg {作业编号}&lt;/code&gt;，功能是将暂停的作业切换到后台继续运行。&lt;/p&gt;
+&lt;p&gt;使用场景：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;让暂停的作业在后台继续运行&lt;/li&gt;
+&lt;li&gt;释放当前终端以便执行其他命令&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;###### bg case&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;raymond@ray-vm:~$ sleep &lt;span class=&#34;m&#34;&gt;60&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# enter后，按键 ctrl + z 将该作业停止&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;^Z
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;1&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;+  Stopped                 sleep &lt;span class=&#34;m&#34;&gt;60&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;raymond@ray-vm:~$ &lt;span class=&#34;nb&#34;&gt;jobs&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# 查看作业列表&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;1&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;+  Stopped                 sleep &lt;span class=&#34;m&#34;&gt;60&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;raymond@ray-vm:~$ &lt;span class=&#34;nb&#34;&gt;bg&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# 将1号作业在后台恢复运行&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;1&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;+ sleep &lt;span class=&#34;m&#34;&gt;60&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;amp;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;grep&#34;&gt;GREP
+&lt;/h2&gt;&lt;p&gt;grep meaning: global regular expression print&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;基本语法&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;grep &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;选项...&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt; 模式 &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;文件...&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;[]表示参数可选&lt;/li&gt;
+&lt;li&gt;&amp;hellip;表示可传入多个参数&lt;/li&gt;
+&lt;li&gt;模式：表示要查找的字符串或正则表达式。&lt;/li&gt;
+&lt;li&gt;文件：表示要查找的文件名，可以同时查找多个文件，如果省略 files 参数，则默认从标准输入中读取数据。&lt;/li&gt;
+&lt;li&gt;选项：
+&lt;ul&gt;
+&lt;li&gt;i：忽略大小写进行匹配。&lt;/li&gt;
+&lt;li&gt;v：反向查找，只打印不匹配的行。&lt;/li&gt;
+&lt;li&gt;n：显示匹配行的行号。&lt;/li&gt;
+&lt;li&gt;r：递归查找子目录中的文件。&lt;/li&gt;
+&lt;li&gt;l：只打印匹配的文件名。&lt;/li&gt;
+&lt;li&gt;c：只打印匹配的行数。&lt;/li&gt;
+&lt;li&gt;&amp;hellip;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;我们有时使用grep匹配时会发现匹配的结果和预期不一致，这个大概率是由于grep使用BREs导致的。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;指定使用的正则表达式类型&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;BREs: 基本的正则表达式，grep默认使用&lt;/li&gt;
+&lt;li&gt;EREs: 扩展的正则表达式，grep需要通过选项-E指定使用&lt;/li&gt;
+&lt;li&gt;PREs: Perl的正则表达式，grep需要通过选项-P指定&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这三种正则表达式的区别参考&lt;a class=&#34;link&#34; href=&#34;https://kuanghy.github.io/2015/10/26/grep-regex&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Linux 下 grep 命令的正则表达式规范&lt;/a&gt;&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

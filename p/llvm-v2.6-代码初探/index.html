@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="编译准备工作 LLVM 2.6.0 是第一个包含Clang的版本，也就是Clang的第一个版本就是2.6.0。看git tag的发布时间应该是2009年9月。\ngit上llvmorg-2.6.0的源码是根目录下有clang和llvm两个子文件夹。需要将clang文件夹移到llvm/tools/目录下，然后使用make进行构建：\n">
+<title>LLVM v2.6 代码初探</title>
+
+<link rel='canonical' href='https://example.com/p/llvm-v2.6-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="LLVM v2.6 代码初探">
+<meta property='og:description' content="编译准备工作 LLVM 2.6.0 是第一个包含Clang的版本，也就是Clang的第一个版本就是2.6.0。看git tag的发布时间应该是2009年9月。\ngit上llvmorg-2.6.0的源码是根目录下有clang和llvm两个子文件夹。需要将clang文件夹移到llvm/tools/目录下，然后使用make进行构建：\n">
+<meta property='og:url' content='https://example.com/p/llvm-v2.6-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/'>
+<meta property='og:site_name' content='Weijie&#39;s Blog Site'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='LLVM' /><meta property='article:tag' content='编译原理' /><meta property='article:published_time' content='2024-09-30T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-09-30T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/llvm-v2.6-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.jpg' />
+<meta name="twitter:title" content="LLVM v2.6 代码初探">
+<meta name="twitter:description" content="编译准备工作 LLVM 2.6.0 是第一个包含Clang的版本，也就是Clang的第一个版本就是2.6.0。看git tag的发布时间应该是2009年9月。\ngit上llvmorg-2.6.0的源码是根目录下有clang和llvm两个子文件夹。需要将clang文件夹移到llvm/tools/目录下，然后使用make进行构建：\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://example.com/p/llvm-v2.6-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.jpg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    <img src="/img/avatar.jpg" width="300" height="300" class="site-logo" loading="lazy" alt="Avatar">
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Weijie&#39;s Blog Site</a></h1>
+            <h2 class="site-description">My Tech Blogs</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#编译准备工作">编译准备工作</a></li>
+    <li><a href="#clang和clang-cc的区别">clang和clang-cc的区别</a></li>
+    <li><a href="#clang-cc程序入口">clang-cc程序入口</a></li>
+    <li><a href="#ast解析入口">AST解析入口</a></li>
+    <li><a href="#astconsumer子类astprinter">ASTConsumer子类ASTPrinter</a></li>
+    <li><a href="#astconsumer子类backendconsumer">ASTConsumer子类BackendConsumer</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/llvm-v2.6-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/">
+                <img src="/p/llvm-v2.6-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover_hu_7282910ab35e0709.jpg"
+                        srcset="/p/llvm-v2.6-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover_hu_7282910ab35e0709.jpg 800w, /p/llvm-v2.6-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover_hu_8119e5003548ac.jpg 1600w"
+                        width="800" 
+                        height="590" 
+                        loading="lazy"
+                        alt="Featured image of post LLVM v2.6 代码初探" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E7%BC%96%E8%AF%91%E5%99%A8/" >
+                编译器
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/llvm-v2.6-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/">LLVM v2.6 代码初探</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Sep 30, 2024</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    6 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="编译准备工作">编译准备工作
+</h2><p>LLVM 2.6.0 是第一个包含Clang的版本，也就是Clang的第一个版本就是2.6.0。看git tag的发布时间应该是2009年9月。</p>
+<p>git上llvmorg-2.6.0的源码是根目录下有clang和llvm两个子文件夹。需要将clang文件夹移到llvm/tools/目录下，然后使用make进行构建：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 此时在llvm-project目录下，该目录下只有一个llvm子文件夹</span>
+</span></span><span class="line"><span class="cl">mkdir build
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> build
+</span></span><span class="line"><span class="cl"><span class="c1"># 这里使用--enable-optimized=off关闭Makefile中的ENABLE_OPTIMIZED变量，但是没有起作用</span>
+</span></span><span class="line"><span class="cl">../llvm/configure --prefix<span class="o">=</span>/home/raymond/workspace/git-repos/llvm-project-2.6.0/build/installed --enable-debug-runtime --enable-doxygen --enable-optimized<span class="o">=</span><span class="m">0</span> 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>修改build/Makefile.config：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-Makefile" data-lang="Makefile"><span class="line"><span class="cl"><span class="c"># 注释该变量后会执行Debug构建，有-g选项，否则会执行Release构建
+</span></span></span><span class="line"><span class="cl"><span class="c">#ENABLE_OPTIMIZED=1
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>修改llvm/Makefile.rules：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-Makefile" data-lang="Makefile"><span class="line"><span class="cl"><span class="c"># 在-g选项后设置语言标准，语言标准选项可以通过man gcc /-std 查看，同一时期的gnu标准比一般的c/c++标准执行的语言特性更丰富些。
+</span></span></span><span class="line"><span class="cl"><span class="c"># 其实 -std 放到 CFLAGS 和 CXXFLAGS 中更好一些，但是目前还没有搞清楚，CFLAGS/CXXFLAGS变量是在执行configure脚本时传入，还是在执行 make 时传入？先凑合用吧，研究的焦点是C++代码而不是构建过程。
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">else</span>
+</span></span><span class="line"><span class="cl">  <span class="nv">BuildMode</span> <span class="o">:=</span> Debug
+</span></span><span class="line"><span class="cl">  CXX.Flags +<span class="o">=</span> -g -std<span class="o">=</span>gnu++03
+</span></span><span class="line"><span class="cl">  C.Flags   +<span class="o">=</span> -g -std<span class="o">=</span>gnu99
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># 注释掉该参数，现代gcc不支持这个参数
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">ifdef</span> <span class="err">LOADABLE_MODULE</span>
+</span></span><span class="line"><span class="cl"><span class="c"># LD.Flags += -module
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">endif</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># 压制warning信息
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">ifndef</span> <span class="err">NO_PEDANTIC</span>
+</span></span><span class="line"><span class="cl"><span class="nv">CompileCommonOpts</span> <span class="o">+=</span> -pedantic -Wno-long-long
+</span></span><span class="line"><span class="cl"><span class="err">endif</span>
+</span></span><span class="line"><span class="cl"><span class="c">#CompileCommonOpts += -Wall -W -Wno-unused-parameter -Wwrite-strings \
+</span></span></span><span class="line"><span class="cl"><span class="c">#                    $(EXTRA_OPTIONS)
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="nv">CompileCommonOpts</span> <span class="o">+=</span> -w -fpermissive <span class="k">$(</span>EXTRA_OPTIONS<span class="k">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>此时可以执行构建命令，会遇到一些编译错误，直接按照报错信息修改即可。在build/Debug/bin目录中会生成LLVM的所有工具程序。</p>
+<h2 id="clang和clang-cc的区别">clang和clang-cc的区别
+</h2><ul>
+<li>clang 是一个 驱动程序（Driver）。它的主要任务是解析你通过命令行传入的参数（例如 -o, -g, -c, -l），然后根据这些参数去调用真正的编译工具链中的其他工具，并组织好调用顺序和参数传递。可以通过clang &ndash;help查看其支持的参数是很简洁的，方便直接调用。</li>
+<li>clang-cc 才是真正的编译器前端，主要用于 Clang 开发者和高级用户进行调试、探究编译器的内部行为，或者需要非常精细地控制前端时使用。通过 clang-cc &ndash;help查看其支持的参数更复杂，更底层。</li>
+<li>可以通过传入clang的<code>-###</code>参数查看内部调用的 clang-cc命令：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">../../build/Debug/bin/clang -### -S -emit-llvm -o hello_llvm.ll hello_llvm.c
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">clang version 1.0 <span class="o">(</span> <span class="o">)</span>
+</span></span><span class="line"><span class="cl">Target: x86_64-unknown-linux-gnu
+</span></span><span class="line"><span class="cl">Thread model: posix
+</span></span><span class="line"><span class="cl"> <span class="s2">&#34;/home/raymond/workspace/git-repos/llvm-project-2.6.0/build/Debug/bin/clang-cc&#34;</span> <span class="s2">&#34;-triple&#34;</span> <span class="s2">&#34;x86_64-unknown-linux-gnu&#34;</span> <span class="s2">&#34;-emit-llvm&#34;</span> <span class="s2">&#34;-disable-free&#34;</span> <span class="s2">&#34;-main-file-name&#34;</span> <span class="s2">&#34;hello_llvm.c&#34;</span> <span class="s2">&#34;--relocation-model&#34;</span> <span class="s2">&#34;static&#34;</span> <span class="s2">&#34;--disable-fp-elim&#34;</span> <span class="s2">&#34;--unwind-tables=1&#34;</span> <span class="s2">&#34;--mcpu=x86-64&#34;</span> <span class="s2">&#34;--fmath-errno=1&#34;</span> <span class="s2">&#34;-fdiagnostics-show-option&#34;</span> <span class="s2">&#34;-o&#34;</span> <span class="s2">&#34;hello_llvm.ll&#34;</span> <span class="s2">&#34;-x&#34;</span> <span class="s2">&#34;c&#34;</span> <span class="s2">&#34;hello_llvm.c&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里clang-cc各个参数的作用：</p>
+<ul>
+<li>&ldquo;-triple&rdquo; &ldquo;x86_64-pc-cygwin&rdquo;: 表明体系结构和操作系统的三元组</li>
+<li>&ldquo;-emit-llvm&rdquo;: 生成LLVM IR</li>
+<li>&ldquo;-disable-free&rdquo;: 退出时禁用内存释放，<strong>这个可以不设置</strong></li>
+<li>&ldquo;-main-file-name&rdquo; &ldquo;hello_llvm.c&rdquo;:  输入的主要文件</li>
+<li>&ldquo;&ndash;relocation-model&rdquo; &ldquo;static&rdquo;: 使用静态重定位</li>
+<li>&ldquo;&ndash;disable-fp-elim&rdquo;: 禁止帧指针frame pointer的优化</li>
+<li>&ldquo;&ndash;unwind-tables=1&rdquo;: Generate unwinding tables for all functions</li>
+<li>&ldquo;&ndash;mcpu=x86-64&rdquo;：指定cpu架构</li>
+<li>&ldquo;&ndash;fmath-errno=1&rdquo;：不知</li>
+<li>&ldquo;-fdiagnostics-show-option&rdquo;：显示错误诊断信息</li>
+<li>&ldquo;-o&rdquo; &ldquo;hello_llvm.ll&rdquo;：输出文件</li>
+<li>&ldquo;-x&rdquo; &ldquo;c&rdquo;: 编译语言类型为C语言</li>
+<li>&ldquo;hello_llvm.c&rdquo;: 输入文件</li>
+</ul>
+<p>我们也可以使用这个命令来直接调试clang-cc程序：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">gdb --args ./clang-cc -triple x86_64-unknown-linux-gnu -emit-llvm -disable-free -main-file-name hello_llvm.c --relocation-model static --disable-fp-elim --unwind-tables<span class="o">=</span><span class="m">1</span> --mcpu<span class="o">=</span>x86-64 --fmath-errno<span class="o">=</span><span class="m">1</span> -fdiagnostics-show-option -o hello_llvm.ll -x c hello_llvm.c
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="clang-cc程序入口">clang-cc程序入口
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">/// clang-cc程序入口函数，省略了和主逻辑无关的代码
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span><span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">InputFilenames</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">e</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 处理源文件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">ProcessInputFile</span><span class="p">(</span><span class="o">*</span><span class="n">PP</span><span class="p">,</span> <span class="n">PPFactory</span><span class="p">,</span> <span class="n">InFile</span><span class="p">,</span> <span class="n">ProgAction</span><span class="p">,</span> <span class="n">Features</span><span class="p">,</span> <span class="n">Context</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">llvm</span><span class="o">::</span><span class="n">llvm_shutdown</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">void</span> <span class="nf">ProcessInputFile</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// PA是一个枚举，表示程序要执行的动作
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">switch</span> <span class="p">(</span><span class="n">PA</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">case</span> <span class="nl">ASTPrint</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">OS</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="n">ComputeOutFile</span><span class="p">(</span><span class="n">InFile</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">false</span><span class="p">,</span> <span class="n">OutPath</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">		    <span class="n">Consumer</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="n">CreateASTPrinter</span><span class="p">(</span><span class="n">OS</span><span class="p">.</span><span class="n">get</span><span class="p">()));</span>
+</span></span><span class="line"><span class="cl">        <span class="k">case</span> <span class="nl">EmitAssembly</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="k">case</span> <span class="nl">EmitLLVM</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	    <span class="k">case</span> <span class="nl">EmitBC</span><span class="p">:</span> 
+</span></span><span class="line"><span class="cl">	    <span class="k">case</span> <span class="nl">EmitLLVMOnly</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		    <span class="n">BackendAction</span> <span class="n">Act</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		    <span class="k">if</span> <span class="p">(</span><span class="n">ProgAction</span> <span class="o">==</span> <span class="n">EmitAssembly</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		      <span class="n">Act</span> <span class="o">=</span> <span class="n">Backend_EmitAssembly</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		      <span class="n">OS</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="n">ComputeOutFile</span><span class="p">(</span><span class="n">InFile</span><span class="p">,</span> <span class="s">&#34;s&#34;</span><span class="p">,</span> <span class="nb">true</span><span class="p">,</span> <span class="n">OutPath</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">		    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">ProgAction</span> <span class="o">==</span> <span class="n">EmitLLVM</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		      <span class="n">Act</span> <span class="o">=</span> <span class="n">Backend_EmitLL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		      <span class="n">OS</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="n">ComputeOutFile</span><span class="p">(</span><span class="n">InFile</span><span class="p">,</span> <span class="s">&#34;ll&#34;</span><span class="p">,</span> <span class="nb">true</span><span class="p">,</span> <span class="n">OutPath</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">		    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">ProgAction</span> <span class="o">==</span> <span class="n">EmitLLVMOnly</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		      <span class="n">Act</span> <span class="o">=</span> <span class="n">Backend_EmitNothing</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		      <span class="n">Act</span> <span class="o">=</span> <span class="n">Backend_EmitBC</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		      <span class="n">OS</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="n">ComputeOutFile</span><span class="p">(</span><span class="n">InFile</span><span class="p">,</span> <span class="s">&#34;bc&#34;</span><span class="p">,</span> <span class="nb">true</span><span class="p">,</span> <span class="n">OutPath</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">		    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">		    <span class="n">Consumer</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="n">CreateBackendConsumer</span><span class="p">(</span><span class="n">Act</span><span class="p">,</span> <span class="n">PP</span><span class="p">.</span><span class="n">getDiagnostics</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">		                                         <span class="n">PP</span><span class="p">.</span><span class="n">getLangOptions</span><span class="p">(),</span> <span class="n">Opts</span><span class="p">,</span> <span class="n">InFile</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		                                         <span class="n">OS</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">Context</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">		    <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">...</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">Consumer</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ContextOwner</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="k">new</span> <span class="n">ASTContext</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">Consumer</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// ParserAST()内部调用Consumer的相关方法进行解析。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 如果Consumer是后端的Consumer，比如CreateBackendConsumer，那再ParseAST还会执行后端的动作，比如生成汇编文本到磁盘上。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">ParseAST</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 后面的逻辑都不重要了
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">PA</span> <span class="o">==</span> <span class="n">RunPreprocessorOnly</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">PP</span><span class="p">.</span><span class="n">EnterMainSourceFile</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">do</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">PP</span><span class="p">.</span><span class="n">Lex</span><span class="p">(</span><span class="n">Tok</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="n">Tok</span><span class="p">.</span><span class="n">isNot</span><span class="p">(</span><span class="n">tok</span><span class="o">::</span><span class="n">eof</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ClearSourceMgr</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">PA</span> <span class="o">==</span> <span class="n">ParseNoop</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="p">......</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">PA</span> <span class="o">==</span> <span class="n">PrintPreprocessedInput</span><span class="p">){</span>  <span class="c1">// -E mode.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">......</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="ast解析入口">AST解析入口
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">/// ParseAST.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">clang</span><span class="o">::</span><span class="n">ParseAST</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 后续的Lexing和Parsing出AST的过程都交给这个实例
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Parser</span> <span class="nf">P</span><span class="p">(</span><span class="n">PP</span><span class="p">,</span> <span class="n">S</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">P</span><span class="p">.</span><span class="n">Initialize</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Parser</span><span class="o">::</span><span class="n">DeclGroupPtrTy</span> <span class="n">ADecl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 分词和解析AST逻辑就在下面这个函数里，ParseTopLevelDecl返回true表示解析到文件EOF，否则返回false
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">P</span><span class="p">.</span><span class="n">ParseTopLevelDecl</span><span class="p">(</span><span class="n">ADecl</span><span class="p">))</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">ADecl</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Consumer</span><span class="o">-&gt;</span><span class="n">HandleTopLevelDecl</span><span class="p">(</span><span class="n">ADecl</span><span class="p">.</span><span class="n">getAsVal</span><span class="o">&lt;</span><span class="n">DeclGroupRef</span><span class="o">&gt;</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="p">};</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Consumer</span><span class="o">-&gt;</span><span class="n">HandleTranslationUnit</span><span class="p">(</span><span class="n">Ctx</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>这里解析逻辑可以配合<a class="link" href="https://iso-9899.info/wiki/The_Standard"  target="_blank" rel="noopener"
+    >C99标准文档</a>（其中带锁的是需要付费购买的）食用。也可以参考微软文档里比较简洁的C语言语法介绍<a class="link" href="https://learn.microsoft.com/en-us/cpp/c-language/external-definitions?view=msvc-170"  target="_blank" rel="noopener"
+    >External Definitions</a>。</li>
+<li>每次调用ParseExternalDeclaration()都在做词法解析的同时也在做语法解析，解析出的AST存放在Context里。</li>
+<li>ASTConsumer虽然不是抽象类，但是是一个空基类，实现为空，其具体行为肯定是通过其具体派生类来实现的。
+<ul>
+<li>不管是什么派生类，需要重点关注<strong>HandleTopLevelDecl和HandleTranslationUnit</strong>这两个方法的具体实现逻辑。</li>
+</ul>
+</li>
+</ul>
+<h2 id="astconsumer子类astprinter">ASTConsumer子类ASTPrinter
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">/// ASTConsumers.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="n">ASTConsumer</span> <span class="o">*</span><span class="n">clang</span><span class="o">::</span><span class="n">CreateASTPrinter</span><span class="p">(</span><span class="n">llvm</span><span class="o">::</span><span class="n">raw_ostream</span><span class="o">*</span> <span class="n">out</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="k">new</span> <span class="nf">ASTPrinter</span><span class="p">(</span><span class="n">out</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 【1】其继承的HandleTopLevelDecl方法没有重写，就是父类的空方法
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 【2】重写了父类的HandleTranslationUnit方法
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">virtual</span> <span class="kt">void</span> <span class="nf">HandleTranslationUnit</span><span class="p">(</span><span class="n">ASTContext</span> <span class="o">&amp;</span><span class="n">Context</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">PrintingPolicy</span> <span class="n">Policy</span> <span class="o">=</span> <span class="n">Context</span><span class="p">.</span><span class="n">PrintingPolicy</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Policy</span><span class="p">.</span><span class="n">Dump</span> <span class="o">=</span> <span class="n">Dump</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 可见抽象语法树解析的结构是放在ASTContext里的
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">Context</span><span class="p">.</span><span class="n">getTranslationUnitDecl</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">print</span><span class="p">(</span><span class="n">Out</span><span class="p">,</span> <span class="n">Policy</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="astconsumer子类backendconsumer">ASTConsumer子类BackendConsumer
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">/// Frontend/Backend.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="n">ASTConsumer</span> <span class="o">*</span><span class="n">clang</span><span class="o">::</span><span class="n">CreateBackendConsumer</span><span class="p">(</span><span class="n">BackendAction</span> <span class="n">Action</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                          <span class="n">Diagnostic</span> <span class="o">&amp;</span><span class="n">Diags</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                          <span class="k">const</span> <span class="n">LangOptions</span> <span class="o">&amp;</span><span class="n">LangOpts</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                          <span class="k">const</span> <span class="n">CompileOptions</span> <span class="o">&amp;</span><span class="n">CompileOpts</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                          <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">InFile</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                          <span class="n">llvm</span><span class="o">::</span><span class="n">raw_ostream</span><span class="o">*</span> <span class="n">OS</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                          <span class="n">LLVMContext</span><span class="o">&amp;</span> <span class="n">C</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="k">new</span> <span class="nf">BackendConsumer</span><span class="p">(</span><span class="n">Action</span><span class="p">,</span> <span class="n">Diags</span><span class="p">,</span> <span class="n">LangOpts</span><span class="p">,</span> <span class="n">CompileOpts</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                             <span class="n">InFile</span><span class="p">,</span> <span class="n">OS</span><span class="p">,</span> <span class="n">C</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//****************** 【1】重写的HandleTopLevelDecl方法如下 *********************
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">virtual</span> <span class="kt">void</span> <span class="nf">HandleTopLevelDecl</span><span class="p">(</span><span class="n">DeclGroupRef</span> <span class="n">D</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">PrettyStackTraceDecl</span> <span class="n">CrashInfo</span><span class="p">(</span><span class="o">*</span><span class="n">D</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">SourceLocation</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">								 <span class="n">Context</span><span class="o">-&gt;</span><span class="n">getSourceManager</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">								 <span class="s">&#34;LLVM IR generation of declaration&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">CompileOpts</span><span class="p">.</span><span class="n">TimePasses</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">LLVMIRGeneration</span><span class="p">.</span><span class="n">startTimer</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// Gen字段通过函数CreateLLVMCodeGen初始化，返回的类型是CodeGeneratorImpl，最终会调用CodeGenModule::EmitTopLevelDecl函数来处理。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// 猜测这里就对每个顶层定义进行处理，注意这里是个空函数。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">Gen</span><span class="o">-&gt;</span><span class="n">HandleTopLevelDecl</span><span class="p">(</span><span class="n">D</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">CompileOpts</span><span class="p">.</span><span class="n">TimePasses</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">LLVMIRGeneration</span><span class="p">.</span><span class="n">stopTimer</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//****************** 【2】重写的HandleTranslationUnit方法如下  *********************
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">virtual</span> <span class="kt">void</span> <span class="nf">HandleTranslationUnit</span><span class="p">(</span><span class="n">ASTContext</span> <span class="o">&amp;</span><span class="n">C</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">PrettyStackTraceString</span> <span class="n">CrashInfo</span><span class="p">(</span><span class="s">&#34;Per-file LLVM IR generation&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">CompileOpts</span><span class="p">.</span><span class="n">TimePasses</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	  <span class="n">LLVMIRGeneration</span><span class="p">.</span><span class="n">startTimer</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// Gen字段通过函数CreateLLVMCodeGen初始化，返回的类型是CodeGeneratorImpl，最终会调用CodeGenModule::Release()来做最后的收尾工作
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">Gen</span><span class="o">-&gt;</span><span class="n">HandleTranslationUnit</span><span class="p">(</span><span class="n">C</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">CompileOpts</span><span class="p">.</span><span class="n">TimePasses</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	  <span class="n">LLVMIRGeneration</span><span class="p">.</span><span class="n">stopTimer</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// 前面是生成LLVM IR，这里开始创建Pass然后生成本地汇编代码
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">EmitAssembly</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  
+</span></span><span class="line"><span class="cl">  <span class="c1">// Force a flush here in case we never get released.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">AsmOutStream</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">FormattedOutStream</span><span class="p">.</span><span class="n">flush</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/llvm/">LLVM</a>
+        
+            <a href="/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/">编译原理</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Weijie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

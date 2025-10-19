@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="实验环境准备 可执行程序文件在磁盘上的存储格式和操作系统相关，在Windows平台上的可执行程序文件是PE格式，在Linux平台上就是ELF格式。EFL全称为Executable and Linkable Format。其实这里表达不是很准确，ELF文件可以细分三种类型：可执行程序、可重定位文件（单个编译单元编译后的产物，未进行链接操作，Linux上的扩展名字一般是 .o）和共享目标文件（也就是动态链接库，在Linux上的扩展名字一般是 .so）\n">
+<title>程序ELF格式布局初探</title>
+
+<link rel='canonical' href='https://example.com/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="程序ELF格式布局初探">
+<meta property='og:description' content="实验环境准备 可执行程序文件在磁盘上的存储格式和操作系统相关，在Windows平台上的可执行程序文件是PE格式，在Linux平台上就是ELF格式。EFL全称为Executable and Linkable Format。其实这里表达不是很准确，ELF文件可以细分三种类型：可执行程序、可重定位文件（单个编译单元编译后的产物，未进行链接操作，Linux上的扩展名字一般是 .o）和共享目标文件（也就是动态链接库，在Linux上的扩展名字一般是 .so）\n">
+<meta property='og:url' content='https://example.com/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/'>
+<meta property='og:site_name' content='Weijie&#39;s Blog Site'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='ELF' /><meta property='article:tag' content='可执行程序' /><meta property='article:tag' content='程序布局' /><meta property='article:published_time' content='2024-07-19T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-07-19T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover.jpg' />
+<meta name="twitter:title" content="程序ELF格式布局初探">
+<meta name="twitter:description" content="实验环境准备 可执行程序文件在磁盘上的存储格式和操作系统相关，在Windows平台上的可执行程序文件是PE格式，在Linux平台上就是ELF格式。EFL全称为Executable and Linkable Format。其实这里表达不是很准确，ELF文件可以细分三种类型：可执行程序、可重定位文件（单个编译单元编译后的产物，未进行链接操作，Linux上的扩展名字一般是 .o）和共享目标文件（也就是动态链接库，在Linux上的扩展名字一般是 .so）\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://example.com/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover.jpg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    <img src="/img/avatar.jpg" width="300" height="300" class="site-logo" loading="lazy" alt="Avatar">
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Weijie&#39;s Blog Site</a></h1>
+            <h2 class="site-description">My Tech Blogs</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#实验环境准备">实验环境准备</a></li>
+    <li><a href="#size命令查看各个段大小">size命令查看各个段大小</a></li>
+    <li><a href="#readelf查看data-section内容">readelf查看.data section内容</a></li>
+    <li><a href="#readelf查看rodata-section内容">readelf查看.rodata section内容</a></li>
+    <li><a href="#readelf查看全局变量的地址">readelf查看全局变量的地址</a></li>
+    <li><a href="#readelf和objdump查看text内容">readelf和objdump查看.text内容</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/">
+                <img src="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover_hu_abd0fbe639e84072.jpg"
+                        srcset="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover_hu_abd0fbe639e84072.jpg 800w, /p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover_hu_4d2c2a92e83c7bd8.jpg 1600w"
+                        width="800" 
+                        height="400" 
+                        loading="lazy"
+                        alt="Featured image of post 程序ELF格式布局初探" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/linux%E5%86%85%E6%A0%B8/" style="background-color: #fa3da9; color: #fff;">
+                Linux内核
+            </a>
+        
+            <a href="/categories/linux%E7%BC%96%E7%A8%8B/" style="background-color: #1aedaf; color: #fff;">
+                Linux编程
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/">程序ELF格式布局初探</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 19, 2024</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    4 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="实验环境准备">实验环境准备
+</h2><p>可执行程序文件在磁盘上的存储格式和操作系统相关，在Windows平台上的可执行程序文件是PE格式，在Linux平台上就是ELF格式。EFL全称为Executable and Linkable Format。其实这里表达不是很准确，ELF文件可以细分三种类型：可执行程序、可重定位文件（单个编译单元编译后的产物，未进行链接操作，Linux上的扩展名字一般是 <code>.o</code>）和共享目标文件（也就是动态链接库，在Linux上的扩展名字一般是 <code>.so</code>）</p>
+<p>一般学习过计算机专业课都会知道程序包含代码和数据两部分，这里我们通过编译一个最小的C可执行程序，来分析ELF是如何存储代码和数据的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// main.c
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">char</span> <span class="n">strarr</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&#34;xyz&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">g_int</span> <span class="o">=</span> <span class="mh">0x12345678</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">char</span><span class="o">*</span> <span class="n">strp</span> <span class="o">=</span> <span class="s">&#34;abcdefgh&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们通过这段gcc命令来编译得到可执行程序：<code>gcc -nostdinc -nostdlib -static --entry main main.c</code>。这里的编译是广义的概念，内部隐藏了链接的操作，而狭义的编译概念不包含链接操作，对应于gcc命令里的 <code>-c</code> 参数。</p>
+<p>另外快速解释上面命令中的几个参数的含义：</p>
+<ul>
+<li>nostdinc：禁止在标准系统目录中搜索头文件</li>
+<li>nostdlib：不链接标准启动文件和标准库</li>
+<li>static：生成完全静态链接的可执行文件</li>
+<li>entry main：指定程序入口点为 main 函数</li>
+</ul>
+<p>增加这些参数的目的是简化我们的分析，剔除和我们分析无关的代码。</p>
+<p>好了，现在我们得到分析目标 a.out 可执行程序，因为没有通过 <code>-o</code> 参数指定输出文件名字，所以gcc使用默认名称a.out。</p>
+<h2 id="size命令查看各个段大小">size命令查看各个段大小
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">size a.out 
+</span></span><span class="line"><span class="cl">   text	   data	    bss	    dec	    hex	filename
+</span></span><span class="line"><span class="cl">    148	     16	      0	    164	     a4	a.out
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>从命令的输出结果中可以看出代码段(text)在ELF格式中占用了148个字节，数据段(data)在ELF格式中占据了16字节。变量<code>strarr</code> 4个字节 + <code>g_int</code> 4个字节 + <code>strp</code> 9个字节 = 17个字节，怎么和上面size命令的结果对不上呢？注意这里 <code>strp</code> 只是一个字符串指针，在64位系统上指针的大小是8个字节，所以其实 <code>strp</code> 在 data段里只占用8个字节，它指向的内容存放在另外的地方。后面会通过另一个工具readelf来验证这里的逻辑。</p>
+<h2 id="readelf查看data-section内容">readelf查看.data section内容
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">readelf -x .data a.out 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Hex dump of section <span class="s1">&#39;.data&#39;</span>:
+</span></span><span class="line"><span class="cl">  0x00404000 78797a00 <span class="m">78563412</span> <span class="m">00204000</span> <span class="m">00000000</span> xyz.xV4.. @.....
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>输出的内容是从虚拟地址 0x00404000 开始的16个字节的内容，我们可以看到所有全局字段的初始值是连续存储的：</p>
+<ul>
+<li>0x78797a00 存储 <code>strarr[]</code>的初始值，注意按照C语言字符串规范，最后以 <code>\0</code> 标记字符串结束位置。</li>
+<li>0x78563412 存储 <code>g_int</code> 的初始值，注意按照Little Endian规则存储。</li>
+<li>0x00204000 00000000 存储的一个 <code>strp</code> 的64位指针指向的地址（注意Little Endian序）。这个地址的内容就是实际字符串的值。记住这个地址，后面验证过程会出现这个地址。</li>
+</ul>
+<h2 id="readelf查看rodata-section内容">readelf查看.rodata section内容
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">readelf -x .rodata a.out 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Hex dump of section <span class="s1">&#39;.rodata&#39;</span>:
+</span></span><span class="line"><span class="cl">  0x00402000 <span class="m">61626364</span> <span class="m">65666768</span> <span class="m">00</span>                abcdefgh.
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>从输出结果中我们可以看到.rodata section的起始地址就是上面 <code>strp</code> 指向的地址，这是巧合吗？并非如此。后面字符串的内容 <code>0x61626364 0x65666768 0x00</code> 说明这个地址存放的内容就是 <code>strp</code> 指向的字符串内容。</p>
+<h2 id="readelf查看全局变量的地址">readelf查看全局变量的地址
+</h2><p>每个全局字段在 .data 中的位置是存储在符号表中的，可以通过 <code>readelf -s a.out</code> 查看各个符号的虚拟地址：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">readelf -s a.out 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Symbol table <span class="s1">&#39;.symtab&#39;</span> contains <span class="m">16</span> entries:
+</span></span><span class="line"><span class="cl">   Num:    Value          Size Type    Bind   Vis      Ndx Name
+</span></span><span class="line"><span class="cl">     0: <span class="m">0000000000000000</span>     <span class="m">0</span> NOTYPE  LOCAL  DEFAULT  UND 
+</span></span><span class="line"><span class="cl">     1: <span class="m">0000000000400200</span>     <span class="m">0</span> SECTION LOCAL  DEFAULT    <span class="m">1</span> 
+</span></span><span class="line"><span class="cl">     2: <span class="m">0000000000400220</span>     <span class="m">0</span> SECTION LOCAL  DEFAULT    <span class="m">2</span> 
+</span></span><span class="line"><span class="cl">     3: <span class="m">0000000000401000</span>     <span class="m">0</span> SECTION LOCAL  DEFAULT    <span class="m">3</span> 
+</span></span><span class="line"><span class="cl">     4: <span class="m">0000000000402000</span>     <span class="m">0</span> SECTION LOCAL  DEFAULT    <span class="m">4</span> 
+</span></span><span class="line"><span class="cl">     5: <span class="m">0000000000402010</span>     <span class="m">0</span> SECTION LOCAL  DEFAULT    <span class="m">5</span> 
+</span></span><span class="line"><span class="cl">     6: <span class="m">0000000000404000</span>     <span class="m">0</span> SECTION LOCAL  DEFAULT    <span class="m">6</span> 
+</span></span><span class="line"><span class="cl">     7: <span class="m">0000000000000000</span>     <span class="m">0</span> SECTION LOCAL  DEFAULT    <span class="m">7</span> 
+</span></span><span class="line"><span class="cl">     8: <span class="m">0000000000000000</span>     <span class="m">0</span> FILE    LOCAL  DEFAULT  ABS main.c
+</span></span><span class="line"><span class="cl">     9: <span class="m">0000000000404000</span>     <span class="m">4</span> OBJECT  GLOBAL DEFAULT    <span class="m">6</span> strarr
+</span></span><span class="line"><span class="cl">    10: <span class="m">0000000000404010</span>     <span class="m">0</span> NOTYPE  GLOBAL DEFAULT    <span class="m">6</span> __bss_start
+</span></span><span class="line"><span class="cl">    11: <span class="m">0000000000401000</span>    <span class="m">15</span> FUNC    GLOBAL DEFAULT    <span class="m">3</span> main
+</span></span><span class="line"><span class="cl">    12: <span class="m">0000000000404008</span>     <span class="m">8</span> OBJECT  GLOBAL DEFAULT    <span class="m">6</span> strp
+</span></span><span class="line"><span class="cl">    13: <span class="m">0000000000404010</span>     <span class="m">0</span> NOTYPE  GLOBAL DEFAULT    <span class="m">6</span> _edata
+</span></span><span class="line"><span class="cl">    14: <span class="m">0000000000404010</span>     <span class="m">0</span> NOTYPE  GLOBAL DEFAULT    <span class="m">6</span> _end
+</span></span><span class="line"><span class="cl">    15: <span class="m">0000000000404004</span>     <span class="m">4</span> OBJECT  GLOBAL DEFAULT    <span class="m">6</span> g_int
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里输出的内容和前面检查的内容是可以互相对照印证的。</p>
+<h2 id="readelf和objdump查看text内容">readelf和objdump查看.text内容
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">readelf -x .text a.out 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Hex dump of section <span class="s1">&#39;.text&#39;</span>:
+</span></span><span class="line"><span class="cl">  0x00401000 f30f1efa 554889e5 b8000000 005dc3   ....UH.......<span class="o">]</span>.
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>当然这是所有机器指令混合在一起输出的，对于人类阅读而言，非常不直观。这里还有一种更直观的查看代码段的方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">objdump -d a.out
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">0:  f3 0f 1e fa             endbr64
+</span></span><span class="line"><span class="cl">4:  <span class="m">55</span>                      push   rbp
+</span></span><span class="line"><span class="cl">5:  <span class="m">48</span> <span class="m">89</span> e5                mov    rbp,rsp
+</span></span><span class="line"><span class="cl">8:  b8 <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span>          mov    eax,0x0
+</span></span><span class="line"><span class="cl">d:  5d                      pop    rbp
+</span></span><span class="line"><span class="cl">e:  c3                      ret
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>objdump直接将每条机器指令分开展示，并且每天机器指令对应的汇编代码也反解出来了。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/elf/">ELF</a>
+        
+            <a href="/tags/%E5%8F%AF%E6%89%A7%E8%A1%8C%E7%A8%8B%E5%BA%8F/">可执行程序</a>
+        
+            <a href="/tags/%E7%A8%8B%E5%BA%8F%E5%B8%83%E5%B1%80/">程序布局</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/linux-epoll-api/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux-epoll-api/cover.ec8e4fac264ca8a7bb92b3774bf3a8a5_hu_f6397f5714a1583.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Linux epoll API"
+                        
+                        data-hash="md5-7I5PrCZMqKe7krN3S/OopQ==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Linux epoll API</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/elf-format/">
+        
+        
+            <div class="article-image">
+                <img src="/p/elf-format/cover.54add658b8d2b0451a27cc39cb2720a0_hu_cacb52883a74ab2e.png" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post ELF格式解析"
+                        data-key="elf-format" 
+                        data-hash="md5-VK3WWLjSsEUaJ8w5yycgoA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">ELF格式解析</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/linux-proc-file-system/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux-proc-file-system/cover.9de61f04c0763783daf0ad63a6b5a330_hu_bc48bf34997a1e6d.png" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Linux中几个特殊文件系统"
+                        data-key="linux-proc-file-system" 
+                        data-hash="md5-neYfBMB2N4Pa8K1jprWjMA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Linux中几个特殊文件系统</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/linux-command-daily-learning/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux-command-daily-learning/cover.6f1fc27e7c6dd18f63cb338db59d5c13_hu_d363ddb6ab4eb88d.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 【更新中】每天学习一个Linux命令"
+                        data-key="linux-command-daily-learning" 
+                        data-hash="md5-bx/Cfnxt0Y9jyzONtZ1cEw==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">【更新中】每天学习一个Linux命令</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/gdb-advance-tips/">
+        
+        
+            <div class="article-image">
+                <img src="/p/gdb-advance-tips/cover.fbb800aca25cac30cb4a425b547b438b_hu_396b4e5c1343b36c.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post GDB高级调试技巧"
+                        data-key="gdb-advance-tips" 
+                        data-hash="md5-&#43;7gArKJcrDDLSkJbVHtDiw==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">GDB高级调试技巧</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Weijie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

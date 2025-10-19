@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="概念 定义：总线是计算机系统中用于在各组件之间传输数据、地址和控制信号的公共通信通道。它是一组电子线路，允许处理器、内存、输入输出设备等通过共享路径进行通信和协调。总线的主要功能包括数据传输、地址传输和控制信号传输，确保系统各部件能够高效、有序地工作。\n">
+<title>计算机总线</title>
+
+<link rel='canonical' href='https://example.com/p/computer-bus/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="计算机总线">
+<meta property='og:description' content="概念 定义：总线是计算机系统中用于在各组件之间传输数据、地址和控制信号的公共通信通道。它是一组电子线路，允许处理器、内存、输入输出设备等通过共享路径进行通信和协调。总线的主要功能包括数据传输、地址传输和控制信号传输，确保系统各部件能够高效、有序地工作。\n">
+<meta property='og:url' content='https://example.com/p/computer-bus/'>
+<meta property='og:site_name' content='Weijie&#39;s Blog Site'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='硬件' /><meta property='article:tag' content='总线' /><meta property='article:published_time' content='2024-08-10T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-08-10T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/computer-bus/cover.jpg' />
+<meta name="twitter:title" content="计算机总线">
+<meta name="twitter:description" content="概念 定义：总线是计算机系统中用于在各组件之间传输数据、地址和控制信号的公共通信通道。它是一组电子线路，允许处理器、内存、输入输出设备等通过共享路径进行通信和协调。总线的主要功能包括数据传输、地址传输和控制信号传输，确保系统各部件能够高效、有序地工作。\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://example.com/p/computer-bus/cover.jpg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    <img src="/img/avatar.jpg" width="300" height="300" class="site-logo" loading="lazy" alt="Avatar">
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Weijie&#39;s Blog Site</a></h1>
+            <h2 class="site-description">My Tech Blogs</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#概念">概念</a></li>
+    <li><a href="#分类">分类</a></li>
+    <li><a href="#性能指标">性能指标</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/computer-bus/">
+                <img src="/p/computer-bus/cover_hu_9dae7eacf7bc9a1c.jpg"
+                        srcset="/p/computer-bus/cover_hu_9dae7eacf7bc9a1c.jpg 800w, /p/computer-bus/cover_hu_bc80211c8489af59.jpg 1600w"
+                        width="800" 
+                        height="400" 
+                        loading="lazy"
+                        alt="Featured image of post 计算机总线" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E7%A1%AC%E4%BB%B6/" style="background-color: #2a9d8f; color: #fff;">
+                硬件
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/computer-bus/">计算机总线</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Aug 10, 2024</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    3 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="概念">概念
+</h2><p>定义：总线是计算机系统中用于在各组件之间传输数据、地址和控制信号的公共通信通道。它是一组电子线路，允许处理器、内存、输入输出设备等通过共享路径进行通信和协调。总线的主要功能包括数据传输、地址传输和控制信号传输，确保系统各部件能够高效、有序地工作。</p>
+<p><strong>我的理解</strong>：总线的物理实体就是CPU、内存、显卡和其他主板芯片之间用来连接各个芯片引脚的导线。但是这些导线上的信号、时序、电气和机械特性有一个标准/规范。具体来看ISA总线、PCI总线等实际就是制定的不同的这些规范。显然总线的这些标准和规范不是在总线的物理实体（导线）上实现的，而是在需要总线连接的芯片/组件/设备内部实现的。举个例子如果一个芯片在a1, a2, &hellip;, a32这些引脚实现了PCI总线的标准，那连接a1, &hellip;, a32这些引脚和导线就是PCI总线。</p>
+<p>HDMI是否是一种总线，不是，HDMI和总线的区别：</p>
+<ol>
+<li><strong>功能范围</strong>：
+<ul>
+<li><strong>总线</strong>：用于在计算机系统内部或外部传输数据、地址和控制信号，支持多种设备通信。</li>
+<li><strong>HDMI</strong>：专注于音视频信号的传输，不涉及地址或控制信号。</li>
+</ul>
+</li>
+<li><strong>连接方式</strong>：
+<ul>
+<li><strong>总线</strong>：允许多个设备通过共享通道通信。</li>
+<li><strong>HDMI</strong>：通常是点对点连接，如电脑连接显示器。</li>
+</ul>
+</li>
+<li><strong>协议复杂性</strong>：
+<ul>
+<li><strong>总线</strong>：需要复杂的协议管理数据传输和设备通信。</li>
+<li><strong>HDMI</strong>：协议相对简单，主要用于音视频流的传输。</li>
+</ul>
+</li>
+</ol>
+<h2 id="分类">分类
+</h2><p>按照数据传输方式，总线可分为：</p>
+<ul>
+<li>并行总线：每个信号都有自己的信号线，传输速度快，接口简单，但是使用的电缆线多。</li>
+<li>串行总线：多个信号复用少量信号线，电缆线数少，便于远距离传播，信号传输慢，接口复杂。</li>
+</ul>
+<p>按照总线在系统结构中的层次位置，可以分为：</p>
+<ul>
+<li>片内总线（On-Chip Bus）：在集成电路的内部，用来连接各功能单元的信息通路。如CPU芯片内部连接ALU、寄存器、控制器等部件的信息通路。</li>
+<li>内部总线（Internal Bus）：用于计算机内部模块之间的通信。如主板上连接CPU、存储器、I/O接口等各种芯片的信息通路包括ISA、MCA、PCI、PCI-Express等。</li>
+<li>外部总线（External Bus）：用于计算机之间或计算机与设备之间通信包括IEEE488、RS232、RS485、USB。</li>
+</ul>
+<p>按照总线内部信息传输的性质，可以分为：</p>
+<ul>
+<li>地址总线（Adress Bus）：用于传递地址信息。是==单向三态总线==，只能从CPU传向I/O端口或存储器，地址总线位数决定了CPU可直接寻址的内存空间大小，注意IO设备和内存的独立编址和统一编址。</li>
+<li>数据总线（Data Bus）：用于传递数据信息。是==双向三态总线==，其总线位数通常与微处理器字长一致。</li>
+<li>控制总线（Control Bus）：用于传递控制信息。包括控制、时序和中断信号线，单双向都有，对总线性能起关键作用。</li>
+<li>电源总线（Power Bus）：用于向系统提供电源。PCI-E总线供电能力是75W</li>
+</ul>
+<h2 id="性能指标">性能指标
+</h2><ol>
+<li><strong>总线带宽（Bandwidth）</strong></li>
+</ol>
+<ul>
+<li>定义：总线在单位时间内能够传输的数据量。</li>
+<li>单位：通常以兆字节每秒（MB/s）或吉字节每秒（GB/s）表示。</li>
+<li>重要性：带宽越高，总线传输数据的能力越强。</li>
+</ul>
+<p>2. <strong>时钟频率（Clock Frequency）</strong></p>
+<ul>
+<li>定义：总线的工作频率，即总线每秒钟的时钟周期数。</li>
+<li>单位：通常以兆赫兹（MHz）或吉赫兹（GHz）表示。</li>
+<li>重要性：时钟频率越高，总线传输数据的速度越快。</li>
+</ul>
+<p>3. <strong>总线宽度（Bus Width）</strong></p>
+<ul>
+<li>定义：总线一次传输的数据位数。</li>
+<li>单位：以位（bit）表示，如32位、64位。</li>
+<li>重要性：总线宽度越大，一次传输的数据量越多。</li>
+</ul>
+<!-- KaTeX -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+$$总线带宽(MB/s) = 1/8 \times 总线宽度 \times 总线频率$$
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E7%A1%AC%E4%BB%B6/">硬件</a>
+        
+            <a href="/tags/%E6%80%BB%E7%BA%BF/">总线</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/computer-booting-process/">
+        
+        
+            <div class="article-image">
+                <img src="/p/computer-booting-process/cover.3eb67af7fe960ff3bd167d160522b5cc_hu_2fa82b92da7bd9b.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 计算机启动过程"
+                        data-key="computer-booting-process" 
+                        data-hash="md5-PrZ69/6WD/O9Fn0WBSK1zA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">计算机启动过程</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Weijie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

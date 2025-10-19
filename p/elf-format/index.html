@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="格式概览 整个ELF文件可以分成四块：\n1 2 3 4 5 6 7 8 9 10 11 12 ┌───────────────────────┐ │ ELF File Header │ ► 描述文件类型、架构、入口点等全局信息 ├───────────────────────┤ │ Program Headers │ ► 定义运行时内存布局（Segments） │ (Optional for reloc.) │ ├───────────────────────┤ │ Sections │ ► 实际存储代码、数据等（如 .text, .data） │ │ ├───────────────────────┤ │ Section Headers │ ► 描述各节的逻辑信息（供链接器使用） │ (Optional for exec.) │ └───────────────────────┘ ELF格式本质上是一些称为 Headers 的较小数据结构的集合。一个 Header 是由一些更简单（或原始的 primitive）的数据类型（例如整数）组成的连续序列。有多种类型的 Headers ，每种类型描述一种信息。下面这张图描述了ELF中包含的Header以及组成Header的原始数据类型之间的关系。\n">
+<title>ELF格式解析</title>
+
+<link rel='canonical' href='https://example.com/p/elf-format/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="ELF格式解析">
+<meta property='og:description' content="格式概览 整个ELF文件可以分成四块：\n1 2 3 4 5 6 7 8 9 10 11 12 ┌───────────────────────┐ │ ELF File Header │ ► 描述文件类型、架构、入口点等全局信息 ├───────────────────────┤ │ Program Headers │ ► 定义运行时内存布局（Segments） │ (Optional for reloc.) │ ├───────────────────────┤ │ Sections │ ► 实际存储代码、数据等（如 .text, .data） │ │ ├───────────────────────┤ │ Section Headers │ ► 描述各节的逻辑信息（供链接器使用） │ (Optional for exec.) │ └───────────────────────┘ ELF格式本质上是一些称为 Headers 的较小数据结构的集合。一个 Header 是由一些更简单（或原始的 primitive）的数据类型（例如整数）组成的连续序列。有多种类型的 Headers ，每种类型描述一种信息。下面这张图描述了ELF中包含的Header以及组成Header的原始数据类型之间的关系。\n">
+<meta property='og:url' content='https://example.com/p/elf-format/'>
+<meta property='og:site_name' content='Weijie&#39;s Blog Site'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='ELF格式' /><meta property='article:tag' content='ELF' /><meta property='article:tag' content='Linux内核' /><meta property='article:published_time' content='2024-11-03T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-03T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/elf-format/cover.png' />
+<meta name="twitter:title" content="ELF格式解析">
+<meta name="twitter:description" content="格式概览 整个ELF文件可以分成四块：\n1 2 3 4 5 6 7 8 9 10 11 12 ┌───────────────────────┐ │ ELF File Header │ ► 描述文件类型、架构、入口点等全局信息 ├───────────────────────┤ │ Program Headers │ ► 定义运行时内存布局（Segments） │ (Optional for reloc.) │ ├───────────────────────┤ │ Sections │ ► 实际存储代码、数据等（如 .text, .data） │ │ ├───────────────────────┤ │ Section Headers │ ► 描述各节的逻辑信息（供链接器使用） │ (Optional for exec.) │ └───────────────────────┘ ELF格式本质上是一些称为 Headers 的较小数据结构的集合。一个 Header 是由一些更简单（或原始的 primitive）的数据类型（例如整数）组成的连续序列。有多种类型的 Headers ，每种类型描述一种信息。下面这张图描述了ELF中包含的Header以及组成Header的原始数据类型之间的关系。\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://example.com/p/elf-format/cover.png' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    <img src="/img/avatar.jpg" width="300" height="300" class="site-logo" loading="lazy" alt="Avatar">
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Weijie&#39;s Blog Site</a></h1>
+            <h2 class="site-description">My Tech Blogs</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#格式概览">格式概览</a>
+      <ol>
+        <li><a href="#原始数据类型">原始数据类型</a></li>
+      </ol>
+    </li>
+    <li><a href="#elf-header">ELF Header</a>
+      <ol>
+        <li><a href="#e_ident">e_ident</a></li>
+        <li><a href="#e_type">e_type</a></li>
+        <li><a href="#e_machine">e_machine</a></li>
+        <li><a href="#e_entry">e_entry</a></li>
+        <li><a href="#e_phoff">e_phoff</a></li>
+        <li><a href="#e_shoff">e_shoff</a></li>
+        <li><a href="#e_ehsize">e_ehsize</a></li>
+        <li><a href="#e_phentsize">e_phentsize</a></li>
+        <li><a href="#e_phnum">e_phnum</a></li>
+        <li><a href="#e_shentsize">e_shentsize</a></li>
+        <li><a href="#e_shnum">e_shnum</a></li>
+        <li><a href="#e_shstrndx">e_shstrndx</a></li>
+      </ol>
+    </li>
+    <li><a href="#program-header-table">Program Header Table</a>
+      <ol>
+        <li><a href="#p_type">p_type</a></li>
+        <li><a href="#p_offset">p_offset</a></li>
+        <li><a href="#p_vaddr">p_vaddr</a></li>
+        <li><a href="#p_paddr">p_paddr</a></li>
+        <li><a href="#p_filesz">p_filesz</a></li>
+        <li><a href="#p_memsz">p_memsz</a></li>
+        <li><a href="#p_flags">p_flags</a></li>
+        <li><a href="#p_align">p_align</a></li>
+      </ol>
+    </li>
+    <li><a href="#section-header-table">Section Header Table</a>
+      <ol>
+        <li><a href="#sh_name">sh_name</a></li>
+        <li><a href="#sh_type">sh_type</a></li>
+        <li><a href="#sh_flags">sh_flags</a></li>
+        <li><a href="#sh_addr">sh_addr</a></li>
+        <li><a href="#sh_offset">sh_offset</a></li>
+        <li><a href="#sh_size">sh_size</a></li>
+        <li><a href="#sh_link">sh_link</a></li>
+        <li><a href="#sh_info">sh_info</a></li>
+        <li><a href="#sh_addralign">sh_addralign</a></li>
+        <li><a href="#sh_entsize">sh_entsize</a></li>
+      </ol>
+    </li>
+    <li><a href="#sections">Sections</a>
+      <ol>
+        <li><a href="#bss">.bss</a></li>
+        <li><a href="#comment">.comment</a></li>
+        <li><a href="#ctors-和-dtors">.ctors 和 .dtors</a></li>
+        <li><a href="#data">.data</a></li>
+        <li><a href="#rodata">.rodata</a></li>
+        <li><a href="#reltext-32位">.rel.text (32位)</a></li>
+        <li><a href="#重定位表-relatext-和-reladata">重定位表 .rela.text 和 rela.data</a></li>
+        <li><a href="#字符串表-strtab-和-shstrtab">字符串表 .strtab 和 .shstrtab</a></li>
+        <li><a href="#符号表-symtab">符号表 .symtab</a></li>
+        <li><a href="#全局偏移表-got">全局偏移表 .got</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/elf-format/">
+                <img src="/p/elf-format/cover_hu_5556ff6dd272ffca.png"
+                        srcset="/p/elf-format/cover_hu_5556ff6dd272ffca.png 800w, /p/elf-format/cover_hu_63ecd5c3ca45738d.png 1600w"
+                        width="800" 
+                        height="452" 
+                        loading="lazy"
+                        alt="Featured image of post ELF格式解析" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/linux%E5%86%85%E6%A0%B8/" style="background-color: #fa3da9; color: #fff;">
+                Linux内核
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/elf-format/">ELF格式解析</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Nov 03, 2024</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    21 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="格式概览">格式概览
+</h2><p>整个ELF文件可以分成四块：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">┌───────────────────────┐
+</span></span><span class="line"><span class="cl">│      ELF File Header  │  ► 描述文件类型、架构、入口点等全局信息
+</span></span><span class="line"><span class="cl">├───────────────────────┤
+</span></span><span class="line"><span class="cl">│    Program Headers    │  ► 定义运行时内存布局（Segments）
+</span></span><span class="line"><span class="cl">│ (Optional for reloc.) │
+</span></span><span class="line"><span class="cl">├───────────────────────┤
+</span></span><span class="line"><span class="cl">│       Sections        │  ► 实际存储代码、数据等（如 .text, .data）
+</span></span><span class="line"><span class="cl">│                       │
+</span></span><span class="line"><span class="cl">├───────────────────────┤
+</span></span><span class="line"><span class="cl">│    Section Headers    │  ► 描述各节的逻辑信息（供链接器使用）
+</span></span><span class="line"><span class="cl">│ (Optional for exec.)  │
+</span></span><span class="line"><span class="cl">└───────────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>ELF格式本质上是一些称为 <strong>Headers</strong> 的较小数据结构的集合。一个 <strong>Header</strong> 是由一些更简单（或原始的 primitive）的数据类型（例如整数）组成的连续序列。有多种类型的 <strong>Headers</strong> ，每种类型描述一种信息。下面这张图描述了ELF中包含的Header以及组成Header的原始数据类型之间的关系。</p>
+<p><img src="/p/elf-format/elf-header-and-primitive-type.webp"
+	width="680"
+	height="1135"
+	srcset="/p/elf-format/elf-header-and-primitive-type_hu_33c61a3cfdc14b18.webp 480w, /p/elf-format/elf-header-and-primitive-type_hu_601728c17279fbaf.webp 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="59"
+		data-flex-basis="143px"
+	
+></p>
+<h3 id="原始数据类型">原始数据类型
+</h3><p>原始数据类型（primitive data type）是编程语言中最基本的数据类型，具有如下特点：</p>
+<ul>
+<li>原始值一旦创建就不能被修改</li>
+<li>在赋值或传递给函数时，传递的是值的副本</li>
+<li>值直接存储在变量访问的位置</li>
+</ul>
+<p>ELF定义了几种原始类型，ELF格式中定义的其他任何结构都是这几种原始类型的组合：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">/// linux/include/elf.h
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="cm">/* 64-bit ELF base types. */</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="kt">uint16_t</span> <span class="n">Elf64_Half</span><span class="p">;</span>        <span class="n">General</span> <span class="n">purpose</span> <span class="mi">16</span> <span class="n">bit</span> <span class="kt">unsigned</span> <span class="n">integer</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="kt">uint32_t</span> <span class="n">Elf64_Word</span><span class="p">;</span>        <span class="n">General</span> <span class="n">purpose</span> <span class="mi">32</span> <span class="n">bit</span> <span class="kt">unsigned</span> <span class="n">integer</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="kt">int32_t</span>  <span class="n">Elf64_Sword</span><span class="p">;</span>       <span class="n">General</span> <span class="n">purpose</span> <span class="mi">32</span> <span class="n">bit</span> <span class="kt">signed</span> <span class="n">integer</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="kt">uint64_t</span> <span class="n">Elf64_Xword</span><span class="p">;</span>       <span class="n">General</span> <span class="n">purpose</span> <span class="mi">64</span> <span class="n">bit</span> <span class="kt">unsigned</span> <span class="n">integer</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="kt">int64_t</span>  <span class="n">Elf64_Sxword</span><span class="p">;</span>      <span class="n">General</span> <span class="n">purpose</span> <span class="mi">64</span> <span class="n">bit</span> <span class="kt">signed</span> <span class="n">integer</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="kt">uint64_t</span> <span class="n">Elf64_Addr</span><span class="p">;</span>        <span class="n">Memory</span> <span class="nl">address</span><span class="p">:</span> <span class="mi">64</span> <span class="n">bit</span> <span class="kt">unsigned</span> <span class="n">integer</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="kt">uint64_t</span> <span class="n">Elf64_Off</span><span class="p">;</span>         <span class="nl">Offset</span><span class="p">:</span> <span class="mi">64</span> <span class="n">bit</span> <span class="kt">unsigned</span> <span class="n">integer</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="elf-header">ELF Header
+</h2><p>整个ELF Header的大小为64字节。</p>
+<p>ELF文件头（也有称作主头）的英文名字叫做<strong>Elf Header</strong>对应elf.h中的结构体是 <code>Elf64_Ehdr</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">elf64_hdr</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 16字节长度
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kt">unsigned</span> <span class="kt">char</span>	<span class="n">e_ident</span><span class="p">[</span><span class="n">EI_NIDENT</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Half</span> <span class="n">e_type</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Half</span> <span class="n">e_machine</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Word</span> <span class="n">e_version</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Addr</span> <span class="n">e_entry</span><span class="p">;</span>		<span class="cm">/* Entry point virtual address */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Off</span> <span class="n">e_phoff</span><span class="p">;</span>		<span class="cm">/* Program header table file offset */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Off</span> <span class="n">e_shoff</span><span class="p">;</span>		<span class="cm">/* Section header table file offset */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Word</span> <span class="n">e_flags</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Half</span> <span class="n">e_ehsize</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Half</span> <span class="n">e_phentsize</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Half</span> <span class="n">e_phnum</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Half</span> <span class="n">e_shentsize</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Half</span> <span class="n">e_shnum</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Half</span> <span class="n">e_shstrndx</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">Elf64_Ehdr</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="e_ident">e_ident
+</h3><p>ident是identity的缩写，意味ELF文件的身份信息。</p>
+<p>通过宏 <code>EI_NIDENT</code>写死了是16个元素的字节数组。通过 <code>elfcat</code> 结合 <code>man elf</code> 可以了解到这16个字节包含的信息：</p>
+<ul>
+<li>4字节：<code>\x7f E L F</code></li>
+<li>1字节：32位/64位</li>
+<li>1字节：小端/大端，Linux+GCC生成的ELF文件默认为小端</li>
+<li>1字节：EI_VERSION EFL规范的版本信息，必须为1，其他值无效</li>
+<li>1字节：EI_OSABI 操作系统ABI信息</li>
+<li>1字节：EI_ABIVERSION</li>
+<li>当前规范中后面7个字节为padding（全0），后面的规范可以会变化</li>
+</ul>
+<h3 id="e_type">e_type
+</h3><p>2个字节表示对象文件类型：</p>
+<ul>
+<li>未知</li>
+<li>可重定位文件</li>
+<li>执行文件</li>
+<li>共享对象文件</li>
+<li>core file</li>
+</ul>
+<h3 id="e_machine">e_machine
+</h3><p>2个字节指明目标架构：</p>
+<ul>
+<li>00 3e AMD x86-64</li>
+</ul>
+<h3 id="e_entry">e_entry
+</h3><p>8个字节（刚好是64位指针大小）表示程序入口点的虚拟地址（vaddr）。如果为0表示该文件没有关联入口点。</p>
+<h3 id="e_phoff">e_phoff
+</h3><p>8个字节表示**Program headers (Program Header Table)**在本文件中的字节偏移量。如果没有程序头表，该值为0</p>
+<h3 id="e_shoff">e_shoff
+</h3><p>8个字节表示**Section Headers (Section Header Table)**在本文件中的字节偏移量。如果没有节头表，该值为0</p>
+<h3 id="e_ehsize">e_ehsize
+</h3><p>2个字节表示<strong>ELF Header</strong>的大小</p>
+<h3 id="e_phentsize">e_phentsize
+</h3><p>2个字节表示<strong>Program Header Table</strong>中一个entry的字节大小，注意Program Header Table中每个entry的大小都是相同的。</p>
+<h3 id="e_phnum">e_phnum
+</h3><p>2个字节表示Program Header Table中entry的数量，注意  <code>e_phentsize * e_phnum</code>  等于整个Program Header Table的字节大小。</p>
+<h3 id="e_shentsize">e_shentsize
+</h3><p>2个字节表示Section Header Table中一个entry的字节大小，Section Header Table中一个entry就是一个Section Header，所有的entry的大小都是一样的。</p>
+<h3 id="e_shnum">e_shnum
+</h3><p>2个字节表示Section Header Table中entry的数量，注意 <code>e_shentsize * e_shnum</code> 等于整个Section Header Table的字节大小。</p>
+<h3 id="e_shstrndx">e_shstrndx
+</h3><p>2个字节表示 <code>.shstrtab</code> Section Header在整个Section Header Table中的索引。<code>.shstrtab</code> 是 Section Header Table中的一个entry，也就是一个Section Header，该 Section Header 是一个字符串表（String Table）里面保存了所有Section Header的名字。</p>
+<p><strong>举个具体的例子</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 通过elfcat查到simple文件中 e_shstrndx 的值为 22 00（十进制值为34）</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看 .shstrtab 在 Section Header Table中的位置</span>
+</span></span><span class="line"><span class="cl">readelf simple -S -W
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;output
+</span></span></span><span class="line"><span class="cl"><span class="s">There are 35 section headers, starting at offset 0x3920:
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">Section Headers:
+</span></span></span><span class="line"><span class="cl"><span class="s">  [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al
+</span></span></span><span class="line"><span class="cl"><span class="s">  [ 0]                   NULL            0000000000000000 000000 000000 00      0   0  0
+</span></span></span><span class="line"><span class="cl"><span class="s">  [ 1] .interp           PROGBITS        0000000000000318 000318 00001c 00   A  0   0  1
+</span></span></span><span class="line"><span class="cl"><span class="s">  ...
+</span></span></span><span class="line"><span class="cl"><span class="s">  ...
+</span></span></span><span class="line"><span class="cl"><span class="s">  [32] .symtab           SYMTAB          0000000000000000 003290 000360 18     33  18  8
+</span></span></span><span class="line"><span class="cl"><span class="s">  [33] .strtab           STRTAB          0000000000000000 0035f0 0001cf 00      0   0  1
+</span></span></span><span class="line"><span class="cl"><span class="s">  [34] .shstrtab         STRTAB          0000000000000000 0037bf 00015c 00      0   0  1
+</span></span></span><span class="line"><span class="cl"><span class="s">output</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 输出信息中方括号的数字就是Section Header Table的索引值，刚好 34 等于 0x22</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 另外可以通过 -p / --string-dump 参数dump字符串表的内容</span>
+</span></span><span class="line"><span class="cl">readelf -p .shstrtab simple
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;output
+</span></span></span><span class="line"><span class="cl"><span class="s">String dump of section &#39;.shstrtab&#39;:
+</span></span></span><span class="line"><span class="cl"><span class="s">  [     1]  .symtab
+</span></span></span><span class="line"><span class="cl"><span class="s">  [     9]  .strtab
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    11]  .shstrtab
+</span></span></span><span class="line"><span class="cl"><span class="s">  ...
+</span></span></span><span class="line"><span class="cl"><span class="s">  [   141]  .debug_str
+</span></span></span><span class="line"><span class="cl"><span class="s">  [   14c]  .debug_line_str
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">output</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="program-header-table">Program Header Table
+</h2><p>程序头表只在ELF可执行文件和动态共享对象中存在，因为程序头表描述的是所有Section合并成Segment的结果，只有能被加载执行的才具有该项目。</p>
+<p>程序头表紧跟着ELF Header从ELF文件的第65个字节开始，从C语言代码的角度来看，可以看作是一个结构体数组。这里结构体  <code>Elf64_Phdr</code> 表示的就是程序头表中的一个 Program Header（在一些场景中Program Header也被叫做Segment；同样Section Header在一些场景中也被叫做Section）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">/// linux/include/elf.h
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Word</span>	<span class="n">p_type</span><span class="p">;</span>			<span class="cm">/* Segment type */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Word</span>	<span class="n">p_flags</span><span class="p">;</span>		<span class="cm">/* Segment flags */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Off</span>	    <span class="n">p_offset</span><span class="p">;</span>		<span class="cm">/* Segment file offset */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Addr</span>	<span class="n">p_vaddr</span><span class="p">;</span>		<span class="cm">/* Segment virtual address */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Addr</span>	<span class="n">p_paddr</span><span class="p">;</span>		<span class="cm">/* Segment physical address */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Xword</span>	<span class="n">p_filesz</span><span class="p">;</span>		<span class="cm">/* Segment size in file */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Xword</span>	<span class="n">p_memsz</span><span class="p">;</span>		<span class="cm">/* Segment size in memory */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Xword</span>	<span class="n">p_align</span><span class="p">;</span>		<span class="cm">/* Segment alignment */</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">Elf64_Phdr</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们可以通过 <code>readelf -l</code> 查看程序头表的内容：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 查看simple文件的程序头表内容</span>
+</span></span><span class="line"><span class="cl">readelf -l -W simple
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;output
+</span></span></span><span class="line"><span class="cl"><span class="s">Elf file type is DYN (Position-Independent Executable file)
+</span></span></span><span class="line"><span class="cl"><span class="s">Entry point 0x1040
+</span></span></span><span class="line"><span class="cl"><span class="s">There are 13 program headers, starting at offset 64
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">Program Headers:
+</span></span></span><span class="line"><span class="cl"><span class="s">...
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s"> Section to Segment mapping:
+</span></span></span><span class="line"><span class="cl"><span class="s">  Segment Sections...
+</span></span></span><span class="line"><span class="cl"><span class="s">   ...
+</span></span></span><span class="line"><span class="cl"><span class="s">output</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="p_type">p_type
+</h3><p>4个字节表示程序头表中的元素（Segment / Program Header）的类型。该类型用于指导怎么解析程序头数组元素的信息：</p>
+<ul>
+<li>PT_NULL  表示数组元素是未使用的，且元素的成员也是未定义的，该标志用于表明忽略该元素。</li>
+<li>PT_LOAD  该数组元素表示一个可加载的Segment</li>
+<li>PT_DYNAMIC  该数组元素表示动态链接信息</li>
+<li>PT_INTERP  该数组元素指定了一个以<strong>空字符结尾的路径名</strong>的位置和大小，该路径名用于指定要调用的解释器。此段类型仅对可执行文件有效（尽管它可能出现在共享对象中），但一个文件中最多只能出现一次。如果存在，它必须位于任何可加载Segment条目之前。</li>
+<li>PT_NOTE</li>
+<li>PT_SHLIB  该类型是保留的，目前未明确定义其语义。若程序包含此类数组元素，则不符合ABI规范。</li>
+<li>PT_PHDR  若存在该数组元素，则其用于指明程序头表（program header table）在文件及程序内存映像中的位置和大小。此段类型在文件中最多只能出现一次，<strong>且仅当</strong>程序头表属于程序内存映像的一部分时才允许存在。若存在，则其必须位于所有可加载段条目之前。</li>
+<li>PT_LOPROC, PT_HIPROC  位于 <code>[PT_LOPROC, PT_HIPROC]</code> 之间的值是为特定处理器语义而保留的。</li>
+<li>PT_GNU_STACK  GNU扩展功能，该功能被Linux内核用于通过p_flags成员中设置的标志位来控制堆栈状态。</li>
+</ul>
+<h3 id="p_offset">p_offset
+</h3><p>该成员存储了Segment首字节在ELF文件中的起始偏移量（单位字节）。</p>
+<h3 id="p_vaddr">p_vaddr
+</h3><p>该成员记录了该Segment首字节在内存中的虚拟地址。</p>
+<h3 id="p_paddr">p_paddr
+</h3><p>该字段在采用物理寻址的系统上是有意义的，此成员被保留用于存储段的物理地址。在BSD系统下，该成员未被使用且必须置零。</p>
+<h3 id="p_filesz">p_filesz
+</h3><p>表示该Segment在ELF<strong>文件映像</strong>（磁盘上的二进制表示）中的字节数大小，可能为0</p>
+<h3 id="p_memsz">p_memsz
+</h3><p>表示该Segment在<strong>内存映像</strong>（内存中的二进制表示）中的字节数大小，可能为0</p>
+<h3 id="p_flags">p_flags
+</h3><p>该成员存储了与该Segment相关的标志位掩码：</p>
+<ul>
+<li>PF_X  一个可执行的Segment</li>
+<li>PF_W  一个可写的Segment</li>
+<li>PF_R  一个可读的Segment
+举例：一个 text segment通常拥有 PF_X和PF_R。一个 data segment通常拥有 PF_W和PF_R。</li>
+</ul>
+<h3 id="p_align">p_align
+</h3><p>该成员定义了Segment在内存及文件中的对齐值。可加载进程段必须满足 p_vaddr 与 p_offset 在页面大小模数下的对齐一致性。若该值为零或一，则表示无需对齐；否则，p_align 应为 2 的正整数次幂，且 p_vaddr 需等于 p_offset，而且 p_vaddr/p_offset 对 p_align 取模的余数均为0。</p>
+<h2 id="section-header-table">Section Header Table
+</h2><p>ELF Header的大小是固定的64字节，Program Header Table的大小通过 <code>e_phentsize * e_phnum</code> 也可以计算出来。<strong>注意Section Header Table不是紧跟着 Program Header Table的，它们中间存在Sections，Section Header Table放在ELF文件的最后面</strong>。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 验证Section Header Table确实放在ELF文件的最后面</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 列出 Section Header Table 信息</span>
+</span></span><span class="line"><span class="cl">readelf -S -W simple
+</span></span><span class="line"><span class="cl"><span class="c1"># 注意这里 0x3920是通过ELF Header 的 e_shoff 得到的</span>
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;output
+</span></span></span><span class="line"><span class="cl"><span class="s">There are 35 section headers, starting at offset 0x3920:
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">Section Headers:
+</span></span></span><span class="line"><span class="cl"><span class="s">...
+</span></span></span><span class="line"><span class="cl"><span class="s">output</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 通过 e_shentsize * e_shnum 计算 Section Header Table的大小是 35 * 64</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 所以得出文件的大小 = 0x3920 + 35 * 64 = 16864</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 通过 ls -l 验证算出的文件大小是正确的</span>
+</span></span><span class="line"><span class="cl">ls -l simple
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;output
+</span></span></span><span class="line"><span class="cl"><span class="s">-rwxrwxr-x 1 raymond raymond 16864  7月 29 15:25 simple
+</span></span></span><span class="line"><span class="cl"><span class="s">output</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>文件的 Section Header Table 用于定位所有Sections的位置。和 Program Header Table 类似，该表也是一个结构体数组。结构体为 <code>Elf64_Shdr</code> ：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">/// linux/include/elf.h
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Word</span>	<span class="n">sh_name</span><span class="p">;</span>		<span class="cm">/* Section name (string tbl index) */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Word</span>	<span class="n">sh_type</span><span class="p">;</span>		<span class="cm">/* Section type */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Xword</span>	<span class="n">sh_flags</span><span class="p">;</span>		<span class="cm">/* Section flags */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Addr</span>	<span class="n">sh_addr</span><span class="p">;</span>		<span class="cm">/* Section virtual addr at execution */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Off</span>	    <span class="n">sh_offset</span><span class="p">;</span>		<span class="cm">/* Section file offset */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Xword</span>	<span class="n">sh_size</span><span class="p">;</span>		<span class="cm">/* Section size in bytes */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Word</span>	<span class="n">sh_link</span><span class="p">;</span>		<span class="cm">/* Link to another section */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Word</span>	<span class="n">sh_info</span><span class="p">;</span>		<span class="cm">/* Additional section information */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Xword</span>	<span class="n">sh_addralign</span><span class="p">;</span>	<span class="cm">/* Section alignment */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Xword</span>	<span class="n">sh_entsize</span><span class="p">;</span>		<span class="cm">/* Entry size if section holds table */</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">Elf64_Shdr</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Section Header Table的部分索引值是被保留的（ELF文件不会分配这些Section Header）：</p>
+<ul>
+<li>一是初始条目（索引位置为0），在ELF扩展的情况下用于存储 e_phnum、e_shnum和e_shstrndx的值；在其他情况下各字段均为零。</li>
+<li>二是 <code>[SHN_LORESERVE, SHN_HIRESERVE]</code> （索引位置为 <code>[0xff00, 0xffff]</code>）</li>
+</ul>
+<h3 id="sh_name">sh_name
+</h3><p>4个字节表示 <code>.shstrtab</code> Section （Section Header String Table Section）中的索引，该索引位置元素是 Section的名字（这个字符串是C风格的以<code>\0</code>结尾的字符串）。</p>
+<h3 id="sh_type">sh_type
+</h3><p>4个字节，用于表示该Section Header对应的Section的类型：</p>
+<ul>
+<li>SHT_NULL  这个值表示该节头（section header）是非活跃的，它没有关联的实际节区（section）。节头中的其他成员的值是未定义的。</li>
+<li>SHT_PROGBITS  该Section包含由程序自身定义的信息，其格式和含义完全由程序决定。</li>
+<li>SHT_SYMTAB  该Section包含一个符号表。通常情况下，SHT_SYMTAB 类型的符号表主要用于链接编辑（link editing），但也可能被动态链接（dynamic linking）使用。由于它是一个完整的符号表，可能会包含许多动态链接所不需要的符号。此外，目标文件（object file）还可能包含一个 SHT_DYNSYM 节区，专门用于动态链接。</li>
+<li>SHT_STRTAB  该Section包含一个字符串表(String Table)。一个ELF文件可能拥有多个字符串表Section</li>
+<li>SHT_RELA  该Section存储了带有显式加数（explicit addends）的重定位项，例如 32 位目标文件中的 Elf32_Rela 类型。一个目标文件可能包含多个重定位节区。</li>
+<li>SHT_HASH  该Section存储了一个符号hash表。任何参与动态链接（dynamic linking）的目标文件或共享库必须包含一个符号哈希表，以加速运行时符号查找（如通过 dlopen 或 dlsym）。若缺失此表，动态链接器（ld.so）将无法高效解析符号，导致性能下降或错误。每个目标文件只能包含一个哈希表（通常位于 .hash 或 .gnu.hash 节区）。</li>
+<li>SHT_DYNAMIC  该Section存储了动态链接信息。一个ELF文件只能有一个 dynamic section。（may have only one 此处 &ldquo;may&rdquo; 不是表示&quot;可能&quot;，而是表示规范中的允许性限制（类似&quot;shall&quot;但语气较弱），应译为&quot;只能&quot;或&quot;仅允许&quot;。技术文档中常见的 &ldquo;may only&rdquo; 结构均表示强制性限制（如 RFC 2119 标准定义）。</li>
+<li>SHT_NOTE  该Section包含 notes (ElfN_Nhdr)</li>
+<li>SHT_NOBITS  此类节区（section）在文件中不占用实际空间，但其他特征与 SHT_PROGBITS 类型节区类似。尽管该节区不包含实际数据字节，其 sh_offset 成员仍保留逻辑文件偏移量的概念值。</li>
+<li>SHT_REL  该Section存储的是无显式加数（explicit addends）的重定位偏移量，例如32位目标文件中的Elf32_Rel类型。一个目标文件中可能包含多个重定位节区。</li>
+<li>SHT_SHLIB  该类型保留（目前没有确定的语义）</li>
+<li>SHT_DYNSYM  该Section存储的是动态链接所需的最简符号集合。目标文件可能同时包含一个SHT_SYMTAB节区（完整符号表）。</li>
+<li>SHT_LOPROC, SHT_HIPROC</li>
+<li>SHT_LOUSER</li>
+<li>SHT_HIUSER</li>
+</ul>
+<h3 id="sh_flags">sh_flags
+</h3><p>8个字节，每个bit为一个标志位：</p>
+<ul>
+<li>SHF_WRITE  该Section包含内容在进程执行过程中是可写的</li>
+<li>SHF_ALLOC  该Section在进程执行期间会占用内存空间。某些控制节区不会驻留在目标文件的内存映像中，此类节区将禁用此属性。</li>
+<li>SHF_EXECINSTR  该Section包含可执行的机器指令</li>
+<li>SHF_MASKPROC  该掩码包含的所有bit是为处理器特定语义保留的。</li>
+</ul>
+<h3 id="sh_addr">sh_addr
+</h3><p>8个字节，若该Section存在于进程的内存映像中，则此成员（sh_addr）存储节区首字节应驻留的内存地址；否则，该成员值为零。</p>
+<h3 id="sh_offset">sh_offset
+</h3><p>8字节，该成员（sh_offset）的值表示从文件起始位置到该Section首个字节的字节偏移量。特别地，对于SHT_NOBITS类型的节区（如.bss），其虽然在文件中不占用实际存储空间，但sh_offset成员仍会标识该节区在文件中的逻辑位置。</p>
+<h3 id="sh_size">sh_size
+</h3><p>8字节，表示该Section的大小（单位字节）</p>
+<h3 id="sh_link">sh_link
+</h3><p>4个字节，Section的索引号，指向当前Section关联的其他Section，具体含义取决于当前Section类型（sh_type）</p>
+<p>sh_link和sh_info两个字段表示段的链接信息，如果段的类型是与链接相关的（不论是动态链接还是静态链接），比如重定位表、符号表这些段，那么 sh_link 和 sh_info 这两个成员所包含的意义如下表所示（对于其他类型的段，这两个成员没有意义）：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>sh_type</th>
+          <th>sh_link</th>
+          <th>sh_info</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>SHT_DYNAMIC</td>
+          <td>该段所使用的字符串表在section header table中的索引</td>
+          <td>0</td>
+      </tr>
+      <tr>
+          <td>SHT_HASH</td>
+          <td>该段所使用的符号表在section header table中的索引</td>
+          <td>0</td>
+      </tr>
+      <tr>
+          <td>SHT_REL</td>
+          <td>该段所使用的相应符号表在section header table中的索引</td>
+          <td>该重定位表所作用的Section在section header table中的下标</td>
+      </tr>
+      <tr>
+          <td>SHT_RELA</td>
+          <td>该段所使用的相应符号表在section header table中的索引</td>
+          <td>该重定位表所作用的Section在section header table中的下标</td>
+      </tr>
+      <tr>
+          <td>SHT_SYMTAB</td>
+          <td>操作系统相关的</td>
+          <td>操作系统相关的</td>
+      </tr>
+      <tr>
+          <td>SHT_DYNSYM</td>
+          <td>操作系统相关的</td>
+          <td>操作系统相关的</td>
+      </tr>
+      <tr>
+          <td>other</td>
+          <td>SHN_UNDEF</td>
+          <td>0</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="sh_info">sh_info
+</h3><p>4个字节，表示额外信息，具体语义由 sh_type 决定</p>
+<h3 id="sh_addralign">sh_addralign
+</h3><p>8个字节。某些节区具有地址对齐约束。例如，若某节区存储的是双字（doubleword）数据，则系统必须确保整个节区按双字对齐。具体表现为：该节区的 sh_addr 地址值必须满足 sh_addr ≡ 0 (mod sh_addralign) 的同余条件。对齐值仅允许为 0、1 或 2 的正整数幂次方——当取值为 0 或 1 时，表示该节区无对齐要求。</p>
+<h3 id="sh_entsize">sh_entsize
+</h3><p>部分节区存储的是由固定长度条目构成的表结构（如符号表）。对于此类节区，本字段（sh_entsize）表示每个条目所占的字节大小；若节区内容非固定长度条目表，则本字段值为零。</p>
+<h2 id="sections">Sections
+</h2><p>关于Section的名字，下面列出的Section的名字都是以  <code>.</code>  开头的，表示这些Section名字都是系统保留的，应用程序也可以使用一些非系统保留的名字作为Section名字。自定义的Section名字不能使用 <code>.</code> 开头，以免和系统保留名字冲突。ELF文件中也可以拥有几个相同段名的Section。</p>
+<h3 id="bss">.bss
+</h3><p>存储的是未初始化的全局变量和局部静态变量，这些数据会占用程序的内存映像空间。根据定义，系统会在程序启动运行时将其内容初始化为零值。此节区类型为 SHT_NOBITS（不占用文件空间），其属性标志包含 SHF_ALLOC（需分配内存）和 SHF_WRITE（可写）。</p>
+<p>注意.bss段在文件中不占用实际存储空间（仅定义未初始化的全局/静态变量）。也就是说在ELF文件中.bss段只有元数据（如sh_size定义大小），无实际内容，而且其对应节区头（Section Header）描述中的sh_offset字段通常为0或无效值。</p>
+<p><strong>readelf验证</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 通过readefl -x dump某个Section的16进制数据</span>
+</span></span><span class="line"><span class="cl">readelf -x .bss simple
+</span></span><span class="line"><span class="cl"><span class="c1">#输出提示：Section &#39;.bss&#39; has no data to dump.</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>gdb验证</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">readelf -S -W simple
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;out
+</span></span></span><span class="line"><span class="cl"><span class="s">Section Headers:
+</span></span></span><span class="line"><span class="cl"><span class="s">  [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al
+</span></span></span><span class="line"><span class="cl"><span class="s">  [24] .bss              NOBITS          0000000000004010 003010 000008 00  WA  0   0  1
+</span></span></span><span class="line"><span class="cl"><span class="s">out</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 从虚拟地址 0x4010 开始 8 个字节的内容，一般都是全0值</span>
+</span></span><span class="line"><span class="cl">gdb simple
+</span></span><span class="line"><span class="cl"><span class="o">(</span>gdb<span class="o">)</span> x/8xb 0x4010
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;out
+</span></span></span><span class="line"><span class="cl"><span class="s">0x4010 &lt;completed.0&gt;:	0x00	0x00	0x00	0x00	0x00	0x00	0x00	0x00
+</span></span></span><span class="line"><span class="cl"><span class="s">out</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="comment">.comment
+</h3><p>存储版本控制信息，直接通过readelf可观察：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">readelf -x .comment simple
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;output
+</span></span></span><span class="line"><span class="cl"><span class="s">Hex dump of section &#39;.comment&#39;:
+</span></span></span><span class="line"><span class="cl"><span class="s">  0x00000000 4743433a 20285562 756e7475 2031312e  GCC: (Ubuntu 11.
+</span></span></span><span class="line"><span class="cl"><span class="s">  0x00000010 342e302d 31756275 6e747531 7e32322e  4.0-1ubuntu1~22.
+</span></span></span><span class="line"><span class="cl"><span class="s">  0x00000020 30342920 31312e34 2e3000             04) 11.4.0.
+</span></span></span><span class="line"><span class="cl"><span class="s">output</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="ctors-和-dtors">.ctors 和 .dtors
+</h3><p>.ctors Section存储的是已初始化的C++构造函数指针，其类型为SHT_PROGBITS（包含程序定义的已初始化数据），并具有SHF_ALLOC（需加载到内存）和SHF_WRITE（可写）属性标志。</p>
+<p>.dtors Section存储的是已初始化的C++析构函数指针，其类型为SHT_PROGBITS（包含程序定义的已初始化数据），并具有SHF_ALLOC（需加载到内存）和SHF_WRITE（可写）属性标志。</p>
+<h3 id="data">.data
+</h3><p>该Section存储的是已初始化的程序数据，这些数据将构成进程的内存映像。其类型为SHT_PROGBITS（包含实际初始数据内容），并具有SHF_ALLOC（需分配内存）和SHF_WRITE（可写）属性标志。.data Section保存了初始化了的全局变量和局部静态变量。</p>
+<p><strong>readelf验证</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 当没有初始化的全局变量/局部静态变量时，该Section为空</span>
+</span></span><span class="line"><span class="cl">readelf -x .data simple
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;out
+</span></span></span><span class="line"><span class="cl"><span class="s">Hex dump of section &#39;.data&#39;:
+</span></span></span><span class="line"><span class="cl"><span class="s">  0x00004000 00000000 00000000 08400000 00000000 .........@......
+</span></span></span><span class="line"><span class="cl"><span class="s">out</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="rodata">.rodata
+</h3><p>存放只读数据，一般是程序里面的const修饰的变量和字符串变量。有些编译器会把字符串变量放到 <code>.data</code> Section。</p>
+<h3 id="reltext-32位">.rel.text (32位)
+</h3><p>ELF文件中 .rel.text 和 .rela.text 都是与代码段 .text 相关的重定位Section。</p>
+<ul>
+<li>.rel.text
+<ul>
+<li>类型 Elf32_Rel/Elf64_Rel</li>
+<li>加数Addend隐式存储在需要重定位的目标位置</li>
+<li>一般使用在较旧的工具链或者简单架构里</li>
+</ul>
+</li>
+<li>.rela.text
+<ul>
+<li>类型 Elf32_Rela/Elf64_Rela</li>
+<li>加数Addend显式给出，条目中直接包含 r_addend 字段</li>
+<li>一般使用在现代主流架构里（如x86-64）</li>
+</ul>
+</li>
+</ul>
+<p>一句话总结：Rel 用在32位系统里，Rela则用在64位系统里。</p>
+<h3 id="重定位表-relatext-和-reladata">重定位表 .rela.text 和 rela.data
+</h3><p>ELF目标文件（只编译不链接生成的 .o 文件）中会有一个或多个重定位表（Relocation Table）的Section专门用来保存和重定位相关的信息。如果 .text 段中有要被重定位的地方，会有对应的 .rel.text 重定位表；同理，如果 .data 有要被重定位的地方，也会有相应的 .rel.data 重定位表。</p>
+<p><strong>objdump -r 查看 .rela.text</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="s">&lt;&lt;example_code
+</span></span></span><span class="line"><span class="cl"><span class="s">// main.c
+</span></span></span><span class="line"><span class="cl"><span class="s">int add(int a, int b);  // 引用外部定义的函数
+</span></span></span><span class="line"><span class="cl"><span class="s">extern int g_shared;  // 引用外部定义的全局变量
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">void main() {
+</span></span></span><span class="line"><span class="cl"><span class="s">	g_shared += 0xfafb;
+</span></span></span><span class="line"><span class="cl"><span class="s">	int c = add(1, 2);
+</span></span></span><span class="line"><span class="cl"><span class="s">	return;
+</span></span></span><span class="line"><span class="cl"><span class="s">}
+</span></span></span><span class="line"><span class="cl"><span class="s">example_code</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">gcc -c main.c  <span class="c1"># 生成 main.o</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">objdump -r main.o
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;out
+</span></span></span><span class="line"><span class="cl"><span class="s">RELOCATION RECORDS FOR [.text]:
+</span></span></span><span class="line"><span class="cl"><span class="s">OFFSET           TYPE              VALUE
+</span></span></span><span class="line"><span class="cl"><span class="s">000000000000000e R_X86_64_PC32     g_shared-0x0000000000000004
+</span></span></span><span class="line"><span class="cl"><span class="s">0000000000000019 R_X86_64_PC32     g_shared-0x0000000000000004
+</span></span></span><span class="line"><span class="cl"><span class="s">0000000000000028 R_X86_64_PLT32    add-0x0000000000000004
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">RELOCATION RECORDS FOR [.eh_frame]:
+</span></span></span><span class="line"><span class="cl"><span class="s">OFFSET           TYPE              VALUE
+</span></span></span><span class="line"><span class="cl"><span class="s">0000000000000020 R_X86_64_PC32     .text
+</span></span></span><span class="line"><span class="cl"><span class="s">out</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>objdump -r 用来查看 main.o 中所有要重定位的地方，即 main.o 所有引用到外部符号的地址。每个要被重定位的地方叫一个重定位条目（Relocation Entry）, 每个条目对应一个结构体 <code>Elf64_Rela</code> ，该结构体字段：</p>
+<ul>
+<li>r_offset：表示该重定位需要修正的内容的第一个字节相对于该符号表关联的Section（比如 .text）段起始位置的偏移量（单位字节）</li>
+<li>r_info：该成员（r_info）同时包含需执行重定位所依据的符号表索引和待应用的重定位类型。重定位类型的具体定义与处理器架构相关。当文档提及重定位条目的&quot;重定位类型&quot;或&quot;符号表索引&quot;时，即表示分别对条目的r_info成员应用<code>ELF[32|64]_R_TYPE</code>或<code>ELF[32|64]_R_SYM</code>宏所提取的结果。部分字节表示类型，部分字节表示符号表索引，elf.h 有对应宏提取各部分的信息。</li>
+<li>r_addend：对于结构体<code>Elf64_Rel</code>缺少的这个字段，其实是隐式写在 r_offset 指向的位置。这个值加到哪里？猜测是指令修正中用到的一个常数。</li>
+</ul>
+<p>对于所有在 <code>readelf -s main.o</code> 中 Bind列显示为 GLOBAL 且 Ndx 列显示UND (undefined) 的符号，在重定位表中都应该至少有一项（每个重定位符号在读取和写入时都应该有一个 Relocation Entry）。</p>
+<p><strong>重定位的本质是指令修正</strong></p>
+<p>重定位本质是指令修正，牢记这一点对于理解重定位概念和实现逻辑至关重要。ELF定义了32种不同的重定位类型，这里主要讲解其中两种最基本的：</p>
+<ul>
+<li>R_X86_64_PC32。重定位一个使用 32 位 PC 相对地址的引用。回顾《程序员的自我修养》3.6.3 节，一个 PC 相对地址就是距程序计数器（PC）的当前运行时值的偏移量。当 CPU 执行一条使用 PC 相对寻址的指令时，它就将在指令中编码的 32 位值加上 PC 的当前运行时值，得到有效地址（如 call 指令的目标），PC 值通常是下一条指令在内存中的地址。</li>
+<li>R_X86_64_32。重定位一个使用 32 位绝对地址的引用。通过绝对寻址，CPU 直接使用在指令中编码的 32 位值作为有效地址，不需要进一步修改。
+这两种重定位类型支持 x86-64 小型代码模型（small code model），该模型假设可执行目标文件中的代码和数据的总体大小小于 2GB，因此在运行时可以用 32 位 PC 相对地址来访问。GCC 默认使用小型代码模型。大于 2GB 的程序可以用 -mcmodel=medium（中型代码模型）和 -mcmodel=large（大型代码模型）标志来编译，不过在此我们不讨论这些模型。</li>
+</ul>
+<h3 id="字符串表-strtab-和-shstrtab">字符串表 .strtab 和 .shstrtab
+</h3><p>字符串表将所有字符串（段名，变量名，函数名）接连排列成线性存储，因为采用的是C风格字符串（yi <code>\0</code> 结束），所以只需要给定字符串起始位置的索引，就可以访问这个字符串的内容了。</p>
+<p>.rela.text 是针对 .text 段的重定位表，当 .text 中至少有一个绝对地址的引用（比如调用当前源文件之外定义的函数例如 printf 库函数）。所谓的重定位表其实就是ELF文件中的一个Section，而每个Section都有一个Section Header。重定位表的Section Header中 sh_link 表示符号表的下标，sh_info 表示它作用于哪个Section。</p>
+<p>可以通过 <code>readelf -p</code> 查看字符串表的内容：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 样例程序SimpleSection.c 来自 《程序员的自我修养》第三章节</span>
+</span></span><span class="line"><span class="cl">readelf -p .strtab SimpleSection.o
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;out
+</span></span></span><span class="line"><span class="cl"><span class="s">String dump of section &#39;.strtab&#39;:
+</span></span></span><span class="line"><span class="cl"><span class="s">  [     1]  SimpleSection.c
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    11]  static_var.1
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    1e]  static_var2.0
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    2c]  global_init_var
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    3c]  global_uninit_var
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    4e]  func1
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    54]  printf
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    5b]  main
+</span></span></span><span class="line"><span class="cl"><span class="s">out</span>
+</span></span><span class="line"><span class="cl">readelf -p .shstrtab SimpleSection.o
+</span></span><span class="line"><span class="cl"><span class="s">&lt;&lt;out
+</span></span></span><span class="line"><span class="cl"><span class="s">String dump of section &#39;.shstrtab&#39;:
+</span></span></span><span class="line"><span class="cl"><span class="s">  [     1]  .symtab
+</span></span></span><span class="line"><span class="cl"><span class="s">  [     9]  .strtab
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    11]  .shstrtab
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    1b]  .rela.text
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    26]  .data
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    2c]  .bss
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    31]  .rodata
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    39]  .comment
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    42]  .note.GNU-stack
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    52]  .note.gnu.property
+</span></span></span><span class="line"><span class="cl"><span class="s">  [    65]  .rela.eh_frame
+</span></span></span><span class="line"><span class="cl"><span class="s">out</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="符号表-symtab">符号表 .symtab
+</h3><p>每一个目标文件都会有一个相应的符号表，这个表里面记录了目标文件中所用到的所有符号。每个定义的符号有一个对应的值，叫做符号值，对于变量和函数来说，符号值就是他们的地址。除了函数和变量之外，还存在其他几种不常用到的符号。我们将符号表中的所有符号进行分类，它们可能是下面这些类型中的一种：</p>
+<ul>
+<li>全局符号：定义在一个目标文件中的全局函数和全局变量，它们可以被其他目标文件引用。</li>
+<li>外部符号：在本目标文件中引用的全局符号，却没有定义在本目标文件中。</li>
+<li>段名：这种符号一般由编译器生成，它的值就是该段的起始地址。</li>
+<li>局部符号：这类符号只在编译单元内部可见。比如static修饰的变量。调试器可以使用这些符号来分析程序或崩溃时的coredump文件。这些局部符号对于链接过程没有作用，连接器往往也忽略它们。</li>
+<li>行号信息：即目标文件指令与源代码中代码行的对应关系，它也是可选的。</li>
+</ul>
+<p>以上符号类型中，最值得关注的就是全局符号，即上面分类的第一类和第二类。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// ELF 符号表结构
+</span></span></span><span class="line"><span class="cl"><span class="c1">/// linux/include/elf.h
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Word</span>	<span class="n">st_name</span><span class="p">;</span>		<span class="cm">/* Symbol name (string tbl index) */</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">unsigned</span> <span class="kt">char</span>	<span class="n">st_info</span><span class="p">;</span>		<span class="cm">/* Symbol type and binding */</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">st_other</span><span class="p">;</span>		<span class="cm">/* Symbol visibility */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Section</span>	<span class="n">st_shndx</span><span class="p">;</span>		<span class="cm">/* Section index */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Addr</span>	<span class="n">st_value</span><span class="p">;</span>		<span class="cm">/* Symbol value */</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Elf64_Xword</span>	<span class="n">st_size</span><span class="p">;</span>		<span class="cm">/* Symbol size */</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">Elf64_Sym</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>st_name  表示该符号名在字符串表 <code>.strtab</code> 中的索引</li>
+<li>st_value  符号相对应的值。这个值跟符号有关，可能是一个绝对值，也可能是一个地址等，不同的符号，它所对应的值含义不同。
+<ul>
+<li>目标文件中：
+<ul>
+<li>如果符号不是COMMON块类型（<code>st_shndx != SHN_COMMON</code> ），st_value 表示该符号在段中的偏移。即符号位于由 st_shndx 指定的段，偏移为 st_value 的位置。</li>
+<li>如果符号是COMMON块类型，st_value 表示该符号的对齐属性。</li>
+</ul>
+</li>
+<li>可执行文件中：
+<ul>
+<li>st_value 表示符号的虚拟地址。这个虚拟地址对动态链接器非常有用。关键词 &ldquo;动态链接器&rdquo;</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>st_size  符号大小，对于包含数据的符号，这个值是该数据类型的大小。比如一个double型的符号它占用8个字节。如果值为0，表示符号大小为0或未知。</li>
+<li>st_info  一个字节表示符号类型和绑定信息，低4位表示符号类型，高4位标识绑定信息。
+<ul>
+<li>STT_NONE  未知类型符号</li>
+<li>STT_OBJECT  类型为数据对象，比如变量、数组</li>
+<li>STT_FUNC  类型为函数或其他可执行代码</li>
+<li>STT_SECTION  类型为一个段，对应的绑定信息必须为STB_LOCAL</li>
+<li>STT_FILE  类型为一个文件名，一般为目标文件对应的源文件名，对应的绑定信息也一定是STB_LOCAL的，而且它的st_shndx一定是 SHN_ABS (0xfff1) 标识该符号是一个绝对符号。</li>
+</ul>
+</li>
+<li>st_other  该成员目前为0，没用</li>
+<li>st_shndx 符号表中定义的每一项都是和一个Section相关的，该字段表明与之相关的 Section 的信息。
+<ul>
+<li>如果符号定义在本目标文件中，那么这个成员标识符号所在的Section对应的Section Header在Section Header Table中的索引。</li>
+<li>如果符号不是定义在本目标文件中，或者某些特殊符号，sh_shndx会有特殊值：
+<ul>
+<li>SHN_ABS = 0xfff1  表示该符号包含了一个绝对的值，比如表示文件名的符号就属于这种类型</li>
+<li>SHN_COMMON = 0xfff2  表示该符号是一个COMMON块类型的符号，一般来说，未初始化的全局符号定义就是这种类型的，详细参考 &ldquo;静态链接 COMMON块&rdquo;</li>
+<li>SHN_UNDEF = 0  表示该符号未定义，这个符号在本目标文件被引用到，但是定义在其他目标文件中。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>通过 <code>readelf -s</code> 查看符号表，输出的含义：</p>
+<ul>
+<li>Num：表示该条目在符号表数组中的下标</li>
+<li>Value：表示符号值，就是 st_value</li>
+<li>Size：表示符号大小，对应st_size</li>
+<li>Type：对应st_info的符号类型信息</li>
+<li>Bind：对应 st_info 的符号绑定信息</li>
+<li>Vis：目前在C/C++中未使用，可以忽略它</li>
+<li>Ndx：对应 st_shndx</li>
+<li>Name：符号名称，对应 st_name，已从字符串表中解析出来。
+从输出中可以看到，第一个符号，即下标为0的符号，永远是一个未定义的符号。</li>
+</ul>
+<h3 id="全局偏移表-got">全局偏移表 .got
+</h3><p>To Be Continued&hellip;</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/elf%E6%A0%BC%E5%BC%8F/">ELF格式</a>
+        
+            <a href="/tags/elf/">ELF</a>
+        
+            <a href="/tags/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/linux-proc-file-system/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux-proc-file-system/cover.9de61f04c0763783daf0ad63a6b5a330_hu_bc48bf34997a1e6d.png" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Linux中几个特殊文件系统"
+                        data-key="linux-proc-file-system" 
+                        data-hash="md5-neYfBMB2N4Pa8K1jprWjMA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Linux中几个特殊文件系统</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.9332f09241b6ef5c1fc0c5d058c2585c_hu_89398df38c139eb8.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Linux v1.0 代码初探"
+                        
+                        data-hash="md5-kzLwkkG271wfwMXQWMJYXA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Linux v1.0 代码初探</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover.8c0b22750436acf837a0e27ebab14500_hu_ffb8773c4963df28.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 程序ELF格式布局初探"
+                        
+                        data-hash="md5-jAsidQQ2rPg3oOJ&#43;urFFAA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">程序ELF格式布局初探</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/linux-epoll-api/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux-epoll-api/cover.ec8e4fac264ca8a7bb92b3774bf3a8a5_hu_f6397f5714a1583.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Linux epoll API"
+                        
+                        data-hash="md5-7I5PrCZMqKe7krN3S/OopQ==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Linux epoll API</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Weijie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

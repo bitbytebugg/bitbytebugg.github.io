@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="编译环境配置 freetype依赖 官网 https://freetype.org/ 推荐到sourceforge的镜像里去下载2.7的版本，版本太高可能不兼容。 openjdk8依赖的东西包括源码目录下的include文件夹，和编译的二进制产物 freetype.dll 和 freetype.lib，静态库和动态库都需要，所以要build两次。 用VS2022打开freetype.sln，如果本机上没有freetype需要的VS版本和SDK版本，就选择Upgrade选项 修改项目的属性： 要求输出目标名字必须是freetype，不能带版本号。dll和lib要分别配置编译一次。 这里要将Runtime Library的/MD改成/MT。configure脚本里会构建一个简单的小程序编译测试freetype依赖是否ok，如果这里不选择/MT选项，那configure脚本就会错误提示需要64位的freetype库，其实这和64位没有关系，是测试编译的链接阶段出现了错误，在/MD选项下，freetype.dll和freetype.lib里对VS依赖的一些符号定义没有链接进自身，测试编译时就会出现freetype.xxx里有未定义符号的错误。 将编译得到的freetype.dll和freetype.lib放到freetype源码根目录下的lib目录下，然后configure时&ndash;with-freetype选项指向freetype的源码根目录就可以了。 编译openjdk8 如果在VS2010里编译，则选择b132_mar_2014分支代码。 如果在VS2019里编译，则选择8u402-b06 (GA), January 16th 2024这个分支的代码。 因为之前已经安装了VS2022，卸载重装VS2019太麻烦，就使用VS2022来编译了。首先在源码目录下执行配置脚本：\n">
+<title>OpenJDK代码初探</title>
+
+<link rel='canonical' href='https://example.com/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="OpenJDK代码初探">
+<meta property='og:description' content="编译环境配置 freetype依赖 官网 https://freetype.org/ 推荐到sourceforge的镜像里去下载2.7的版本，版本太高可能不兼容。 openjdk8依赖的东西包括源码目录下的include文件夹，和编译的二进制产物 freetype.dll 和 freetype.lib，静态库和动态库都需要，所以要build两次。 用VS2022打开freetype.sln，如果本机上没有freetype需要的VS版本和SDK版本，就选择Upgrade选项 修改项目的属性： 要求输出目标名字必须是freetype，不能带版本号。dll和lib要分别配置编译一次。 这里要将Runtime Library的/MD改成/MT。configure脚本里会构建一个简单的小程序编译测试freetype依赖是否ok，如果这里不选择/MT选项，那configure脚本就会错误提示需要64位的freetype库，其实这和64位没有关系，是测试编译的链接阶段出现了错误，在/MD选项下，freetype.dll和freetype.lib里对VS依赖的一些符号定义没有链接进自身，测试编译时就会出现freetype.xxx里有未定义符号的错误。 将编译得到的freetype.dll和freetype.lib放到freetype源码根目录下的lib目录下，然后configure时&ndash;with-freetype选项指向freetype的源码根目录就可以了。 编译openjdk8 如果在VS2010里编译，则选择b132_mar_2014分支代码。 如果在VS2019里编译，则选择8u402-b06 (GA), January 16th 2024这个分支的代码。 因为之前已经安装了VS2022，卸载重装VS2019太麻烦，就使用VS2022来编译了。首先在源码目录下执行配置脚本：\n">
+<meta property='og:url' content='https://example.com/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/'>
+<meta property='og:site_name' content='Weijie&#39;s Blog Site'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='OpenJDK' /><meta property='article:tag' content='虚拟机' /><meta property='article:published_time' content='2024-12-29T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-12-29T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.jpg' />
+<meta name="twitter:title" content="OpenJDK代码初探">
+<meta name="twitter:description" content="编译环境配置 freetype依赖 官网 https://freetype.org/ 推荐到sourceforge的镜像里去下载2.7的版本，版本太高可能不兼容。 openjdk8依赖的东西包括源码目录下的include文件夹，和编译的二进制产物 freetype.dll 和 freetype.lib，静态库和动态库都需要，所以要build两次。 用VS2022打开freetype.sln，如果本机上没有freetype需要的VS版本和SDK版本，就选择Upgrade选项 修改项目的属性： 要求输出目标名字必须是freetype，不能带版本号。dll和lib要分别配置编译一次。 这里要将Runtime Library的/MD改成/MT。configure脚本里会构建一个简单的小程序编译测试freetype依赖是否ok，如果这里不选择/MT选项，那configure脚本就会错误提示需要64位的freetype库，其实这和64位没有关系，是测试编译的链接阶段出现了错误，在/MD选项下，freetype.dll和freetype.lib里对VS依赖的一些符号定义没有链接进自身，测试编译时就会出现freetype.xxx里有未定义符号的错误。 将编译得到的freetype.dll和freetype.lib放到freetype源码根目录下的lib目录下，然后configure时&ndash;with-freetype选项指向freetype的源码根目录就可以了。 编译openjdk8 如果在VS2010里编译，则选择b132_mar_2014分支代码。 如果在VS2019里编译，则选择8u402-b06 (GA), January 16th 2024这个分支的代码。 因为之前已经安装了VS2022，卸载重装VS2019太麻烦，就使用VS2022来编译了。首先在源码目录下执行配置脚本：\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://example.com/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.jpg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    <img src="/img/avatar.jpg" width="300" height="300" class="site-logo" loading="lazy" alt="Avatar">
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Weijie&#39;s Blog Site</a></h1>
+            <h2 class="site-description">My Tech Blogs</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#编译环境配置">编译环境配置</a>
+      <ol>
+        <li><a href="#freetype依赖">freetype依赖</a></li>
+        <li><a href="#编译openjdk8">编译openjdk8</a></li>
+      </ol>
+    </li>
+    <li><a href="#openjdk构建过程">OpenJDK构建过程</a>
+      <ol>
+        <li><a href="#快速熟悉nmake">快速熟悉NMake</a></li>
+        <li><a href="#make的默认目标">make的默认目标</a></li>
+        <li><a href="#hotspot构建目标">hotspot构建目标</a></li>
+        <li><a href="#javaexe构建过程">java.exe构建过程</a></li>
+      </ol>
+    </li>
+    <li><a href="#源码探索">源码探索</a>
+      <ol>
+        <li><a href="#javaexe的入口">java.exe的入口</a></li>
+        <li><a href="#hotspot主要目录">hotspot主要目录</a></li>
+        <li><a href="#jclass空类">jclass空类</a></li>
+        <li><a href="#为什么jmethodid可以只有声明没有定义">为什么jmethodID可以只有声明没有定义</a></li>
+        <li><a href="#klass体系">Klass体系</a></li>
+        <li><a href="#hotspot的运行模式">Hotspot的运行模式</a></li>
+        <li><a href="#tos缓存优化">TOS缓存优化</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/">
+                <img src="/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover_hu_d3ac338d752efa0b.jpg"
+                        srcset="/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover_hu_d3ac338d752efa0b.jpg 800w, /p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover_hu_6242147b6e95bde.jpg 1600w"
+                        width="800" 
+                        height="400" 
+                        loading="lazy"
+                        alt="Featured image of post OpenJDK代码初探" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/java/" >
+                Java
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/">OpenJDK代码初探</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Dec 29, 2024</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    12 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="编译环境配置">编译环境配置
+</h2><h3 id="freetype依赖">freetype依赖
+</h3><ul>
+<li>官网 <a class="link" href="https://freetype.org/"  target="_blank" rel="noopener"
+    >https://freetype.org/</a>
+<ul>
+<li>推荐到sourceforge的镜像里去下载2.7的版本，版本太高可能不兼容。
+openjdk8依赖的东西包括源码目录下的include文件夹，和编译的二进制产物 freetype.dll 和 freetype.lib，静态库和动态库都需要，所以要build两次。</li>
+</ul>
+</li>
+</ul>
+<ol>
+<li>用VS2022打开freetype.sln，如果本机上没有freetype需要的VS版本和SDK版本，就选择Upgrade选项</li>
+<li>修改项目的属性：
+<img src="/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/freetype-1.PNG"
+	width="982"
+	height="678"
+	srcset="/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/freetype-1_hu_eb6401e8b2e90ba8.PNG 480w, /p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/freetype-1_hu_4634b6338dfd21ed.PNG 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="144"
+		data-flex-basis="347px"
+	
+></li>
+<li>要求输出目标名字必须是freetype，不能带版本号。dll和lib要分别配置编译一次。
+<img src="/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/freetype-2.PNG"
+	width="982"
+	height="678"
+	srcset="/p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/freetype-2_hu_3363e54c0baf9fd0.PNG 480w, /p/openjdk%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/freetype-2_hu_e20125429cb62747.PNG 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="144"
+		data-flex-basis="347px"
+	
+>
+这里要将Runtime Library的/MD改成/MT。configure脚本里会构建一个简单的小程序编译测试freetype依赖是否ok，如果这里不选择/MT选项，那configure脚本就会错误提示需要64位的freetype库，其实这和64位没有关系，是测试编译的链接阶段出现了错误，在/MD选项下，freetype.dll和freetype.lib里对VS依赖的一些符号定义没有链接进自身，测试编译时就会出现freetype.xxx里有未定义符号的错误。</li>
+<li>将编译得到的freetype.dll和freetype.lib放到freetype源码根目录下的lib目录下，然后configure时&ndash;with-freetype选项指向freetype的源码根目录就可以了。</li>
+</ol>
+<h3 id="编译openjdk8">编译openjdk8
+</h3><ul>
+<li>如果在VS2010里编译，则选择b132_mar_2014分支代码。</li>
+<li>如果在VS2019里编译，则选择8u402-b06 (GA), January 16th 2024这个分支的代码。</li>
+</ul>
+<p>因为之前已经安装了VS2022，卸载重装VS2019太麻烦，就使用VS2022来编译了。首先在源码目录下执行配置脚本：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 这是在cygwin64的终端环境里执行，当前位于源代码的根目录</span>
+</span></span><span class="line"><span class="cl">mkdir build-out
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> build-out
+</span></span><span class="line"><span class="cl">../configure --with-tools-dir<span class="o">=</span><span class="s2">&#34;/cygdrive/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary&#34;</span> --with-target-bits<span class="o">=</span><span class="m">64</span> --with-boot-jdk<span class="o">=</span>/cygdrive/c/Apps/jdk8u432-b06/ --with-debug-level<span class="o">=</span>slowdebug --with-freetype<span class="o">=</span>/cygdrive/c/learning/jvm/deps/freetype-2.7
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这样配置一般就没问题了，如果出现问题怎么排查：</p>
+<ol>
+<li>查看build-out下的*.log信息</li>
+<li>在configure执行脚本(generated-configure.sh)里打印关键变量信息辅助排查错误逻辑</li>
+<li>在configure执行脚本里用sleep 30停止一段时间，避免有些信息被删掉（例如测试的编译程序），这个内容也可以辅助排查。</li>
+</ol>
+<p>接着可以执行<code>make V=1</code> （等价于<code>make VERBOSE=1</code> 或者<code>make -d</code>）这样make会打印详细信息，出错时就好排查了。</p>
+<p>遇到这个问题 ad_x86_64_misc.obj : error LNK2011: precompiled object not linked in; image may not run
+出现这个问题的原因是其实这个版本的jdk只支持VS2019，没有支持VS2022，把VS2022的配置和VS2019的配置都对齐后就能编译成功。修改以下2个地方：</p>
+<ul>
+<li>jdk8u402-b06\hotspot\make\windows\makefiles\compile.make</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-Makefile" data-lang="Makefile"><span class="line"><span class="cl"><span class="c"># jdk8u402-b06\hotspot\make\windows\makefiles\compile.make
+</span></span></span><span class="line"><span class="cl"><span class="c"># 1. 去掉/WX，就不会把warning当成error了
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">-</span> <span class="nv">CXX_FLAGS</span><span class="o">=</span><span class="k">$(</span>EXTRA_CFLAGS<span class="k">)</span> /nologo /W3 /WX
+</span></span><span class="line"><span class="cl"><span class="err">+</span> <span class="nv">CXX_FLAGS</span><span class="o">=</span><span class="k">$(</span>EXTRA_CFLAGS<span class="k">)</span> /nologo /W3
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># 2. 在约123行增加定义，后面的代码是根据 MSC_VER 来设置COMPILER_NAME，因为VS2022的版本号不在里面，所以后面的逻辑不影响这里的复制
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="nv">COMPILER_NAME</span><span class="o">=</span>VS2022
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># 324行将VS2022的链接选项对齐VS2019的链接选项，改了这处后 ad_x86_64_misc.obj: error LINK 2011就可以修复了
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">-</span> <span class="err">!if</span> <span class="s2">&#34;$(COMPILER_NAME)&#34;</span> <span class="err">==</span> <span class="s2">&#34;VS2019&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="err">+</span> <span class="err">!if</span> <span class="s2">&#34;$(COMPILER_NAME)&#34;</span> <span class="err">==</span> <span class="s2">&#34;VS2019&#34;</span> <span class="err">||</span> <span class="s2">&#34;$(COMPILER_NAME)&#34;</span> <span class="err">==</span> <span class="s2">&#34;VS2022&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>jdk8u402-b06\hotspot\make\windows\makefiles\vm.make</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-Makefile" data-lang="Makefile"><span class="line"><span class="cl"><span class="c"># jdk8u402-b06\hotspot\make\windows\makefiles\vm.make
+</span></span></span><span class="line"><span class="cl"><span class="c"># 1. 132行对齐VS2022编译配置
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">-</span> <span class="err">!if</span> <span class="s2">&#34;$(COMPILER_NAME)&#34;</span> <span class="err">==</span> <span class="s2">&#34;VS2012&#34;</span> <span class="err">||</span> <span class="s2">&#34;$(COMPILER_NAME)&#34;</span> <span class="err">==</span> <span class="s2">&#34;VS2013&#34;</span> <span class="err">||</span> <span class="s2">&#34;$(COMPILER_NAME)&#34;</span> <span class="err">==</span> <span class="s2">&#34;VS2015&#34;</span> <span class="err">||</span> <span class="s2">&#34;$(COMPILER_NAME)&#34;</span> <span class="err">==</span> <span class="s2">&#34;VS2017&#34;</span> <span class="err">||</span> <span class="s2">&#34;$(COMPILER_NAME)&#34;</span> <span class="err">==</span> <span class="s2">&#34;VS2019&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="err">+</span> <span class="err">!if</span> <span class="s2">&#34;$(COMPILER_NAME)&#34;</span> <span class="err">==</span> <span class="s2">&#34;VS2012&#34;</span> <span class="err">||</span> <span class="s2">&#34;$(COMPILER_NAME)&#34;</span> <span class="err">==</span> <span class="s2">&#34;VS2013&#34;</span> <span class="err">||</span> <span class="s2">&#34;$(COMPILER_NAME)&#34;</span> <span class="err">==</span> <span class="s2">&#34;VS2015&#34;</span> <span class="err">||</span> <span class="s2">&#34;$(COMPILER_NAME)&#34;</span> <span class="err">==</span> <span class="s2">&#34;VS2017&#34;</span> <span class="err">||</span> <span class="s2">&#34;$(COMPILER_NAME)&#34;</span> <span class="err">==</span> <span class="s2">&#34;VS2019&#34;</span> <span class="err">||</span> <span class="s2">&#34;$(COMPILER_NAME)&#34;</span> <span class="err">==</span> <span class="s2">&#34;VS2022&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>另外可以全局搜索一下&quot;VS2019&quot;出现的地方，把VS2022的配置和它对齐就行了。接下来执行make all就能编译出jre和jdk的镜像文件了，这在我的电脑上大概用了20分钟的时间。</p>
+<h2 id="openjdk构建过程">OpenJDK构建过程
+</h2><p>OpenJDK在Windows上要求cygwin环境，按理说是可以直接使用GNU Make构建的，但是发现有一部分makefile是用nmake的语法（例如文件里使用!IF !ELSE这样的关键字）。所以OpenJDK在Windows平台上使用了GNU Make和NMake两种命令来构建。</p>
+<h3 id="快速熟悉nmake">快速熟悉NMake
+</h3><p>参考官方文档 <a class="link" href="https://learn.microsoft.com/zh-cn/cpp/build/reference/description-blocks?view=msvc-170"  target="_blank" rel="noopener"
+    >https://learn.microsoft.com/zh-cn/cpp/build/reference/description-blocks?view=msvc-170</a></p>
+<ul>
+<li>连续冒号：用在多个描述块具有相同目标的情况下，可以让同一个目标在不同的依赖前置条件下执行不同的命令。</li>
+<li>隐含规则： .源扩展名.目标扩展名</li>
+</ul>
+<h3 id="make的默认目标">make的默认目标
+</h3><p>build-out下makfile文件只有这两行：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="c"># :=表示覆盖之前的值; ?=表示在没有赋值过时才执行赋值; +=添加后面的值
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="nv">SPEC</span><span class="o">:=</span>/cygdrive/c/learning/jvm/jdk8u402-b06/build-out/spec.gmk
+</span></span><span class="line"><span class="cl"><span class="err">include</span> <span class="err">/cygdrive/c/learning/jvm/jdk8u402-b06/Makefile</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>所以make执行时的默认目标在build-out上一层的Makefile文件里（这个是GNU make）。</p>
+<p>根目录下的Makefile里有两处include指令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="c"># Makefile
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">include</span> <span class="k">$(</span><span class="nv">root_dir</span><span class="k">)</span><span class="err">/make/MakeHelpers.gmk</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Now determine if we have zero, one or several configurations to build.
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">ifeq</span> <span class="err">(</span><span class="k">$(</span><span class="nv">SPEC</span><span class="k">)</span><span class="err">,)</span>
+</span></span><span class="line"><span class="cl">  <span class="c"># Since we got past ParseConfAndSpec, we must be building a global target. Do nothing.
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">else</span>
+</span></span><span class="line"><span class="cl">  <span class="err">ifeq</span> <span class="err">(</span><span class="k">$(</span><span class="nv">words</span> <span class="k">$(</span><span class="nv">SPEC</span><span class="k">))</span><span class="err">,1)</span>
+</span></span><span class="line"><span class="cl">    <span class="c"># We are building a single configuration. This is the normal case. Execute the Main.gmk file.
+</span></span></span><span class="line"><span class="cl"><span class="c"></span>    include <span class="k">$(</span>root_dir<span class="k">)</span>/make/Main.gmk
+</span></span><span class="line"><span class="cl">  <span class="k">else</span>
+</span></span><span class="line"><span class="cl">    ...
+</span></span><span class="line"><span class="cl">  endif
+</span></span><span class="line"><span class="cl"><span class="err">endif</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>综合这两个包含的makefile文件，我们可以找到根目录下定义的第一条规则是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="c"># Makefile第一条被定义为空的default就是默认目标
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="nf">default</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># make/Main.gmk里会对default继续定义，default就是一个多规则目标，它的依赖是jdk，注意多规则目标只能有一条规则指定需要执行的命令
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="nf">default</span><span class="o">:</span> <span class="n">jdk</span>
+</span></span><span class="line"><span class="cl">        @<span class="k">$(</span>call CheckIfMakeAtEnd<span class="k">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nf">all</span><span class="o">:</span> <span class="n">images</span> <span class="n">docs</span>
+</span></span><span class="line"><span class="cl">        @<span class="k">$(</span>call CheckIfMakeAtEnd<span class="k">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="hotspot构建目标">hotspot构建目标
+</h3><p>spec.gmk里设置了 BUILD_HOTSPOT=true ，这会让Main.gmk里定义hotspot的目标和规则：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="err">ifeq</span> <span class="err">(</span><span class="k">$(</span><span class="nv">BUILD_HOTSPOT</span><span class="k">)</span><span class="err">,true)</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">hotspot</span><span class="o">:</span> <span class="n">hotspot</span>-<span class="n">only</span>
+</span></span><span class="line"><span class="cl">  hotspot-only: start-make
+</span></span><span class="line"><span class="cl">        @<span class="k">$(</span>call TargetEnter<span class="k">)</span>  <span class="c1"># 打印Starting xxx的信息和记录开始时间</span>
+</span></span><span class="line"><span class="cl">        @<span class="o">(</span><span class="k">$(</span>CD<span class="k">)</span> <span class="k">$(</span>SRC_ROOT<span class="k">)</span>/make <span class="o">&amp;&amp;</span> <span class="k">$(</span>BUILD_LOG_WRAPPER<span class="k">)</span> <span class="k">$(</span>MAKE<span class="k">)</span> <span class="k">$(</span>MAKE_ARGS<span class="k">)</span> -f HotspotWrapper.gmk<span class="o">)</span>
+</span></span><span class="line"><span class="cl">        @<span class="k">$(</span>call TargetExit<span class="k">)</span>  <span class="c1"># 打印Finished xxx的信息和构建该目标的耗时</span>
+</span></span><span class="line"><span class="cl"><span class="err">endif</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># start-make in Main.gmk
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="nf">start-make</span><span class="o">:</span> <span class="k">$(</span><span class="nv">SPEC</span><span class="k">)</span>  <span class="c"># 依赖build-out/spec.gmk文件，因为start-make不是一个文件，所以每次一定会执行
+</span></span></span><span class="line"><span class="cl"><span class="c"></span>        @<span class="k">$(</span>call AtMakeStart<span class="k">)</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl"><span class="c"># AtMakeStart in MakeHelpers.gmk. 这个代码主要是做环境的一些检查和开启计时器（记录构建时间），对构建逻辑的分析可以忽略
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">define</span> <span class="err">AtMakeStart</span>
+</span></span><span class="line"><span class="cl">        <span class="k">$(</span><span class="nv">if</span> <span class="k">$(</span><span class="nv">findstring</span> --<span class="nv">jobserver</span>,<span class="k">$(</span><span class="nv">MAKEFLAGS</span><span class="k">))</span>,<span class="k">$(</span><span class="nv">error</span> <span class="nv">make</span> -<span class="nv">j</span> <span class="nv">is</span> <span class="nv">not</span> <span class="nv">supported</span>, <span class="nv">use</span> <span class="nv">make</span> <span class="nv">JOBS</span>=<span class="nv">n</span><span class="k">))</span>
+</span></span><span class="line"><span class="cl">        <span class="k">$(</span><span class="nv">call</span> <span class="nv">CheckEnvironment</span><span class="k">)</span>
+</span></span><span class="line"><span class="cl">        <span class="err">@</span><span class="k">$(</span><span class="nv">PRINTF</span><span class="k">)</span> <span class="k">$(</span><span class="nv">LOG_INFO</span><span class="k">)</span> <span class="s2">&#34;Running make as &#39;$(MAKE) $(MFLAGS) $(MAKE_ARGS)&#39;\n&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="err">@</span><span class="k">$(</span><span class="nv">PRINTF</span><span class="k">)</span> <span class="s2">&#34;Building $(PRODUCT_NAME) for target &#39;$(call GetRealTarget)&#39; in configuration &#39;$(CONF_NAME)&#39;\n\n&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">$(</span><span class="nv">call</span> <span class="nv">StartGlobalTimer</span><span class="k">)</span>
+</span></span><span class="line"><span class="cl"><span class="err">endef</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>hotspot-only和start-make一样都不是一个文件，所以每次都需构建该目标。通过在build-out下执行make hotspot &ndash;dry-run可以知道上面第五行的命令对应:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="err">(cd</span> <span class="err">/cygdrive/c/learning/jvm/jdk8u402-b06/make</span> <span class="err">&amp;&amp;</span> <span class="err">/usr/bin/bash</span> <span class="err">/cygdrive/c/learning/jvm/jdk8u402-b06/common/bin/logger.sh</span> <span class="err">/cygdrive/c/learning/jvm/jdk8u402-b06/build-out/build.log</span> <span class="err">/usr/bin/make</span> <span class="err">-s</span> <span class="nv">VERBOSE</span><span class="o">=</span><span class="s2">&#34;-s&#34;</span> <span class="nv">LOG_LEVEL</span><span class="o">=</span><span class="s2">&#34;warn&#34;</span> -R -I /cygdrive/c/learning/jvm/jdk8u402-b06/make/common <span class="s2">&#34;SPEC=/cygdrive/c/learning/jvm/jdk8u402-b06/build-out/spec.gmk&#34;</span> -j7 -f HotspotWrapper.gmk<span class="o">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这段命令的逻辑就是进入根目录下的make文件夹然后将执行逻辑交给了HotspotWrapper.gmk了。因为是Wrapper，所以它的逻辑很少：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="c"># make\HotspotWrapper.gmk
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="nv">BASE_SPEC</span><span class="o">:=</span><span class="k">$(</span>SPEC<span class="k">)</span>
+</span></span><span class="line"><span class="cl"><span class="err">include</span> <span class="k">$(</span><span class="nv">dir</span> <span class="k">$(</span><span class="nv">SPEC</span><span class="k">))</span><span class="err">hotspot-spec.gmk</span>
+</span></span><span class="line"><span class="cl"><span class="err">include</span> <span class="err">MakeBase.gmk</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nf">.NOTPARALLEL</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl"><span class="nf">default</span><span class="o">:</span> <span class="n">all</span>
+</span></span><span class="line"><span class="cl"><span class="c"># hotspot目录下包含的所有文件：*.cpp, *.h, *.html, *.txt等等
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="nv">HOTSPOT_FILES</span> <span class="o">:=</span> <span class="k">$(</span>shell <span class="k">$(</span>FIND<span class="k">)</span> -L <span class="k">$(</span>HOTSPOT_TOPDIR<span class="k">)</span> -name <span class="s2">&#34;.hg&#34;</span> -prune -o -print<span class="k">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># build-out/hotspot/_hotspot.timestamp 文件最新时间就是上次构建成功的时间
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="nf">$(HOTSPOT_OUTPUTDIR)/_hotspot.timestamp</span><span class="o">:</span> <span class="k">$(</span><span class="nv">HOTSPOT_FILES</span><span class="k">)</span>
+</span></span><span class="line"><span class="cl"><span class="c"># mkdir -p /cygdrive/c/learning/jvm/jdk8u402-b06/build-out/hotspot
+</span></span></span><span class="line"><span class="cl"><span class="c"></span>        @<span class="k">$(</span>MKDIR<span class="k">)</span> -p <span class="k">$(</span>HOTSPOT_OUTPUTDIR<span class="k">)</span>
+</span></span><span class="line"><span class="cl"><span class="c"># 这段代码比较复杂，在下面单独展开
+</span></span></span><span class="line"><span class="cl"><span class="c"></span>        @<span class="o">(</span><span class="k">$(</span>CD<span class="k">)</span> <span class="k">$(</span>HOTSPOT_TOPDIR<span class="k">)</span>/make <span class="o">&amp;&amp;</span> <span class="k">$(</span>MAKE<span class="k">)</span> -j1 <span class="k">$(</span>HOTSPOT_MAKE_ARGS<span class="k">)</span> <span class="nv">SPEC</span><span class="o">=</span><span class="k">$(</span>HOTSPOT_SPEC<span class="k">)</span> <span class="nv">BASE_SPEC</span><span class="o">=</span><span class="k">$(</span>BASE_SPEC<span class="k">)</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="c"># 构建完成，更新_hotspot.timestamp的时间戳
+</span></span></span><span class="line"><span class="cl"><span class="c"></span>        <span class="k">$(</span>TOUCH<span class="k">)</span> <span class="nv">$@</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl"><span class="nf">hotspot</span><span class="o">:</span> <span class="k">$(</span><span class="nv">HOTSPOT_OUTPUTDIR</span><span class="k">)</span>/<span class="n">_hotspot</span>.<span class="n">timestamp</span>
+</span></span><span class="line"><span class="cl"><span class="nf">all</span><span class="o">:</span> <span class="n">hotspot</span>
+</span></span><span class="line"><span class="cl"><span class="nf">.PHONY</span><span class="o">:</span> <span class="n">default</span> <span class="n">all</span> <span class="n">hotspot</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面代码块中在第16行展开的代码命令为：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="c"># 上面代码块中在第16行展开的代码命令
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">/usr/bin/mkdir</span> <span class="err">-p</span> <span class="err">/cygdrive/c/learning/jvm/jdk8u402-b06/build-out/hotspot</span>
+</span></span><span class="line"><span class="cl"><span class="err">(cd</span> <span class="err">/cygdrive/c/learning/jvm/jdk8u402-b06/hotspot/make</span> <span class="err">&amp;&amp;</span> <span class="err">/usr/bin/make</span> <span class="err">-s</span> <span class="nv">VERBOSE</span><span class="o">=</span><span class="s2">&#34;-s&#34;</span> <span class="nv">LOG_LEVEL</span><span class="o">=</span><span class="s2">&#34;warn&#34;</span> -R -I /cygdrive/c/learning/jvm/jdk8u402-b06/make/common -j1 jvmg  docs export_debug  <span class="nv">SPEC</span><span class="o">=</span>/cygdrive/c/learning/jvm/jdk8u402-b06/build-out/hotspot-spec.gmk <span class="nv">BASE_SPEC</span><span class="o">=</span>/cygdrive/c/learning/jvm/jdk8u402-b06/build-out/spec.gmk<span class="o">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这段命令会执行hotspot/make/Makefile文件（这个文件就是hotspot的主体构建逻辑），jvmg, docs, export_debug都是其构建目标。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="c"># hotspot\make\Makefile
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">include</span> <span class="err">defs.make</span>
+</span></span><span class="line"><span class="cl"><span class="c"># hotspot\make\altsrc.make
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">include</span> <span class="k">$(</span><span class="nv">GAMMADIR</span><span class="k">)</span><span class="err">/make/altsrc.make</span>
+</span></span><span class="line"><span class="cl"><span class="c"># -表示不理无法读取的文件，继续执行 ，搜索不到这个文件
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">-include</span> <span class="k">$(</span><span class="nv">HS_ALT_MAKE</span><span class="k">)</span><span class="err">/Makefile.make</span>
+</span></span><span class="line"><span class="cl"><span class="c"># hotspot\make\bsd\makefiles\universal.gmk
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">include</span> <span class="k">$(</span><span class="nv">GAMMADIR</span><span class="k">)</span><span class="err">/make/</span><span class="k">$(</span><span class="nv">OSNAME</span><span class="k">)</span><span class="err">/makefiles/universal.gmk</span>
+</span></span><span class="line"><span class="cl"><span class="c"># hotspot\make\jprt.gmk
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">include</span> <span class="k">$(</span><span class="nv">GAMMADIR</span><span class="k">)</span><span class="err">/make/jprt.gmk</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="javaexe构建过程">java.exe构建过程
+</h3><p>第一层的目标是 jdk-only：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="err">(cd</span> <span class="err">/cygdrive/c/learning/jvm/jdk8u402-b06/jdk/make</span> <span class="err">&amp;&amp;</span> <span class="err">/usr/bin/bash</span> <span class="err">/cygdrive/c/learning/jvm/jdk8u402-b06/common/bin/logger.sh</span> <span class="err">/cygdrive/c/learning/jvm/jdk8u402-b06/build-out/build.log</span> <span class="err">/usr/bin/make</span> <span class="err">-s</span> <span class="nv">VERBOSE</span><span class="o">=</span><span class="s2">&#34;-s&#34;</span> <span class="nv">LOG_LEVEL</span><span class="o">=</span><span class="s2">&#34;warn&#34;</span> -R -I /cygdrive/c/learning/jvm/jdk8u402-b06/make/common <span class="s2">&#34;SPEC=/cygdrive/c/learning/jvm/jdk8u402-b06/build-out/spec.gmk&#34;</span> -j7 -f BuildJdk.gmk <span class="o">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最终的逻辑会导向 jdk\make\CompileLaunchers.gmk，java.exe就是jvm的启动器。</p>
+<h2 id="源码探索">源码探索
+</h2><h3 id="javaexe的入口">java.exe的入口
+</h3><p>位于文件 jdk8u402-b06\jdk\src\share\bin\main.c。</p>
+<h3 id="hotspot主要目录">hotspot主要目录
+</h3><p>hotspot/src是其源代码的主体目录，包含：</p>
+<ul>
+<li>cpu: 此目录包含一些依赖具体处理器架构的代码</li>
+<li>os: 此目录下包含一些依赖操作系统的代码</li>
+<li>os_cpu: 此目录下包含一些依赖操作系统和处理器架构的代码，如linux_x86</li>
+<li>share: 此目录包含了独立于操作系统和处理器架构的代码，尤其是vm子目录，这个子目录中包含的内容比较多，hotspot主要的一些功能模块都包含在这个子目录里</li>
+</ul>
+<h3 id="jclass空类">jclass空类
+</h3><p>在export/jni.h内部定义了这些空类，没有任何字段和方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">_jobject</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="nc">_jobject</span> <span class="o">*</span><span class="n">jobject</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">jobject</span> <span class="n">jclass</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">jobject</span> <span class="n">jthrowable</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">jobject</span> <span class="n">jstring</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">jobject</span> <span class="n">jarray</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">jarray</span> <span class="n">jbooleanArray</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">jarray</span> <span class="n">jbyteArray</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">jarray</span> <span class="n">jcharArray</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">jarray</span> <span class="n">jshortArray</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">jarray</span> <span class="n">jintArray</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">jarray</span> <span class="n">jlongArray</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">jarray</span> <span class="n">jfloatArray</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">jarray</span> <span class="n">jdoubleArray</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">jarray</span> <span class="n">jobjectArray</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>想象一下我们写代码的环境： Java -&gt; JNI -&gt; 虚拟机实现代码，越往下越接近jvm底层实现，在JNI这一层及其上层一般就是Java开发者写代码的环境，而虚拟机实现代码是需要对Java开发者实现隔离，让他们不需要搞清楚jvm的实现细节就可以方便的写代码。在JVM实现里对象和类分别是用oops和klass类型来表示的，当数据从JVM内部传递到JNI一层时，oops和klass就会转换成这些空类的指针。这就要求这些数据只能在JVM内部处理，因为是空类吗，没有字段和方法，JNI的使用者无法修改他们的。既方便了Java开发者，也保证了JVM内部的安全性。</p>
+<h3 id="为什么jmethodid可以只有声明没有定义">为什么jmethodID可以只有声明没有定义
+</h3><p>查看hotspot里的jmethodID类型，发现只有声明而没有定义，下面这段代码可以解释。
+下面这段代码是可以在MSVC下正确编译，可见如果我们只是需要一个指针类型而不去访问这个类型的方法和字段，那么这个类型就可以只有声明而不需要定义。这个和jclass之类的空类定义很相似。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">_jmethodID</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="nc">_jmethodID</span> <span class="o">*</span><span class="n">jmethodID</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">jmethodID</span> <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">jmethodID</span><span class="p">)</span> <span class="o">&amp;</span><span class="n">a</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="klass体系">Klass体系
+</h3><p>klass类型用于描述Java类型信息，一个Java类型有一个klass的实例。分成三类 InstanceKlass 和 ArrayKlass以及其他。</p>
+<p>_layout_helper描述该对象内存大小：</p>
+<ul>
+<li>对于InstanceKlass，就是实例大小（字节为单位）。</li>
+<li>对于ArrayKlass，分成4部分，每个部分一个字节
+<ul>
+<li>hsz记录数组header size（单位字节），也是第一个元素的偏移位置；</li>
+<li>ebt记录元素的BasicType</li>
+<li>esz记录元素的个数为2^esz个</li>
+</ul>
+</li>
+</ul>
+<p>_super, _subklass, _next_sibling 三个字段维护继承体系：</p>
+<ul>
+<li>由于Java是单继承，所以_super指向唯一的父类的Klass指针</li>
+<li>_subklass指向其第一个子类</li>
+<li>_next_sibling指向其父类的所有子类中的下一个兄弟
+<ul>
+<li>所以可以通过调用 _subklass-&gt;next_sibling()-&gt;next_sibling()-&gt;&hellip;. 获取其所有子类</li>
+</ul>
+</li>
+</ul>
+<h3 id="hotspot的运行模式">Hotspot的运行模式
+</h3><p>可以通过-version参数查看运行的是哪种模式。</p>
+<ul>
+<li>解释模式：可以用 -Xint 指定。在解释模式下又有两种解释器：C++解释器（CppInterpreter）和模板解释器 （TemplateInterpreter）。默认是使用后者。在构建时如果CC_INTERP宏有定义，那么就会指定C++解释器。
+<ul>
+<li>C++解释器完全是利用软件循环和case-swicth形式解释执行字节码，速度较慢但移植性好。</li>
+<li>模板解释器是默认使用的解释器，它为每种字节码指令都生成了汇编代码，使用机器栈和寄存器，速度比C++解释器快10倍，OpenJDK的文档 也指出了这种设计的优势。</li>
+</ul>
+</li>
+<li>编译模式：可以用-Xcomp 指定。Hotspot里的编译器就是我们所说的JIT（即时编译器），内部由两种编译器实现：
+<ul>
+<li>C1：简单快速的编译器，适用于执行时间较短或者启动性能有要求的程序，例如GUI程序。也被称为Client Compiler。</li>
+<li>C2：为长期运行的服务端程序做性能优化的编译器，适用于执行时间较长或对峰值性能有要求的程序，也被称为Server Compiler。</li>
+</ul>
+</li>
+<li>混合模式：可以用-Xmixed 指定。一般情况下，我们的代码一开始一般都是由解释器执行，但是当虚拟机发现某个方法或者代码块的运行特别频繁的时候，就会认为这些代码是热点代码。为了提高热点代码的执行效率，会用即时编译器（也就是JIT）把这些热点代码编译成与本地平台相关的机器码，并进行各层次的优化。</li>
+</ul>
+<h3 id="tos缓存优化">TOS缓存优化
+</h3><p>这个术语又叫做 Top of Stack Caching。就是在一个栈的栈顶（或附近）元素频繁访问的假设下，对栈顶（或附近）的元素进行缓存的一种优化方式。中文翻译的话通常叫做“栈顶缓存”。</p>
+<p>作为参考，可以阅读Anton Ertl发表的论文中Stack caching for interpreters、Implementation of Stack-Based Languages on Register Machines（这篇特别值得一读），和其它一些与“stack caching”相关的论文。</p>
+<p>Hotspot VM里的解释器也有使用top-of-stack caching, 简称TOSCA. 在Hotspot VM里看到TOS的话就是top-of-stack的意思，多半都跟TOSCA有关系。</p>
+<p>Stack caching有许多可能的变种。有两个指标值得关注：
+1、缓存了栈顶附近的多少个元素？如果缓存了n个元素，那么就叫n-TOS caching；
+2、缓存带有多少种“状态”？如果有n种状态那么就叫n-state TOS caching。
+这俩概念不要弄混了。特别是n-state的概念。</p>
+<p>这个优化技术要先从JVM的栈式指令集讲起。由于JVM设计之初就考虑跨平台，而不同CPU架构下如果使用基于寄存器的指令集架构，可能难以实现，所以选择了栈式指令集架构。基于栈的指令级架构相对于基于寄存器的指令集架构优点是跨平台，指令集小，编译器容易实现，每个指令都是相对于栈顶栈帧和栈顶栈帧操作数栈的操作，缺点是性能下降，实现同样的功能需要更多指令。</p>
+<p>基于栈的指令集中的一个核心组件就是操作数栈，每个字节码指令取操作数要从操作数栈中取（意味着可能需要压栈并出栈），如果指令有结果需要存储，也需要放到操作数栈顶（可能需要压栈）。所以基于栈式的指令集架构的虚拟机虽然使用的零地址指令更加紧凑，但是单完成一项操作的时候必然需要使用更多的入栈和出栈动作，而这个操作数栈也是存在于内存中，这就意味着将需要更多的内存读写次数，频繁的执行内存读/写操作必然会影响执行速度，为了解决这一问题栈顶缓存技术（Top-of-Stack Caching）便应运而生了。它的核心原理就是将栈顶元素（或者栈顶附近的元素）缓存到物理CPU的寄存器中，以此降低对内存读写的次数，提升执行引擎的执行效率。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/openjdk/">OpenJDK</a>
+        
+            <a href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/">虚拟机</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%9B%B4%E6%96%B0%E4%B8%ADjvm%E5%AD%97%E8%8A%82%E7%A0%81%E8%A7%84%E8%8C%83/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%9B%B4%E6%96%B0%E4%B8%ADjvm%E5%AD%97%E8%8A%82%E7%A0%81%E8%A7%84%E8%8C%83/cover.633e76883eb4f055266dc4da70c5449d_hu_a44eb0164350df41.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 【更新中】JVM字节码规范"
+                        
+                        data-hash="md5-Yz52iD608FUmbcTacMVEnQ==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">【更新中】JVM字节码规范</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/java-socket%E5%AE%9E%E7%8E%B0/">
+        
+        
+            <div class="article-image">
+                <img src="/p/java-socket%E5%AE%9E%E7%8E%B0/cover.eba4032b0527da85fbc27a3726674f16_hu_29e22d640e17c46b.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Java Socket实现"
+                        
+                        data-hash="md5-66QDKwUn2oX7wno3JmdPFg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Java Socket实现</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/java%E5%8E%9F%E7%94%9F%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/">
+        
+        
+            <div class="article-image">
+                <img src="/p/java%E5%8E%9F%E7%94%9F%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/cover.f6fccedd4d36f77cd2677c4c40a56254_hu_56ba4d277977d259.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Java原生动态代理"
+                        
+                        data-hash="md5-9vzO3U0293zSZ3xMQKViVA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Java原生动态代理</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/java-thread-class/">
+        
+        
+            <div class="article-image">
+                <img src="/p/java-thread-class/cover.9599fda7c55af42b47b9c43dd8f0bc7c_hu_22c55da75a48e9bb.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Java线程类"
+                        data-key="java-thread-class" 
+                        data-hash="md5-lZn9p8Va9CtHucQ92PC8fA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Java线程类</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/object-root-class-method-impl-logic/">
+        
+        
+            <div class="article-image">
+                <img src="/p/object-root-class-method-impl-logic/cover.ee5c3e082148d356cc97a79165e59495_hu_ab4f62b3ee9eda98.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Object根类方法实现逻辑"
+                        data-key="object-root-class-method-impl-logic" 
+                        data-hash="md5-7lw&#43;CCFI01bMl6eRZeWUlQ==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Object根类方法实现逻辑</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Weijie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

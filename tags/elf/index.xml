@@ -1,0 +1,1066 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>ELF on Weijie&#39;s Blog Site</title>
+        <link>https://example.com/tags/elf/</link>
+        <description>Recent content in ELF on Weijie&#39;s Blog Site</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Weijie</copyright>
+        <lastBuildDate>Sun, 03 Nov 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/elf/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>ELF格式解析</title>
+        <link>https://example.com/p/elf-format/</link>
+        <pubDate>Sun, 03 Nov 2024 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/elf-format/</guid>
+        <description>&lt;img src="https://example.com/p/elf-format/cover.png" alt="Featured image of post ELF格式解析" /&gt;&lt;h2 id=&#34;格式概览&#34;&gt;格式概览
+&lt;/h2&gt;&lt;p&gt;整个ELF文件可以分成四块：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;┌───────────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│      ELF File Header  │  ► 描述文件类型、架构、入口点等全局信息
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;├───────────────────────┤
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│    Program Headers    │  ► 定义运行时内存布局（Segments）
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│ (Optional for reloc.) │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;├───────────────────────┤
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│       Sections        │  ► 实际存储代码、数据等（如 .text, .data）
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│                       │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;├───────────────────────┤
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│    Section Headers    │  ► 描述各节的逻辑信息（供链接器使用）
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│ (Optional for exec.)  │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;└───────────────────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;ELF格式本质上是一些称为 &lt;strong&gt;Headers&lt;/strong&gt; 的较小数据结构的集合。一个 &lt;strong&gt;Header&lt;/strong&gt; 是由一些更简单（或原始的 primitive）的数据类型（例如整数）组成的连续序列。有多种类型的 &lt;strong&gt;Headers&lt;/strong&gt; ，每种类型描述一种信息。下面这张图描述了ELF中包含的Header以及组成Header的原始数据类型之间的关系。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/elf-format/elf-header-and-primitive-type.webp&#34;
+	width=&#34;680&#34;
+	height=&#34;1135&#34;
+	srcset=&#34;https://example.com/p/elf-format/elf-header-and-primitive-type_hu_33c61a3cfdc14b18.webp 480w, https://example.com/p/elf-format/elf-header-and-primitive-type_hu_601728c17279fbaf.webp 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;59&#34;
+		data-flex-basis=&#34;143px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;原始数据类型&#34;&gt;原始数据类型
+&lt;/h3&gt;&lt;p&gt;原始数据类型（primitive data type）是编程语言中最基本的数据类型，具有如下特点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;原始值一旦创建就不能被修改&lt;/li&gt;
+&lt;li&gt;在赋值或传递给函数时，传递的是值的副本&lt;/li&gt;
+&lt;li&gt;值直接存储在变量访问的位置&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;ELF定义了几种原始类型，ELF格式中定义的其他任何结构都是这几种原始类型的组合：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;/// linux/include/elf.h
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cm&#34;&gt;/* 64-bit ELF base types. */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;typedef&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;uint16_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Elf64_Half&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;General&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;purpose&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;16&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bit&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;unsigned&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;integer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;typedef&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;uint32_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Elf64_Word&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;General&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;purpose&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;32&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bit&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;unsigned&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;integer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;typedef&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int32_t&lt;/span&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Sword&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;       &lt;span class=&#34;n&#34;&gt;General&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;purpose&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;32&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bit&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;signed&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;integer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;typedef&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;uint64_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Elf64_Xword&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;       &lt;span class=&#34;n&#34;&gt;General&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;purpose&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;64&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bit&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;unsigned&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;integer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;typedef&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int64_t&lt;/span&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Sxword&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;General&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;purpose&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;64&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bit&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;signed&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;integer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;typedef&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;uint64_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Elf64_Addr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;Memory&lt;/span&gt; &lt;span class=&#34;nl&#34;&gt;address&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;64&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bit&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;unsigned&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;integer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;typedef&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;uint64_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Elf64_Off&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;         &lt;span class=&#34;nl&#34;&gt;Offset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;64&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bit&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;unsigned&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;integer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;elf-header&#34;&gt;ELF Header
+&lt;/h2&gt;&lt;p&gt;整个ELF Header的大小为64字节。&lt;/p&gt;
+&lt;p&gt;ELF文件头（也有称作主头）的英文名字叫做&lt;strong&gt;Elf Header&lt;/strong&gt;对应elf.h中的结构体是 &lt;code&gt;Elf64_Ehdr&lt;/code&gt;：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;typedef&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;elf64_hdr&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// 16字节长度
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;  &lt;span class=&#34;kt&#34;&gt;unsigned&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;e_ident&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;EI_NIDENT&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;];&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Half&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e_type&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Half&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e_machine&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Word&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e_version&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Addr&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e_entry&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Entry point virtual address */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Off&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e_phoff&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Program header table file offset */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Off&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e_shoff&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Section header table file offset */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Word&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e_flags&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Half&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e_ehsize&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Half&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e_phentsize&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Half&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e_phnum&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Half&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e_shentsize&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Half&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e_shnum&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Half&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e_shstrndx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Elf64_Ehdr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;e_ident&#34;&gt;e_ident
+&lt;/h3&gt;&lt;p&gt;ident是identity的缩写，意味ELF文件的身份信息。&lt;/p&gt;
+&lt;p&gt;通过宏 &lt;code&gt;EI_NIDENT&lt;/code&gt;写死了是16个元素的字节数组。通过 &lt;code&gt;elfcat&lt;/code&gt; 结合 &lt;code&gt;man elf&lt;/code&gt; 可以了解到这16个字节包含的信息：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;4字节：&lt;code&gt;\x7f E L F&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;1字节：32位/64位&lt;/li&gt;
+&lt;li&gt;1字节：小端/大端，Linux+GCC生成的ELF文件默认为小端&lt;/li&gt;
+&lt;li&gt;1字节：EI_VERSION EFL规范的版本信息，必须为1，其他值无效&lt;/li&gt;
+&lt;li&gt;1字节：EI_OSABI 操作系统ABI信息&lt;/li&gt;
+&lt;li&gt;1字节：EI_ABIVERSION&lt;/li&gt;
+&lt;li&gt;当前规范中后面7个字节为padding（全0），后面的规范可以会变化&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;e_type&#34;&gt;e_type
+&lt;/h3&gt;&lt;p&gt;2个字节表示对象文件类型：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;未知&lt;/li&gt;
+&lt;li&gt;可重定位文件&lt;/li&gt;
+&lt;li&gt;执行文件&lt;/li&gt;
+&lt;li&gt;共享对象文件&lt;/li&gt;
+&lt;li&gt;core file&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;e_machine&#34;&gt;e_machine
+&lt;/h3&gt;&lt;p&gt;2个字节指明目标架构：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;00 3e AMD x86-64&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;e_entry&#34;&gt;e_entry
+&lt;/h3&gt;&lt;p&gt;8个字节（刚好是64位指针大小）表示程序入口点的虚拟地址（vaddr）。如果为0表示该文件没有关联入口点。&lt;/p&gt;
+&lt;h3 id=&#34;e_phoff&#34;&gt;e_phoff
+&lt;/h3&gt;&lt;p&gt;8个字节表示**Program headers (Program Header Table)**在本文件中的字节偏移量。如果没有程序头表，该值为0&lt;/p&gt;
+&lt;h3 id=&#34;e_shoff&#34;&gt;e_shoff
+&lt;/h3&gt;&lt;p&gt;8个字节表示**Section Headers (Section Header Table)**在本文件中的字节偏移量。如果没有节头表，该值为0&lt;/p&gt;
+&lt;h3 id=&#34;e_ehsize&#34;&gt;e_ehsize
+&lt;/h3&gt;&lt;p&gt;2个字节表示&lt;strong&gt;ELF Header&lt;/strong&gt;的大小&lt;/p&gt;
+&lt;h3 id=&#34;e_phentsize&#34;&gt;e_phentsize
+&lt;/h3&gt;&lt;p&gt;2个字节表示&lt;strong&gt;Program Header Table&lt;/strong&gt;中一个entry的字节大小，注意Program Header Table中每个entry的大小都是相同的。&lt;/p&gt;
+&lt;h3 id=&#34;e_phnum&#34;&gt;e_phnum
+&lt;/h3&gt;&lt;p&gt;2个字节表示Program Header Table中entry的数量，注意  &lt;code&gt;e_phentsize * e_phnum&lt;/code&gt;  等于整个Program Header Table的字节大小。&lt;/p&gt;
+&lt;h3 id=&#34;e_shentsize&#34;&gt;e_shentsize
+&lt;/h3&gt;&lt;p&gt;2个字节表示Section Header Table中一个entry的字节大小，Section Header Table中一个entry就是一个Section Header，所有的entry的大小都是一样的。&lt;/p&gt;
+&lt;h3 id=&#34;e_shnum&#34;&gt;e_shnum
+&lt;/h3&gt;&lt;p&gt;2个字节表示Section Header Table中entry的数量，注意 &lt;code&gt;e_shentsize * e_shnum&lt;/code&gt; 等于整个Section Header Table的字节大小。&lt;/p&gt;
+&lt;h3 id=&#34;e_shstrndx&#34;&gt;e_shstrndx
+&lt;/h3&gt;&lt;p&gt;2个字节表示 &lt;code&gt;.shstrtab&lt;/code&gt; Section Header在整个Section Header Table中的索引。&lt;code&gt;.shstrtab&lt;/code&gt; 是 Section Header Table中的一个entry，也就是一个Section Header，该 Section Header 是一个字符串表（String Table）里面保存了所有Section Header的名字。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;举个具体的例子&lt;/strong&gt;：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;27
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;28
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;29
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;30
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 通过elfcat查到simple文件中 e_shstrndx 的值为 22 00（十进制值为34）&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 查看 .shstrtab 在 Section Header Table中的位置&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf simple -S -W
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt;output
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;There are 35 section headers, starting at offset 0x3920:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;Section Headers:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [ 0]                   NULL            0000000000000000 000000 000000 00      0   0  0
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [ 1] .interp           PROGBITS        0000000000000318 000318 00001c 00   A  0   0  1
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  ...
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  ...
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [32] .symtab           SYMTAB          0000000000000000 003290 000360 18     33  18  8
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [33] .strtab           STRTAB          0000000000000000 0035f0 0001cf 00      0   0  1
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [34] .shstrtab         STRTAB          0000000000000000 0037bf 00015c 00      0   0  1
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;output&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 输出信息中方括号的数字就是Section Header Table的索引值，刚好 34 等于 0x22&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 另外可以通过 -p / --string-dump 参数dump字符串表的内容&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf -p .shstrtab simple
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt;output
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;String dump of section &amp;#39;.shstrtab&amp;#39;:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [     1]  .symtab
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [     9]  .strtab
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    11]  .shstrtab
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  ...
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [   141]  .debug_str
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [   14c]  .debug_line_str
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;output&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;program-header-table&#34;&gt;Program Header Table
+&lt;/h2&gt;&lt;p&gt;程序头表只在ELF可执行文件和动态共享对象中存在，因为程序头表描述的是所有Section合并成Segment的结果，只有能被加载执行的才具有该项目。&lt;/p&gt;
+&lt;p&gt;程序头表紧跟着ELF Header从ELF文件的第65个字节开始，从C语言代码的角度来看，可以看作是一个结构体数组。这里结构体  &lt;code&gt;Elf64_Phdr&lt;/code&gt; 表示的就是程序头表中的一个 Program Header（在一些场景中Program Header也被叫做Segment；同样Section Header在一些场景中也被叫做Section）：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;/// linux/include/elf.h
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;typedef&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Word&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;p_type&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;			&lt;span class=&#34;cm&#34;&gt;/* Segment type */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Word&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;p_flags&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Segment flags */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Off&lt;/span&gt;	    &lt;span class=&#34;n&#34;&gt;p_offset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Segment file offset */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Addr&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;p_vaddr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Segment virtual address */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Addr&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;p_paddr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Segment physical address */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Xword&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;p_filesz&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Segment size in file */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Xword&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;p_memsz&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Segment size in memory */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Xword&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;p_align&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Segment alignment */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Elf64_Phdr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;我们可以通过 &lt;code&gt;readelf -l&lt;/code&gt; 查看程序头表的内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 查看simple文件的程序头表内容&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf -l -W simple
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt;output
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;Elf file type is DYN (Position-Independent Executable file)
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;Entry point 0x1040
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;There are 13 program headers, starting at offset 64
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;Program Headers:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;...
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt; Section to Segment mapping:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  Segment Sections...
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;   ...
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;output&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;p_type&#34;&gt;p_type
+&lt;/h3&gt;&lt;p&gt;4个字节表示程序头表中的元素（Segment / Program Header）的类型。该类型用于指导怎么解析程序头数组元素的信息：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;PT_NULL  表示数组元素是未使用的，且元素的成员也是未定义的，该标志用于表明忽略该元素。&lt;/li&gt;
+&lt;li&gt;PT_LOAD  该数组元素表示一个可加载的Segment&lt;/li&gt;
+&lt;li&gt;PT_DYNAMIC  该数组元素表示动态链接信息&lt;/li&gt;
+&lt;li&gt;PT_INTERP  该数组元素指定了一个以&lt;strong&gt;空字符结尾的路径名&lt;/strong&gt;的位置和大小，该路径名用于指定要调用的解释器。此段类型仅对可执行文件有效（尽管它可能出现在共享对象中），但一个文件中最多只能出现一次。如果存在，它必须位于任何可加载Segment条目之前。&lt;/li&gt;
+&lt;li&gt;PT_NOTE&lt;/li&gt;
+&lt;li&gt;PT_SHLIB  该类型是保留的，目前未明确定义其语义。若程序包含此类数组元素，则不符合ABI规范。&lt;/li&gt;
+&lt;li&gt;PT_PHDR  若存在该数组元素，则其用于指明程序头表（program header table）在文件及程序内存映像中的位置和大小。此段类型在文件中最多只能出现一次，&lt;strong&gt;且仅当&lt;/strong&gt;程序头表属于程序内存映像的一部分时才允许存在。若存在，则其必须位于所有可加载段条目之前。&lt;/li&gt;
+&lt;li&gt;PT_LOPROC, PT_HIPROC  位于 &lt;code&gt;[PT_LOPROC, PT_HIPROC]&lt;/code&gt; 之间的值是为特定处理器语义而保留的。&lt;/li&gt;
+&lt;li&gt;PT_GNU_STACK  GNU扩展功能，该功能被Linux内核用于通过p_flags成员中设置的标志位来控制堆栈状态。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;p_offset&#34;&gt;p_offset
+&lt;/h3&gt;&lt;p&gt;该成员存储了Segment首字节在ELF文件中的起始偏移量（单位字节）。&lt;/p&gt;
+&lt;h3 id=&#34;p_vaddr&#34;&gt;p_vaddr
+&lt;/h3&gt;&lt;p&gt;该成员记录了该Segment首字节在内存中的虚拟地址。&lt;/p&gt;
+&lt;h3 id=&#34;p_paddr&#34;&gt;p_paddr
+&lt;/h3&gt;&lt;p&gt;该字段在采用物理寻址的系统上是有意义的，此成员被保留用于存储段的物理地址。在BSD系统下，该成员未被使用且必须置零。&lt;/p&gt;
+&lt;h3 id=&#34;p_filesz&#34;&gt;p_filesz
+&lt;/h3&gt;&lt;p&gt;表示该Segment在ELF&lt;strong&gt;文件映像&lt;/strong&gt;（磁盘上的二进制表示）中的字节数大小，可能为0&lt;/p&gt;
+&lt;h3 id=&#34;p_memsz&#34;&gt;p_memsz
+&lt;/h3&gt;&lt;p&gt;表示该Segment在&lt;strong&gt;内存映像&lt;/strong&gt;（内存中的二进制表示）中的字节数大小，可能为0&lt;/p&gt;
+&lt;h3 id=&#34;p_flags&#34;&gt;p_flags
+&lt;/h3&gt;&lt;p&gt;该成员存储了与该Segment相关的标志位掩码：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;PF_X  一个可执行的Segment&lt;/li&gt;
+&lt;li&gt;PF_W  一个可写的Segment&lt;/li&gt;
+&lt;li&gt;PF_R  一个可读的Segment
+举例：一个 text segment通常拥有 PF_X和PF_R。一个 data segment通常拥有 PF_W和PF_R。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;p_align&#34;&gt;p_align
+&lt;/h3&gt;&lt;p&gt;该成员定义了Segment在内存及文件中的对齐值。可加载进程段必须满足 p_vaddr 与 p_offset 在页面大小模数下的对齐一致性。若该值为零或一，则表示无需对齐；否则，p_align 应为 2 的正整数次幂，且 p_vaddr 需等于 p_offset，而且 p_vaddr/p_offset 对 p_align 取模的余数均为0。&lt;/p&gt;
+&lt;h2 id=&#34;section-header-table&#34;&gt;Section Header Table
+&lt;/h2&gt;&lt;p&gt;ELF Header的大小是固定的64字节，Program Header Table的大小通过 &lt;code&gt;e_phentsize * e_phnum&lt;/code&gt; 也可以计算出来。&lt;strong&gt;注意Section Header Table不是紧跟着 Program Header Table的，它们中间存在Sections，Section Header Table放在ELF文件的最后面&lt;/strong&gt;。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 验证Section Header Table确实放在ELF文件的最后面&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 列出 Section Header Table 信息&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf -S -W simple
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 注意这里 0x3920是通过ELF Header 的 e_shoff 得到的&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt;output
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;There are 35 section headers, starting at offset 0x3920:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;Section Headers:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;...
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;output&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 通过 e_shentsize * e_shnum 计算 Section Header Table的大小是 35 * 64&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 所以得出文件的大小 = 0x3920 + 35 * 64 = 16864&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 通过 ls -l 验证算出的文件大小是正确的&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;ls -l simple
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt;output
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;-rwxrwxr-x 1 raymond raymond 16864  7月 29 15:25 simple
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;output&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;文件的 Section Header Table 用于定位所有Sections的位置。和 Program Header Table 类似，该表也是一个结构体数组。结构体为 &lt;code&gt;Elf64_Shdr&lt;/code&gt; ：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;/// linux/include/elf.h
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;typedef&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Word&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;sh_name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Section name (string tbl index) */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Word&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;sh_type&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Section type */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Xword&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;sh_flags&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Section flags */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Addr&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;sh_addr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Section virtual addr at execution */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Off&lt;/span&gt;	    &lt;span class=&#34;n&#34;&gt;sh_offset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Section file offset */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Xword&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;sh_size&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Section size in bytes */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Word&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;sh_link&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Link to another section */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Word&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;sh_info&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Additional section information */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Xword&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;sh_addralign&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;	&lt;span class=&#34;cm&#34;&gt;/* Section alignment */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Xword&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;sh_entsize&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Entry size if section holds table */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Elf64_Shdr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Section Header Table的部分索引值是被保留的（ELF文件不会分配这些Section Header）：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;一是初始条目（索引位置为0），在ELF扩展的情况下用于存储 e_phnum、e_shnum和e_shstrndx的值；在其他情况下各字段均为零。&lt;/li&gt;
+&lt;li&gt;二是 &lt;code&gt;[SHN_LORESERVE, SHN_HIRESERVE]&lt;/code&gt; （索引位置为 &lt;code&gt;[0xff00, 0xffff]&lt;/code&gt;）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;sh_name&#34;&gt;sh_name
+&lt;/h3&gt;&lt;p&gt;4个字节表示 &lt;code&gt;.shstrtab&lt;/code&gt; Section （Section Header String Table Section）中的索引，该索引位置元素是 Section的名字（这个字符串是C风格的以&lt;code&gt;\0&lt;/code&gt;结尾的字符串）。&lt;/p&gt;
+&lt;h3 id=&#34;sh_type&#34;&gt;sh_type
+&lt;/h3&gt;&lt;p&gt;4个字节，用于表示该Section Header对应的Section的类型：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;SHT_NULL  这个值表示该节头（section header）是非活跃的，它没有关联的实际节区（section）。节头中的其他成员的值是未定义的。&lt;/li&gt;
+&lt;li&gt;SHT_PROGBITS  该Section包含由程序自身定义的信息，其格式和含义完全由程序决定。&lt;/li&gt;
+&lt;li&gt;SHT_SYMTAB  该Section包含一个符号表。通常情况下，SHT_SYMTAB 类型的符号表主要用于链接编辑（link editing），但也可能被动态链接（dynamic linking）使用。由于它是一个完整的符号表，可能会包含许多动态链接所不需要的符号。此外，目标文件（object file）还可能包含一个 SHT_DYNSYM 节区，专门用于动态链接。&lt;/li&gt;
+&lt;li&gt;SHT_STRTAB  该Section包含一个字符串表(String Table)。一个ELF文件可能拥有多个字符串表Section&lt;/li&gt;
+&lt;li&gt;SHT_RELA  该Section存储了带有显式加数（explicit addends）的重定位项，例如 32 位目标文件中的 Elf32_Rela 类型。一个目标文件可能包含多个重定位节区。&lt;/li&gt;
+&lt;li&gt;SHT_HASH  该Section存储了一个符号hash表。任何参与动态链接（dynamic linking）的目标文件或共享库必须包含一个符号哈希表，以加速运行时符号查找（如通过 dlopen 或 dlsym）。若缺失此表，动态链接器（ld.so）将无法高效解析符号，导致性能下降或错误。每个目标文件只能包含一个哈希表（通常位于 .hash 或 .gnu.hash 节区）。&lt;/li&gt;
+&lt;li&gt;SHT_DYNAMIC  该Section存储了动态链接信息。一个ELF文件只能有一个 dynamic section。（may have only one 此处 &amp;ldquo;may&amp;rdquo; 不是表示&amp;quot;可能&amp;quot;，而是表示规范中的允许性限制（类似&amp;quot;shall&amp;quot;但语气较弱），应译为&amp;quot;只能&amp;quot;或&amp;quot;仅允许&amp;quot;。技术文档中常见的 &amp;ldquo;may only&amp;rdquo; 结构均表示强制性限制（如 RFC 2119 标准定义）。&lt;/li&gt;
+&lt;li&gt;SHT_NOTE  该Section包含 notes (ElfN_Nhdr)&lt;/li&gt;
+&lt;li&gt;SHT_NOBITS  此类节区（section）在文件中不占用实际空间，但其他特征与 SHT_PROGBITS 类型节区类似。尽管该节区不包含实际数据字节，其 sh_offset 成员仍保留逻辑文件偏移量的概念值。&lt;/li&gt;
+&lt;li&gt;SHT_REL  该Section存储的是无显式加数（explicit addends）的重定位偏移量，例如32位目标文件中的Elf32_Rel类型。一个目标文件中可能包含多个重定位节区。&lt;/li&gt;
+&lt;li&gt;SHT_SHLIB  该类型保留（目前没有确定的语义）&lt;/li&gt;
+&lt;li&gt;SHT_DYNSYM  该Section存储的是动态链接所需的最简符号集合。目标文件可能同时包含一个SHT_SYMTAB节区（完整符号表）。&lt;/li&gt;
+&lt;li&gt;SHT_LOPROC, SHT_HIPROC&lt;/li&gt;
+&lt;li&gt;SHT_LOUSER&lt;/li&gt;
+&lt;li&gt;SHT_HIUSER&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;sh_flags&#34;&gt;sh_flags
+&lt;/h3&gt;&lt;p&gt;8个字节，每个bit为一个标志位：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;SHF_WRITE  该Section包含内容在进程执行过程中是可写的&lt;/li&gt;
+&lt;li&gt;SHF_ALLOC  该Section在进程执行期间会占用内存空间。某些控制节区不会驻留在目标文件的内存映像中，此类节区将禁用此属性。&lt;/li&gt;
+&lt;li&gt;SHF_EXECINSTR  该Section包含可执行的机器指令&lt;/li&gt;
+&lt;li&gt;SHF_MASKPROC  该掩码包含的所有bit是为处理器特定语义保留的。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;sh_addr&#34;&gt;sh_addr
+&lt;/h3&gt;&lt;p&gt;8个字节，若该Section存在于进程的内存映像中，则此成员（sh_addr）存储节区首字节应驻留的内存地址；否则，该成员值为零。&lt;/p&gt;
+&lt;h3 id=&#34;sh_offset&#34;&gt;sh_offset
+&lt;/h3&gt;&lt;p&gt;8字节，该成员（sh_offset）的值表示从文件起始位置到该Section首个字节的字节偏移量。特别地，对于SHT_NOBITS类型的节区（如.bss），其虽然在文件中不占用实际存储空间，但sh_offset成员仍会标识该节区在文件中的逻辑位置。&lt;/p&gt;
+&lt;h3 id=&#34;sh_size&#34;&gt;sh_size
+&lt;/h3&gt;&lt;p&gt;8字节，表示该Section的大小（单位字节）&lt;/p&gt;
+&lt;h3 id=&#34;sh_link&#34;&gt;sh_link
+&lt;/h3&gt;&lt;p&gt;4个字节，Section的索引号，指向当前Section关联的其他Section，具体含义取决于当前Section类型（sh_type）&lt;/p&gt;
+&lt;p&gt;sh_link和sh_info两个字段表示段的链接信息，如果段的类型是与链接相关的（不论是动态链接还是静态链接），比如重定位表、符号表这些段，那么 sh_link 和 sh_info 这两个成员所包含的意义如下表所示（对于其他类型的段，这两个成员没有意义）：&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;sh_type&lt;/th&gt;
+          &lt;th&gt;sh_link&lt;/th&gt;
+          &lt;th&gt;sh_info&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;SHT_DYNAMIC&lt;/td&gt;
+          &lt;td&gt;该段所使用的字符串表在section header table中的索引&lt;/td&gt;
+          &lt;td&gt;0&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;SHT_HASH&lt;/td&gt;
+          &lt;td&gt;该段所使用的符号表在section header table中的索引&lt;/td&gt;
+          &lt;td&gt;0&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;SHT_REL&lt;/td&gt;
+          &lt;td&gt;该段所使用的相应符号表在section header table中的索引&lt;/td&gt;
+          &lt;td&gt;该重定位表所作用的Section在section header table中的下标&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;SHT_RELA&lt;/td&gt;
+          &lt;td&gt;该段所使用的相应符号表在section header table中的索引&lt;/td&gt;
+          &lt;td&gt;该重定位表所作用的Section在section header table中的下标&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;SHT_SYMTAB&lt;/td&gt;
+          &lt;td&gt;操作系统相关的&lt;/td&gt;
+          &lt;td&gt;操作系统相关的&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;SHT_DYNSYM&lt;/td&gt;
+          &lt;td&gt;操作系统相关的&lt;/td&gt;
+          &lt;td&gt;操作系统相关的&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;other&lt;/td&gt;
+          &lt;td&gt;SHN_UNDEF&lt;/td&gt;
+          &lt;td&gt;0&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;sh_info&#34;&gt;sh_info
+&lt;/h3&gt;&lt;p&gt;4个字节，表示额外信息，具体语义由 sh_type 决定&lt;/p&gt;
+&lt;h3 id=&#34;sh_addralign&#34;&gt;sh_addralign
+&lt;/h3&gt;&lt;p&gt;8个字节。某些节区具有地址对齐约束。例如，若某节区存储的是双字（doubleword）数据，则系统必须确保整个节区按双字对齐。具体表现为：该节区的 sh_addr 地址值必须满足 sh_addr ≡ 0 (mod sh_addralign) 的同余条件。对齐值仅允许为 0、1 或 2 的正整数幂次方——当取值为 0 或 1 时，表示该节区无对齐要求。&lt;/p&gt;
+&lt;h3 id=&#34;sh_entsize&#34;&gt;sh_entsize
+&lt;/h3&gt;&lt;p&gt;部分节区存储的是由固定长度条目构成的表结构（如符号表）。对于此类节区，本字段（sh_entsize）表示每个条目所占的字节大小；若节区内容非固定长度条目表，则本字段值为零。&lt;/p&gt;
+&lt;h2 id=&#34;sections&#34;&gt;Sections
+&lt;/h2&gt;&lt;p&gt;关于Section的名字，下面列出的Section的名字都是以  &lt;code&gt;.&lt;/code&gt;  开头的，表示这些Section名字都是系统保留的，应用程序也可以使用一些非系统保留的名字作为Section名字。自定义的Section名字不能使用 &lt;code&gt;.&lt;/code&gt; 开头，以免和系统保留名字冲突。ELF文件中也可以拥有几个相同段名的Section。&lt;/p&gt;
+&lt;h3 id=&#34;bss&#34;&gt;.bss
+&lt;/h3&gt;&lt;p&gt;存储的是未初始化的全局变量和局部静态变量，这些数据会占用程序的内存映像空间。根据定义，系统会在程序启动运行时将其内容初始化为零值。此节区类型为 SHT_NOBITS（不占用文件空间），其属性标志包含 SHF_ALLOC（需分配内存）和 SHF_WRITE（可写）。&lt;/p&gt;
+&lt;p&gt;注意.bss段在文件中不占用实际存储空间（仅定义未初始化的全局/静态变量）。也就是说在ELF文件中.bss段只有元数据（如sh_size定义大小），无实际内容，而且其对应节区头（Section Header）描述中的sh_offset字段通常为0或无效值。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;readelf验证&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 通过readefl -x dump某个Section的16进制数据&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf -x .bss simple
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;#输出提示：Section &amp;#39;.bss&amp;#39; has no data to dump.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;strong&gt;gdb验证&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf -S -W simple
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt;out
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;Section Headers:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [24] .bss              NOBITS          0000000000004010 003010 000008 00  WA  0   0  1
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;out&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 从虚拟地址 0x4010 开始 8 个字节的内容，一般都是全0值&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;gdb simple
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;gdb&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; x/8xb 0x4010
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt;out
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;0x4010 &amp;lt;completed.0&amp;gt;:	0x00	0x00	0x00	0x00	0x00	0x00	0x00	0x00
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;out&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;comment&#34;&gt;.comment
+&lt;/h3&gt;&lt;p&gt;存储版本控制信息，直接通过readelf可观察：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf -x .comment simple
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt;output
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;Hex dump of section &amp;#39;.comment&amp;#39;:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  0x00000000 4743433a 20285562 756e7475 2031312e  GCC: (Ubuntu 11.
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  0x00000010 342e302d 31756275 6e747531 7e32322e  4.0-1ubuntu1~22.
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  0x00000020 30342920 31312e34 2e3000             04) 11.4.0.
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;output&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;ctors-和-dtors&#34;&gt;.ctors 和 .dtors
+&lt;/h3&gt;&lt;p&gt;.ctors Section存储的是已初始化的C++构造函数指针，其类型为SHT_PROGBITS（包含程序定义的已初始化数据），并具有SHF_ALLOC（需加载到内存）和SHF_WRITE（可写）属性标志。&lt;/p&gt;
+&lt;p&gt;.dtors Section存储的是已初始化的C++析构函数指针，其类型为SHT_PROGBITS（包含程序定义的已初始化数据），并具有SHF_ALLOC（需加载到内存）和SHF_WRITE（可写）属性标志。&lt;/p&gt;
+&lt;h3 id=&#34;data&#34;&gt;.data
+&lt;/h3&gt;&lt;p&gt;该Section存储的是已初始化的程序数据，这些数据将构成进程的内存映像。其类型为SHT_PROGBITS（包含实际初始数据内容），并具有SHF_ALLOC（需分配内存）和SHF_WRITE（可写）属性标志。.data Section保存了初始化了的全局变量和局部静态变量。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;readelf验证&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 当没有初始化的全局变量/局部静态变量时，该Section为空&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf -x .data simple
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt;out
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;Hex dump of section &amp;#39;.data&amp;#39;:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  0x00004000 00000000 00000000 08400000 00000000 .........@......
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;out&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;rodata&#34;&gt;.rodata
+&lt;/h3&gt;&lt;p&gt;存放只读数据，一般是程序里面的const修饰的变量和字符串变量。有些编译器会把字符串变量放到 &lt;code&gt;.data&lt;/code&gt; Section。&lt;/p&gt;
+&lt;h3 id=&#34;reltext-32位&#34;&gt;.rel.text (32位)
+&lt;/h3&gt;&lt;p&gt;ELF文件中 .rel.text 和 .rela.text 都是与代码段 .text 相关的重定位Section。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;.rel.text
+&lt;ul&gt;
+&lt;li&gt;类型 Elf32_Rel/Elf64_Rel&lt;/li&gt;
+&lt;li&gt;加数Addend隐式存储在需要重定位的目标位置&lt;/li&gt;
+&lt;li&gt;一般使用在较旧的工具链或者简单架构里&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;.rela.text
+&lt;ul&gt;
+&lt;li&gt;类型 Elf32_Rela/Elf64_Rela&lt;/li&gt;
+&lt;li&gt;加数Addend显式给出，条目中直接包含 r_addend 字段&lt;/li&gt;
+&lt;li&gt;一般使用在现代主流架构里（如x86-64）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;一句话总结：Rel 用在32位系统里，Rela则用在64位系统里。&lt;/p&gt;
+&lt;h3 id=&#34;重定位表-relatext-和-reladata&#34;&gt;重定位表 .rela.text 和 rela.data
+&lt;/h3&gt;&lt;p&gt;ELF目标文件（只编译不链接生成的 .o 文件）中会有一个或多个重定位表（Relocation Table）的Section专门用来保存和重定位相关的信息。如果 .text 段中有要被重定位的地方，会有对应的 .rel.text 重定位表；同理，如果 .data 有要被重定位的地方，也会有相应的 .rel.data 重定位表。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;objdump -r 查看 .rela.text&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;27
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt;example_code
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;// main.c
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;int add(int a, int b);  // 引用外部定义的函数
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;extern int g_shared;  // 引用外部定义的全局变量
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;void main() {
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;	g_shared += 0xfafb;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;	int c = add(1, 2);
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;	return;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;example_code&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;gcc -c main.c  &lt;span class=&#34;c1&#34;&gt;# 生成 main.o&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;objdump -r main.o
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt;out
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;RELOCATION RECORDS FOR [.text]:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;OFFSET           TYPE              VALUE
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;000000000000000e R_X86_64_PC32     g_shared-0x0000000000000004
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;0000000000000019 R_X86_64_PC32     g_shared-0x0000000000000004
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;0000000000000028 R_X86_64_PLT32    add-0x0000000000000004
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;RELOCATION RECORDS FOR [.eh_frame]:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;OFFSET           TYPE              VALUE
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;0000000000000020 R_X86_64_PC32     .text
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;out&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;objdump -r 用来查看 main.o 中所有要重定位的地方，即 main.o 所有引用到外部符号的地址。每个要被重定位的地方叫一个重定位条目（Relocation Entry）, 每个条目对应一个结构体 &lt;code&gt;Elf64_Rela&lt;/code&gt; ，该结构体字段：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;r_offset：表示该重定位需要修正的内容的第一个字节相对于该符号表关联的Section（比如 .text）段起始位置的偏移量（单位字节）&lt;/li&gt;
+&lt;li&gt;r_info：该成员（r_info）同时包含需执行重定位所依据的符号表索引和待应用的重定位类型。重定位类型的具体定义与处理器架构相关。当文档提及重定位条目的&amp;quot;重定位类型&amp;quot;或&amp;quot;符号表索引&amp;quot;时，即表示分别对条目的r_info成员应用&lt;code&gt;ELF[32|64]_R_TYPE&lt;/code&gt;或&lt;code&gt;ELF[32|64]_R_SYM&lt;/code&gt;宏所提取的结果。部分字节表示类型，部分字节表示符号表索引，elf.h 有对应宏提取各部分的信息。&lt;/li&gt;
+&lt;li&gt;r_addend：对于结构体&lt;code&gt;Elf64_Rel&lt;/code&gt;缺少的这个字段，其实是隐式写在 r_offset 指向的位置。这个值加到哪里？猜测是指令修正中用到的一个常数。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;对于所有在 &lt;code&gt;readelf -s main.o&lt;/code&gt; 中 Bind列显示为 GLOBAL 且 Ndx 列显示UND (undefined) 的符号，在重定位表中都应该至少有一项（每个重定位符号在读取和写入时都应该有一个 Relocation Entry）。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;重定位的本质是指令修正&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;重定位本质是指令修正，牢记这一点对于理解重定位概念和实现逻辑至关重要。ELF定义了32种不同的重定位类型，这里主要讲解其中两种最基本的：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;R_X86_64_PC32。重定位一个使用 32 位 PC 相对地址的引用。回顾《程序员的自我修养》3.6.3 节，一个 PC 相对地址就是距程序计数器（PC）的当前运行时值的偏移量。当 CPU 执行一条使用 PC 相对寻址的指令时，它就将在指令中编码的 32 位值加上 PC 的当前运行时值，得到有效地址（如 call 指令的目标），PC 值通常是下一条指令在内存中的地址。&lt;/li&gt;
+&lt;li&gt;R_X86_64_32。重定位一个使用 32 位绝对地址的引用。通过绝对寻址，CPU 直接使用在指令中编码的 32 位值作为有效地址，不需要进一步修改。
+这两种重定位类型支持 x86-64 小型代码模型（small code model），该模型假设可执行目标文件中的代码和数据的总体大小小于 2GB，因此在运行时可以用 32 位 PC 相对地址来访问。GCC 默认使用小型代码模型。大于 2GB 的程序可以用 -mcmodel=medium（中型代码模型）和 -mcmodel=large（大型代码模型）标志来编译，不过在此我们不讨论这些模型。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;字符串表-strtab-和-shstrtab&#34;&gt;字符串表 .strtab 和 .shstrtab
+&lt;/h3&gt;&lt;p&gt;字符串表将所有字符串（段名，变量名，函数名）接连排列成线性存储，因为采用的是C风格字符串（yi &lt;code&gt;\0&lt;/code&gt; 结束），所以只需要给定字符串起始位置的索引，就可以访问这个字符串的内容了。&lt;/p&gt;
+&lt;p&gt;.rela.text 是针对 .text 段的重定位表，当 .text 中至少有一个绝对地址的引用（比如调用当前源文件之外定义的函数例如 printf 库函数）。所谓的重定位表其实就是ELF文件中的一个Section，而每个Section都有一个Section Header。重定位表的Section Header中 sh_link 表示符号表的下标，sh_info 表示它作用于哪个Section。&lt;/p&gt;
+&lt;p&gt;可以通过 &lt;code&gt;readelf -p&lt;/code&gt; 查看字符串表的内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;27
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;28
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 样例程序SimpleSection.c 来自 《程序员的自我修养》第三章节&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf -p .strtab SimpleSection.o
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt;out
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;String dump of section &amp;#39;.strtab&amp;#39;:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [     1]  SimpleSection.c
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    11]  static_var.1
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    1e]  static_var2.0
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    2c]  global_init_var
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    3c]  global_uninit_var
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    4e]  func1
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    54]  printf
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    5b]  main
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;out&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf -p .shstrtab SimpleSection.o
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt;out
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;String dump of section &amp;#39;.shstrtab&amp;#39;:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [     1]  .symtab
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [     9]  .strtab
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    11]  .shstrtab
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    1b]  .rela.text
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    26]  .data
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    2c]  .bss
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    31]  .rodata
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    39]  .comment
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    42]  .note.GNU-stack
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    52]  .note.gnu.property
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;  [    65]  .rela.eh_frame
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s&#34;&gt;out&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;符号表-symtab&#34;&gt;符号表 .symtab
+&lt;/h3&gt;&lt;p&gt;每一个目标文件都会有一个相应的符号表，这个表里面记录了目标文件中所用到的所有符号。每个定义的符号有一个对应的值，叫做符号值，对于变量和函数来说，符号值就是他们的地址。除了函数和变量之外，还存在其他几种不常用到的符号。我们将符号表中的所有符号进行分类，它们可能是下面这些类型中的一种：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;全局符号：定义在一个目标文件中的全局函数和全局变量，它们可以被其他目标文件引用。&lt;/li&gt;
+&lt;li&gt;外部符号：在本目标文件中引用的全局符号，却没有定义在本目标文件中。&lt;/li&gt;
+&lt;li&gt;段名：这种符号一般由编译器生成，它的值就是该段的起始地址。&lt;/li&gt;
+&lt;li&gt;局部符号：这类符号只在编译单元内部可见。比如static修饰的变量。调试器可以使用这些符号来分析程序或崩溃时的coredump文件。这些局部符号对于链接过程没有作用，连接器往往也忽略它们。&lt;/li&gt;
+&lt;li&gt;行号信息：即目标文件指令与源代码中代码行的对应关系，它也是可选的。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;以上符号类型中，最值得关注的就是全局符号，即上面分类的第一类和第二类。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// ELF 符号表结构
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;/// linux/include/elf.h
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;typedef&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Word&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;st_name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Symbol name (string tbl index) */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;kt&#34;&gt;unsigned&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;st_info&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Symbol type and binding */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;kt&#34;&gt;unsigned&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;st_other&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Symbol visibility */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Section&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;st_shndx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Section index */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Addr&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;st_value&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Symbol value */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;Elf64_Xword&lt;/span&gt;	&lt;span class=&#34;n&#34;&gt;st_size&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;		&lt;span class=&#34;cm&#34;&gt;/* Symbol size */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Elf64_Sym&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;st_name  表示该符号名在字符串表 &lt;code&gt;.strtab&lt;/code&gt; 中的索引&lt;/li&gt;
+&lt;li&gt;st_value  符号相对应的值。这个值跟符号有关，可能是一个绝对值，也可能是一个地址等，不同的符号，它所对应的值含义不同。
+&lt;ul&gt;
+&lt;li&gt;目标文件中：
+&lt;ul&gt;
+&lt;li&gt;如果符号不是COMMON块类型（&lt;code&gt;st_shndx != SHN_COMMON&lt;/code&gt; ），st_value 表示该符号在段中的偏移。即符号位于由 st_shndx 指定的段，偏移为 st_value 的位置。&lt;/li&gt;
+&lt;li&gt;如果符号是COMMON块类型，st_value 表示该符号的对齐属性。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;可执行文件中：
+&lt;ul&gt;
+&lt;li&gt;st_value 表示符号的虚拟地址。这个虚拟地址对动态链接器非常有用。关键词 &amp;ldquo;动态链接器&amp;rdquo;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;st_size  符号大小，对于包含数据的符号，这个值是该数据类型的大小。比如一个double型的符号它占用8个字节。如果值为0，表示符号大小为0或未知。&lt;/li&gt;
+&lt;li&gt;st_info  一个字节表示符号类型和绑定信息，低4位表示符号类型，高4位标识绑定信息。
+&lt;ul&gt;
+&lt;li&gt;STT_NONE  未知类型符号&lt;/li&gt;
+&lt;li&gt;STT_OBJECT  类型为数据对象，比如变量、数组&lt;/li&gt;
+&lt;li&gt;STT_FUNC  类型为函数或其他可执行代码&lt;/li&gt;
+&lt;li&gt;STT_SECTION  类型为一个段，对应的绑定信息必须为STB_LOCAL&lt;/li&gt;
+&lt;li&gt;STT_FILE  类型为一个文件名，一般为目标文件对应的源文件名，对应的绑定信息也一定是STB_LOCAL的，而且它的st_shndx一定是 SHN_ABS (0xfff1) 标识该符号是一个绝对符号。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;st_other  该成员目前为0，没用&lt;/li&gt;
+&lt;li&gt;st_shndx 符号表中定义的每一项都是和一个Section相关的，该字段表明与之相关的 Section 的信息。
+&lt;ul&gt;
+&lt;li&gt;如果符号定义在本目标文件中，那么这个成员标识符号所在的Section对应的Section Header在Section Header Table中的索引。&lt;/li&gt;
+&lt;li&gt;如果符号不是定义在本目标文件中，或者某些特殊符号，sh_shndx会有特殊值：
+&lt;ul&gt;
+&lt;li&gt;SHN_ABS = 0xfff1  表示该符号包含了一个绝对的值，比如表示文件名的符号就属于这种类型&lt;/li&gt;
+&lt;li&gt;SHN_COMMON = 0xfff2  表示该符号是一个COMMON块类型的符号，一般来说，未初始化的全局符号定义就是这种类型的，详细参考 &amp;ldquo;静态链接 COMMON块&amp;rdquo;&lt;/li&gt;
+&lt;li&gt;SHN_UNDEF = 0  表示该符号未定义，这个符号在本目标文件被引用到，但是定义在其他目标文件中。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;通过 &lt;code&gt;readelf -s&lt;/code&gt; 查看符号表，输出的含义：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Num：表示该条目在符号表数组中的下标&lt;/li&gt;
+&lt;li&gt;Value：表示符号值，就是 st_value&lt;/li&gt;
+&lt;li&gt;Size：表示符号大小，对应st_size&lt;/li&gt;
+&lt;li&gt;Type：对应st_info的符号类型信息&lt;/li&gt;
+&lt;li&gt;Bind：对应 st_info 的符号绑定信息&lt;/li&gt;
+&lt;li&gt;Vis：目前在C/C++中未使用，可以忽略它&lt;/li&gt;
+&lt;li&gt;Ndx：对应 st_shndx&lt;/li&gt;
+&lt;li&gt;Name：符号名称，对应 st_name，已从字符串表中解析出来。
+从输出中可以看到，第一个符号，即下标为0的符号，永远是一个未定义的符号。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;全局偏移表-got&#34;&gt;全局偏移表 .got
+&lt;/h3&gt;&lt;p&gt;To Be Continued&amp;hellip;&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>程序ELF格式布局初探</title>
+        <link>https://example.com/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/</link>
+        <pubDate>Fri, 19 Jul 2024 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/</guid>
+        <description>&lt;img src="https://example.com/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover.jpg" alt="Featured image of post 程序ELF格式布局初探" /&gt;&lt;h2 id=&#34;实验环境准备&#34;&gt;实验环境准备
+&lt;/h2&gt;&lt;p&gt;可执行程序文件在磁盘上的存储格式和操作系统相关，在Windows平台上的可执行程序文件是PE格式，在Linux平台上就是ELF格式。EFL全称为Executable and Linkable Format。其实这里表达不是很准确，ELF文件可以细分三种类型：可执行程序、可重定位文件（单个编译单元编译后的产物，未进行链接操作，Linux上的扩展名字一般是 &lt;code&gt;.o&lt;/code&gt;）和共享目标文件（也就是动态链接库，在Linux上的扩展名字一般是 &lt;code&gt;.so&lt;/code&gt;）&lt;/p&gt;
+&lt;p&gt;一般学习过计算机专业课都会知道程序包含代码和数据两部分，这里我们通过编译一个最小的C可执行程序，来分析ELF是如何存储代码和数据的：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// main.c
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;strarr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;xyz&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;g_int&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mh&#34;&gt;0x12345678&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;strp&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;abcdefgh&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;main&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;我们通过这段gcc命令来编译得到可执行程序：&lt;code&gt;gcc -nostdinc -nostdlib -static --entry main main.c&lt;/code&gt;。这里的编译是广义的概念，内部隐藏了链接的操作，而狭义的编译概念不包含链接操作，对应于gcc命令里的 &lt;code&gt;-c&lt;/code&gt; 参数。&lt;/p&gt;
+&lt;p&gt;另外快速解释上面命令中的几个参数的含义：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;nostdinc：禁止在标准系统目录中搜索头文件&lt;/li&gt;
+&lt;li&gt;nostdlib：不链接标准启动文件和标准库&lt;/li&gt;
+&lt;li&gt;static：生成完全静态链接的可执行文件&lt;/li&gt;
+&lt;li&gt;entry main：指定程序入口点为 main 函数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;增加这些参数的目的是简化我们的分析，剔除和我们分析无关的代码。&lt;/p&gt;
+&lt;p&gt;好了，现在我们得到分析目标 a.out 可执行程序，因为没有通过 &lt;code&gt;-o&lt;/code&gt; 参数指定输出文件名字，所以gcc使用默认名称a.out。&lt;/p&gt;
+&lt;h2 id=&#34;size命令查看各个段大小&#34;&gt;size命令查看各个段大小
+&lt;/h2&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;size a.out 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   text	   data	    bss	    dec	    hex	filename
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    148	     16	      0	    164	     a4	a.out
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;从命令的输出结果中可以看出代码段(text)在ELF格式中占用了148个字节，数据段(data)在ELF格式中占据了16字节。变量&lt;code&gt;strarr&lt;/code&gt; 4个字节 + &lt;code&gt;g_int&lt;/code&gt; 4个字节 + &lt;code&gt;strp&lt;/code&gt; 9个字节 = 17个字节，怎么和上面size命令的结果对不上呢？注意这里 &lt;code&gt;strp&lt;/code&gt; 只是一个字符串指针，在64位系统上指针的大小是8个字节，所以其实 &lt;code&gt;strp&lt;/code&gt; 在 data段里只占用8个字节，它指向的内容存放在另外的地方。后面会通过另一个工具readelf来验证这里的逻辑。&lt;/p&gt;
+&lt;h2 id=&#34;readelf查看data-section内容&#34;&gt;readelf查看.data section内容
+&lt;/h2&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf -x .data a.out 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Hex dump of section &lt;span class=&#34;s1&#34;&gt;&amp;#39;.data&amp;#39;&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  0x00404000 78797a00 &lt;span class=&#34;m&#34;&gt;78563412&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;00204000&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;00000000&lt;/span&gt; xyz.xV4.. @.....
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;输出的内容是从虚拟地址 0x00404000 开始的16个字节的内容，我们可以看到所有全局字段的初始值是连续存储的：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;0x78797a00 存储 &lt;code&gt;strarr[]&lt;/code&gt;的初始值，注意按照C语言字符串规范，最后以 &lt;code&gt;\0&lt;/code&gt; 标记字符串结束位置。&lt;/li&gt;
+&lt;li&gt;0x78563412 存储 &lt;code&gt;g_int&lt;/code&gt; 的初始值，注意按照Little Endian规则存储。&lt;/li&gt;
+&lt;li&gt;0x00204000 00000000 存储的一个 &lt;code&gt;strp&lt;/code&gt; 的64位指针指向的地址（注意Little Endian序）。这个地址的内容就是实际字符串的值。记住这个地址，后面验证过程会出现这个地址。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;readelf查看rodata-section内容&#34;&gt;readelf查看.rodata section内容
+&lt;/h2&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf -x .rodata a.out 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Hex dump of section &lt;span class=&#34;s1&#34;&gt;&amp;#39;.rodata&amp;#39;&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  0x00402000 &lt;span class=&#34;m&#34;&gt;61626364&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;65666768&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;00&lt;/span&gt;                abcdefgh.
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;从输出结果中我们可以看到.rodata section的起始地址就是上面 &lt;code&gt;strp&lt;/code&gt; 指向的地址，这是巧合吗？并非如此。后面字符串的内容 &lt;code&gt;0x61626364 0x65666768 0x00&lt;/code&gt; 说明这个地址存放的内容就是 &lt;code&gt;strp&lt;/code&gt; 指向的字符串内容。&lt;/p&gt;
+&lt;h2 id=&#34;readelf查看全局变量的地址&#34;&gt;readelf查看全局变量的地址
+&lt;/h2&gt;&lt;p&gt;每个全局字段在 .data 中的位置是存储在符号表中的，可以通过 &lt;code&gt;readelf -s a.out&lt;/code&gt; 查看各个符号的虚拟地址：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf -s a.out 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Symbol table &lt;span class=&#34;s1&#34;&gt;&amp;#39;.symtab&amp;#39;&lt;/span&gt; contains &lt;span class=&#34;m&#34;&gt;16&lt;/span&gt; entries:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   Num:    Value          Size Type    Bind   Vis      Ndx Name
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     0: &lt;span class=&#34;m&#34;&gt;0000000000000000&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; NOTYPE  LOCAL  DEFAULT  UND 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     1: &lt;span class=&#34;m&#34;&gt;0000000000400200&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; SECTION LOCAL  DEFAULT    &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     2: &lt;span class=&#34;m&#34;&gt;0000000000400220&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; SECTION LOCAL  DEFAULT    &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     3: &lt;span class=&#34;m&#34;&gt;0000000000401000&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; SECTION LOCAL  DEFAULT    &lt;span class=&#34;m&#34;&gt;3&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     4: &lt;span class=&#34;m&#34;&gt;0000000000402000&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; SECTION LOCAL  DEFAULT    &lt;span class=&#34;m&#34;&gt;4&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     5: &lt;span class=&#34;m&#34;&gt;0000000000402010&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; SECTION LOCAL  DEFAULT    &lt;span class=&#34;m&#34;&gt;5&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     6: &lt;span class=&#34;m&#34;&gt;0000000000404000&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; SECTION LOCAL  DEFAULT    &lt;span class=&#34;m&#34;&gt;6&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     7: &lt;span class=&#34;m&#34;&gt;0000000000000000&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; SECTION LOCAL  DEFAULT    &lt;span class=&#34;m&#34;&gt;7&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     8: &lt;span class=&#34;m&#34;&gt;0000000000000000&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; FILE    LOCAL  DEFAULT  ABS main.c
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     9: &lt;span class=&#34;m&#34;&gt;0000000000404000&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;4&lt;/span&gt; OBJECT  GLOBAL DEFAULT    &lt;span class=&#34;m&#34;&gt;6&lt;/span&gt; strarr
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    10: &lt;span class=&#34;m&#34;&gt;0000000000404010&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; NOTYPE  GLOBAL DEFAULT    &lt;span class=&#34;m&#34;&gt;6&lt;/span&gt; __bss_start
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    11: &lt;span class=&#34;m&#34;&gt;0000000000401000&lt;/span&gt;    &lt;span class=&#34;m&#34;&gt;15&lt;/span&gt; FUNC    GLOBAL DEFAULT    &lt;span class=&#34;m&#34;&gt;3&lt;/span&gt; main
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    12: &lt;span class=&#34;m&#34;&gt;0000000000404008&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;8&lt;/span&gt; OBJECT  GLOBAL DEFAULT    &lt;span class=&#34;m&#34;&gt;6&lt;/span&gt; strp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    13: &lt;span class=&#34;m&#34;&gt;0000000000404010&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; NOTYPE  GLOBAL DEFAULT    &lt;span class=&#34;m&#34;&gt;6&lt;/span&gt; _edata
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    14: &lt;span class=&#34;m&#34;&gt;0000000000404010&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; NOTYPE  GLOBAL DEFAULT    &lt;span class=&#34;m&#34;&gt;6&lt;/span&gt; _end
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    15: &lt;span class=&#34;m&#34;&gt;0000000000404004&lt;/span&gt;     &lt;span class=&#34;m&#34;&gt;4&lt;/span&gt; OBJECT  GLOBAL DEFAULT    &lt;span class=&#34;m&#34;&gt;6&lt;/span&gt; g_int
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这里输出的内容和前面检查的内容是可以互相对照印证的。&lt;/p&gt;
+&lt;h2 id=&#34;readelf和objdump查看text内容&#34;&gt;readelf和objdump查看.text内容
+&lt;/h2&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf -x .text a.out 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Hex dump of section &lt;span class=&#34;s1&#34;&gt;&amp;#39;.text&amp;#39;&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  0x00401000 f30f1efa 554889e5 b8000000 005dc3   ....UH.......&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;.
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;当然这是所有机器指令混合在一起输出的，对于人类阅读而言，非常不直观。这里还有一种更直观的查看代码段的方法：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;objdump -d a.out
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;0:  f3 0f 1e fa             endbr64
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;4:  &lt;span class=&#34;m&#34;&gt;55&lt;/span&gt;                      push   rbp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;5:  &lt;span class=&#34;m&#34;&gt;48&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;89&lt;/span&gt; e5                mov    rbp,rsp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;8:  b8 &lt;span class=&#34;m&#34;&gt;00&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;00&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;00&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;00&lt;/span&gt;          mov    eax,0x0
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;d:  5d                      pop    rbp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;e:  c3                      ret
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;objdump直接将每条机器指令分开展示，并且每天机器指令对应的汇编代码也反解出来了。&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

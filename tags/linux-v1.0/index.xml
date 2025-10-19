@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Linux-V1.0 on Weijie&#39;s Blog Site</title>
+        <link>https://example.com/tags/linux-v1.0/</link>
+        <description>Recent content in Linux-V1.0 on Weijie&#39;s Blog Site</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Weijie</copyright>
+        <lastBuildDate>Fri, 20 Sep 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/linux-v1.0/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Linux v1.0 代码初探</title>
+        <link>https://example.com/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/</link>
+        <pubDate>Fri, 20 Sep 2024 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/</guid>
+        <description>&lt;img src="https://example.com/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.jpg" alt="Featured image of post Linux v1.0 代码初探" /&gt;&lt;h2 id=&#34;编译环境准备&#34;&gt;编译环境准备
+&lt;/h2&gt;&lt;p&gt;从 &lt;a class=&#34;link&#34; href=&#34;https://www.kernel.org/pub/linux/kernel/v1.0/linux-1.0.tar.xz&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;这里&lt;/a&gt; 下载v1.0版本的内核代码，该版本代码sha1为&lt;code&gt;6bdcbdb4d42c3bec7cbd7e6cc50e7c378acf4faa&lt;/code&gt;。看发布时间，Linux的第一个版本是在1994年发布的。&lt;/p&gt;
+&lt;p&gt;早期的Linux是在Minix上开发的，使用的编译工具也是移植到Minix上的GCC编译器。后续等到Linux版本迭代的越来越成熟后，开源社区将GCC移植到Linux上，此时才支持在旧版本Linux上开发新版本的Linux。&lt;/p&gt;
+&lt;h3 id=&#34;配置内核&#34;&gt;配置内核
+&lt;/h3&gt;&lt;p&gt;通过执行 &lt;code&gt;make config&lt;/code&gt; 命令来做构建之前的配置。要求配置的选项在 config.in 中，通过执行Configure shell脚本文件读取 config.in 生成构建所需要的配置文件 .config。.config文件中的内容其实是一些Shell变量定义，这些变量会被Makefile文件include进去，影响Makefile中的构建逻辑。&lt;/p&gt;
+&lt;p&gt;通过执行 &lt;code&gt;make dep&lt;/code&gt; 命令来正确设置所有的依赖。这里的依赖是指编译上的依赖。该命令会生成文件 .depend ，其内容是按照Makefile的目标依赖规则来组织的，其实这部分和在Makefile硬编码指定编译目标的依赖也是可以实现的，只不过因为编译目标的依赖项太多，这种方法比起硬编码的实现方式更加自动化，更加方便。比如 init/main.o 的依赖内容如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;27
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;28
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;29
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;30
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;31
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;32
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;33
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;34
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;35
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;36
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;37
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;38
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;39
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;40
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;41
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;42
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;43
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;44
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;45
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;46
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;47
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;48
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;49
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;50
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;51
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;52
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;53
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;54
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;55
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;56
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;57
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;58
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;59
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;60
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;init/main.o: init/main.c /usr/include/stdc-predef.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /usr/lib/gcc/x86_64-linux-gnu/9/include/stdarg.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/asm/system.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/segment.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/asm/io.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/types.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/fcntl.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/config.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/autoconf.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/sched.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/tasks.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/head.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/fs.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/linkage.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/limits.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/wait.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/dirent.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/vfs.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/net.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/socket.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/sockios.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/pipe_fs_i.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/minix_fs_i.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/ext_fs_i.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/ext2_fs_i.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/hpfs_fs_i.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/msdos_fs_i.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/iso_fs_i.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/nfs_fs_i.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/nfs.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/xia_fs_i.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/sysv_fs_i.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/minix_fs_sb.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/ext_fs_sb.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/ext2_fs_sb.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/hpfs_fs_sb.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/msdos_fs_sb.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/iso_fs_sb.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/nfs_fs_sb.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/xia_fs_sb.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/sysv_fs_sb.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/mm.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/page.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/errno.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/kernel.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/signal.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/time.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/param.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/resource.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/vm86.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/math_emu.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/tty.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/termios.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/unistd.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/string.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/timer.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/ctype.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/delay.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/utsname.h \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /home/raymond/workspace/linux/linux-v1.0/include/linux/ioport.h
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;同样可以把 .depend 看作是一个 Makefile 碎片文件，它会被Makefile文件include进去，用于指定哪些不方便手动编码的编译目标的依赖项。&lt;/p&gt;
+&lt;h3 id=&#34;编译内核&#34;&gt;编译内核
+&lt;/h3&gt;&lt;p&gt;通过执行 &lt;code&gt;make zImage&lt;/code&gt; 命令就可以创建一个压缩的内核映像了。由于当时Linux内核编译使用的是非常古老的gcc，所以如果直接在我的实验环境Ubuntu-20.04 with gcc-9.4中编译会失败。一个解决方法是搭建出当时开发Linux内核所用到的Minix操作环境，这个的实现难度很大，一方面在于不清楚当时Minix的版本号，另一方面VMWare和VirtualBox在引导古早的操作系统时会出现问题。另一个解决办法就是修改Linux v1.0的源代码以适应现代编译器。&lt;/p&gt;
+&lt;h3 id=&#34;修改编译参数&#34;&gt;修改编译参数
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;由于我使用的操作系统是64位环境，所以编译工具中要增加相关参数，保证生成目标是32位的：
+&lt;ul&gt;
+&lt;li&gt;汇编器AS增加参数 &lt;code&gt;--32&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;链接器LD增加参数 &lt;code&gt;-melf_i386&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;编译器HOSTCC用于生成构建内核的辅助程序，其执行环境是在Host主机上，这里选择 clang-18 替换原有的 gcc 再增加相关参数：
+&lt;ul&gt;
+&lt;li&gt;-std=gnu90 使用 gnu C90的语法&lt;/li&gt;
+&lt;li&gt;-m32 生成32位程序&lt;/li&gt;
+&lt;li&gt;-I/home/raymond/workspace/linux/linux-v1.0/include 指定头文件位置&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;编译器CC用于构建内核映像，其执行环境是在Target主机上，这里选择 clang-18 替换原有的 gcc 再增加相关参数：
+&lt;ul&gt;
+&lt;li&gt;-std=gnu90&lt;/li&gt;
+&lt;li&gt;-m32&lt;/li&gt;
+&lt;li&gt;&amp;ndash;sysroot=/home/raymond/workspace/linux/linux-v1.0/include 使用该选项后，编译器会做如下映射：
+&lt;ul&gt;
+&lt;li&gt;默认搜索路径 /usr/include =&amp;gt; 实际搜索路径 /home/raymond/workspace/linux/linux-v1.0/include&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;-I/home/raymond/workspace/linux/linux-v1.0/include 指定头文件位置&lt;/li&gt;
+&lt;li&gt;-Wno-int-conversion 忽略相关编译警告&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;CPP预处理器增加参数：
+&lt;ul&gt;
+&lt;li&gt;-I/home/raymond/workspace/linux/linux-v1.0/include&lt;/li&gt;
+&lt;li&gt;&amp;ndash;sysroot=/home/raymond/workspace/linux/linux-v1.0/include&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;处理链接时找不到符号问题&#34;&gt;处理链接时找不到符号问题
+&lt;/h3&gt;&lt;p&gt;Linux-v1.0使用的链接器中有一个非常奇葩的规则，如果链接的目标中既有汇编目标文件（.s文件通过汇编器生成）还有编译目标文件（.c文件通过编译器生成），如果这两个目标文件中的全局符号存在相互引用的情况时：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;1.汇编目标文件中定义一个全局变量/函数，可以在C目标文件里使用&lt;/li&gt;
+&lt;li&gt;2.C目标文件里定义一个全局变量/函数，可以在汇编目标文件里使用
+这时链接器会要求汇编目标文件使用的符号前加 &lt;code&gt;_&lt;/code&gt; ，而C目标文件中的符号保持不变。现代链接器已经没有这种不合理的规则了，但是如果不修改代码，现代编译器会报无法找到符号定义的错误。我的解决办法是将交叉使用的符号在所有的汇编代码里 &lt;code&gt;_&lt;/code&gt; 前缀去掉。这个改动非常大，至少有几百处位置修改，但是除此之外没有更好的办法了。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;预处理器语法修改&#34;&gt;预处理器语法修改
+&lt;/h3&gt;&lt;p&gt;Linux-v1.0中C代码会使用 &lt;code&gt;#ifdef 0&lt;/code&gt; 来隐藏不需要被编译的代码，但是现代编译器不支持这种语法，直接改成 &lt;code&gt;#ifdef NO_DEF_REPLACE_0&lt;/code&gt; 即可。&lt;/p&gt;
+&lt;h3 id=&#34;extern-inline-改为-static-inline&#34;&gt;extern inline 改为 static inline
+&lt;/h3&gt;&lt;p&gt;在头文件中定义的 extern inline 函数，在现代编译器下会报多重定义的问题，将 extern 关键字改为 static 关键字可以通过编译。这是因为static限制符号只在文件内部可见。&lt;/p&gt;
+&lt;h3 id=&#34;内联汇编语法&#34;&gt;内联汇编语法
+&lt;/h3&gt;&lt;p&gt;GCC 内联汇编是一种在 C/C++ 代码中直接嵌入汇编指令的强大功能，GCC 使用 AT&amp;amp;T 语法。基本的语法结构如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;asm&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;volatile&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;s&#34;&gt;&amp;#34;汇编指令模板&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;输出操作数列表&lt;/span&gt;      &lt;span class=&#34;cm&#34;&gt;/* 可选，形式为： &amp;#34;操作数约束字符1&amp;#34; (C环境变量1), &amp;#34;操作数约束字符2&amp;#34; (C环境变量2), ... */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;输入操作数列表&lt;/span&gt;      &lt;span class=&#34;cm&#34;&gt;/* 可选，形式同上 */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;被破坏的寄存器列表&lt;/span&gt;  &lt;span class=&#34;cm&#34;&gt;/* 可选，形式为：&amp;#34;寄存器1名字&amp;#34;, &amp;#34;寄存器2名字&amp;#34;, ...*/&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;asm&lt;/code&gt;：关键字，也可以用 &lt;code&gt;__asm__&lt;/code&gt;，后者更常见，因为可以避免与代码中其他名为 asm 的标识符冲突。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;volatile&lt;/code&gt;：可选关键字，也可以用 &lt;code&gt;__volatile__&lt;/code&gt;，理由同上。它告诉编译器不要优化这段汇编代码，防止被意外删除或移动。在涉及内存操作或硬件I/O时，几乎总是需要它。&lt;/li&gt;
+&lt;li&gt;括号内包含四个主要部分，用冒号分隔。
+&lt;ul&gt;
+&lt;li&gt;汇编指令模板：这是一个字符串，包含你的汇编指令。其中可以包含占位符，这些占位符会在编译时被具体的操作数替换。
+&lt;ul&gt;
+&lt;li&gt;占位符语法：%0, %1, %2, &amp;hellip; 按操作数出现的顺序编号（先编码输出操作数编号，后编码输入操作数编号）。&lt;/li&gt;
+&lt;li&gt;寄存器名前加两个百分号 %%（如 %%eax），以区别于占位符（如 %0）。&lt;/li&gt;
+&lt;li&gt;使用 \n 或 \t 来格式化汇编代码。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;输入/输出操作数约束：也就是上述语法中的输出操作数列表和输入操作数列表中的字符串部分中的大小写字母。它告诉编译器如何为C语言操作数分配寄存器或内存。
+&lt;ul&gt;
+&lt;li&gt;约束 含义&lt;/li&gt;
+&lt;li&gt;r 让编译器选择任何一个通用寄存器&lt;/li&gt;
+&lt;li&gt;a 使用 %eax, %ax, %al&lt;/li&gt;
+&lt;li&gt;b 使用 %ebx, %bx, %bl&lt;/li&gt;
+&lt;li&gt;c 使用 %ecx, %cx, %cl&lt;/li&gt;
+&lt;li&gt;d 使用 %edx, %dx, %dl&lt;/li&gt;
+&lt;li&gt;S 使用 %esi, %si&lt;/li&gt;
+&lt;li&gt;D 使用 %edi, %di&lt;/li&gt;
+&lt;li&gt;m 使用内存地址（而不是寄存器）&lt;/li&gt;
+&lt;li&gt;i 立即数（编译时常量）&lt;/li&gt;
+&lt;li&gt;g 寄存器、内存或立即数（任何通用类型）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;输出操作数修饰符：也就是上述语法中输出操作数列表和输入操作数列表中的字符串部分中的特殊符号。
+&lt;ul&gt;
+&lt;li&gt;修饰符 含义&lt;/li&gt;
+&lt;li&gt;= 只写（通常用于输出操作数）&lt;/li&gt;
+&lt;li&gt;+ 读写（操作数既是输入又是输出）&lt;/li&gt;
+&lt;li&gt;&amp;amp; 早期破坏寄存器（不能与输入操作数共用寄存器）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;被破坏的寄存器列表（GCC手册中叫做Clobber List）：这个部分告诉编译器我们在汇编代码中显式修改了哪些寄存器（除了通过输出操作数隐式修改的之外）。
+&lt;ul&gt;
+&lt;li&gt;寄存器名：&amp;ldquo;eax&amp;rdquo;, &amp;ldquo;ebx&amp;rdquo; 等&lt;/li&gt;
+&lt;li&gt;&amp;ldquo;memory&amp;rdquo;：表示我们修改了内存（不仅仅是输出操作数指向的内存），编译器在执行汇编代码前会将所有内存值写回，并在执行后重新读取。&lt;/li&gt;
+&lt;li&gt;&amp;ldquo;cc&amp;rdquo;：表示我们修改了条件码寄存器（EFLAGS）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;扩展汇编模板（Named Operands）：为了避免手动计算 %0, %1 的麻烦，GCC 支持命名操作数，这样代码更易读和维护。如下示例：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;src&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dst&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;asm&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;volatile&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;s&#34;&gt;&amp;#34;movl %[input], %%eax&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;s&#34;&gt;&amp;#34;movl %%eax, %[output]&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;output&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;=r&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dst&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;   &lt;span class=&#34;c1&#34;&gt;// 输出操作数命名为 output
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;o&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;input&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;r&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;src&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;     &lt;span class=&#34;c1&#34;&gt;// 输入操作数命名为 input
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;o&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;%eax&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;内联汇编代码修改&#34;&gt;内联汇编代码修改
+&lt;/h3&gt;&lt;p&gt;Linux-v1.0中C代码会使用内联汇编，但是当时的内联汇编语法和现代编译器支持的内联汇编语法有些区别，差异在于现代gcc要求如果被破坏的寄存器在输入操作数中出现，那就需要写到被破坏的寄存器列表里。比如这段代码：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;__asm__&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;__volatile__&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;rep ; movsl&amp;#34;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;:&lt;/span&gt; \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	&lt;span class=&#34;o&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;c&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(((&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;unsigned&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;long&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;size&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;S&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;from&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;D&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;to&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; \
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	&lt;span class=&#34;o&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;cx&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;di&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;si&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;因为 cx, di, si在输入操作数列表中都出现了，所以最后的Clobber List中要置为空。&lt;/p&gt;
+&lt;h3 id=&#34;使用链接器脚本控制内核映像格式&#34;&gt;使用链接器脚本控制内核映像格式
+&lt;/h3&gt;&lt;p&gt;Linux-v1.0代码中没有加载器的概念，都是硬盘上的可执行文件直接映射到内存中的一段区域，为了适应这种限制，只能用链接器脚本(*.lds)让链接器把&lt;code&gt;.text&lt;/code&gt;段空出一个特定的偏移，并且&lt;code&gt;.text&lt;/code&gt;, &lt;code&gt;.data&lt;/code&gt;, &lt;code&gt;.rodata&lt;/code&gt;, &lt;code&gt;.bss&lt;/code&gt; 段的file offset和虚拟地址保持一致。&lt;/p&gt;
+&lt;p&gt;比如生成zSystem的控制脚本为：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;SECTIONS {
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    . = 0x1000; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    .text : { *(.text) }
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    .rodata : { *(.rodata) *(.kernel_zip_data)}
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    .data : { *(.data) }
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    PROVIDE(edata = .);
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    .bss : { *(.bss) }
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    PROVIDE(end = .);
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;构建映像中的辅助工具&#34;&gt;构建映像中的辅助工具
+&lt;/h2&gt;&lt;h3 id=&#34;xtractc&#34;&gt;xtract.c
+&lt;/h3&gt;&lt;p&gt;zBoot/xtract.c是一个可执行程序，用于从 tools/zSystem（从stdin中读取） 中的 .text .data .bss 段数据提取出来，输出到stdout。&lt;/p&gt;
+&lt;p&gt;由于早期Linux都是用Minix开发的，随着Linux内核逐渐完善后才自举开发（在Linux上开发Linux）。猜测在Linux 1.0 构建二进制可执行文件格式应该是 a.out 格式，从 xtract.c 中包含的头文件 &lt;code&gt;&amp;lt;a.out.h&amp;gt;&lt;/code&gt; 可以验证这一推测，但是现代构建工具已经不支持 a.out 的，生成的是elf格式。所以 xtract.c 的逻辑需要改写。&lt;/p&gt;
+&lt;p&gt;xtract.c 从stdin里读取 ELF 格式的输入文件 tools/zSystem，从中提取代码段和数据段，生成新的 a.out 格式的文件输出到 stdout。&lt;/p&gt;
+&lt;p&gt;通过 xtract.c 代码逻辑猜测 a.out 格式如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;最开始的1024字节就是 &lt;code&gt;GCC_HEADER&lt;/code&gt;，这1024个字节的最开始部分包含了 &lt;code&gt;a.out.h&lt;/code&gt; 中的结构体 &lt;code&gt;struct exec&lt;/code&gt;内容。&lt;/li&gt;
+&lt;li&gt;1024字节后的部分就是 .text段&lt;/li&gt;
+&lt;li&gt;然后紧接着 .data 段&lt;/li&gt;
+&lt;li&gt;然后紧接着是符号表。&lt;code&gt;xtract.c&lt;/code&gt; 中通过符号表开始位置减去GCC_HEADER获取 .text段和 .data 段总共的大小 &lt;code&gt;N_SYMOFF(*ex) - GCC_HEADER&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;piggybackc&#34;&gt;piggyback.c
+&lt;/h3&gt;&lt;p&gt;xtract.c 提取了 .text段和 .data 段后的 a.out 文件经过gzip压缩后从stdin传递给 piggyback.c 程序。该程序的作用是模拟链接器将 stdin 中输入的内容链接到一个可重定位的 piggy.o 文件中（从stdout输出）。piggy.o 其中有一个全局符号 &lt;code&gt;_input_data&lt;/code&gt;，该符号是 piggyback.c 从stdin中读取到数据写入的起始位置，另外还有一个全局符号 &lt;code&gt;_input_len&lt;/code&gt; 该符号是记录的是piggyback.c 从stdin中读取到数据的长度。&lt;/p&gt;
+&lt;h3 id=&#34;buildc-工具&#34;&gt;build.c 工具
+&lt;/h3&gt;&lt;p&gt;将 boot/bootsect, boot/setup 和 zBoot/zSystem 依次写入zImage里。zImage就是生成的内核镜像。zBoot/zSystem会做strip操作，只写入 .text 段 和 .data段，减少映像文件大小。&lt;/p&gt;
+&lt;h2 id=&#34;使用qemu模拟执行内核映像&#34;&gt;使用qemu模拟执行内核映像
+&lt;/h2&gt;&lt;p&gt;一开始没有指定machine参数，发现boot阶段有一段复制磁盘的逻辑无法生效。如果发现qemu不停reboot，那一般就是BIOS环境不支持，考虑到Linux-v1.0是在1994年发布的，所以用&lt;code&gt;-machine pc-1.0&lt;/code&gt;参数指定一个较古老的机器环境。&lt;/p&gt;
+&lt;p&gt;经过多次探索，最终使用如下命令启动qemu的模拟器，能成功引导内核映像：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# -boot a 表示从第一块软盘启动&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# -fda 指定软盘映像的文件&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# -d 所选择的日志会直接打印到terminal上&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# -s 开启gdb调试端口&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# -S 启动后立刻停止&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;qemu-system-i386 -machine pc-1.0 -boot a -fda zImage -d in_asm,guest_errors -s -S
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# -machine help 查看更多机器类型&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;to-be-continued&#34;&gt;To Be Continued
+&lt;/h2&gt;&lt;p&gt;目前实验可以成功执行到 start_kernel 之前的代码，但是由于缺少 Linux-v1.0 配套的根文件系统，系统还是无法成功启动。后续再更新。&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

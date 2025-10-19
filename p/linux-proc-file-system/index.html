@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="ProcFS 通过 mount | grep proc 查看procfs的挂载情况。\nprocfs 的核心工作原理是：将内核数据结构、进程信息和系统运行状态，以“文件”和“目录”的抽象形式动态地暴露给用户空间。 这些“文件”并不存在于磁盘上；当读取或写入它们时，内核会动态地生成内容或触发相应的内核函数。\n">
+<title>Linux中几个特殊文件系统</title>
+
+<link rel='canonical' href='https://example.com/p/linux-proc-file-system/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Linux中几个特殊文件系统">
+<meta property='og:description' content="ProcFS 通过 mount | grep proc 查看procfs的挂载情况。\nprocfs 的核心工作原理是：将内核数据结构、进程信息和系统运行状态，以“文件”和“目录”的抽象形式动态地暴露给用户空间。 这些“文件”并不存在于磁盘上；当读取或写入它们时，内核会动态地生成内容或触发相应的内核函数。\n">
+<meta property='og:url' content='https://example.com/p/linux-proc-file-system/'>
+<meta property='og:site_name' content='Weijie&#39;s Blog Site'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='文件系统' /><meta property='article:tag' content='Linux内核' /><meta property='article:published_time' content='2024-11-20T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-20T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/linux-proc-file-system/cover.png' />
+<meta name="twitter:title" content="Linux中几个特殊文件系统">
+<meta name="twitter:description" content="ProcFS 通过 mount | grep proc 查看procfs的挂载情况。\nprocfs 的核心工作原理是：将内核数据结构、进程信息和系统运行状态，以“文件”和“目录”的抽象形式动态地暴露给用户空间。 这些“文件”并不存在于磁盘上；当读取或写入它们时，内核会动态地生成内容或触发相应的内核函数。\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://example.com/p/linux-proc-file-system/cover.png' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    <img src="/img/avatar.jpg" width="300" height="300" class="site-logo" loading="lazy" alt="Avatar">
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Weijie&#39;s Blog Site</a></h1>
+            <h2 class="site-description">My Tech Blogs</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#procfs">ProcFS</a></li>
+    <li><a href="#sysfs">SysFS</a></li>
+    <li><a href="#debugfs">DebugFS</a>
+      <ol>
+        <li><a href="#syskerneldebug">/sys/kernel/debug</a></li>
+        <li><a href="#syskerneldebugtracing">/sys/kernel/debug/tracing</a></li>
+        <li><a href="#syskerneldebugdmesg">/sys/kernel/debug/dmesg</a></li>
+        <li><a href="#syskerneldebugkprobes">/sys/kernel/debug/kprobes</a></li>
+      </ol>
+    </li>
+    <li><a href="#tracefs">TraceFS</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/linux-proc-file-system/">
+                <img src="/p/linux-proc-file-system/cover_hu_405e53f1bb51c6fc.png"
+                        srcset="/p/linux-proc-file-system/cover_hu_405e53f1bb51c6fc.png 800w, /p/linux-proc-file-system/cover_hu_d33b0951f3429d3c.png 1600w"
+                        width="800" 
+                        height="400" 
+                        loading="lazy"
+                        alt="Featured image of post Linux中几个特殊文件系统" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/linux%E5%86%85%E6%A0%B8/" style="background-color: #fa3da9; color: #fff;">
+                Linux内核
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/linux-proc-file-system/">Linux中几个特殊文件系统</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Nov 20, 2024</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    7 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="procfs">ProcFS
+</h2><p>通过 <code>mount | grep proc</code> 查看procfs的挂载情况。</p>
+<p>procfs 的核心工作原理是：将内核数据结构、进程信息和系统运行状态，以“文件”和“目录”的抽象形式动态地暴露给用户空间。 这些“文件”并不存在于磁盘上；当读取或写入它们时，内核会动态地生成内容或触发相应的内核函数。</p>
+<p>可以把它理解为一个只存在于内存中的、动态的、交互式的内核状态报告和配置界面。它的挂载点通常是 /proc。</p>
+<p><strong>动态虚拟文件是如何实现的</strong>：</p>
+<ul>
+<li>当用户空间程序（如 cat, ps, top）尝试访问 /proc 下的一个文件（例如 /proc/cpuinfo）时，会发生一系列精妙的操作：
+<ul>
+<li>（1）内核拦截请求：VFS（虚拟文件系统）层会拦截到这次文件访问请求。VFS 发现这个路径指向 procfs，于是它将控制权交给 procfs 自己实现的文件操作例程。</li>
+<li>（2）根据路径调用相应的回调函数：procfs 在内核中维护了一个巨大的“路由表”。这个表将不同的文件路径映射到专门用于生成其内容的内核函数上。例如：当访问 /proc/cpuinfo 时，映射的函数会去调用 cpuinfo_open() 和 cpuinfo_read() 这类具体的操作函数。当访问 /proc/1234/status（PID为1234的进程状态）时，映射的函数会找到内核中管理该进程的 task_struct 结构体，从中提取信息，并格式化成文本。</li>
+<li>（3）动态生成内容（对于读取操作）：内核中的对应函数被执行。这个函数会：
+<ul>
+<li>实时查询当前的内核数据结构（如 CPU 寄存器、进程描述符、内存统计信息等）。</li>
+<li>将这些二进制数据格式化成对人类和程序可读的纯文本格式。</li>
+<li>将这些格式化的文本作为“文件内容”返回给 VFS，最终传递给发出请求的用户程序。</li>
+</ul>
+</li>
+<li>（4）触发配置变更（对于写入操作）：对于某些可写的 /proc 文件（通常是 /proc/sys/ 下的内核参数），写入操作会触发另一个内核函数。比如 <code>echo 1 &gt; /proc/sys/net/ipv4/ip_forward</code> 这个写入操作不会改变一个磁盘文件，而是会调用一个内核函数，该函数会直接修改内核中控制 IP 转发的变量值，从而立即改变系统的网络行为。</li>
+</ul>
+</li>
+</ul>
+<h2 id="sysfs">SysFS
+</h2><p>sysfs 是 Linux 系统中一个至关重要且基础的内核虚拟文件系统。简单来说，可以将它理解为：一个反映内核设备模型（Kernel Device Model）的窗口，通过一个层次化的文件目录结构，向用户空间（User Space）直观地展示系统中所连接的设备、驱动、模块以及内核配置信息。它的核心作用是统一和标准化了内核与用户空间关于设备信息的交互方式。</p>
+<p>sysfs 是在开发 Linux 2.6内核时，与新的统一设备模型（Unified Device Model）一同引入的。在它之前，设备信息杂乱地分布在 /proc（procfs）和各个特定目录下，缺乏统一的结构。sysfs 的诞生就是为了解决这个问题，它将所有设备、驱动等内核对象以一种清晰、有组织的方式暴露给用户。</p>
+<p>通过 <code>mount | grep sysfs</code> 可以看到sysfs几乎总是被自动挂载到/sys目录下。</p>
+<ul>
+<li>block 包含系统上所有的块设备（如硬盘、分区、USB 存储设备）。每个设备都是一个符号链接，指向 devices/ 目录下的实际设备对象。</li>
+<li>bus  包含系统支持的各种总线类型。进入每种总线（如 /sys/bus/pci/），你会看到：
+<ul>
+<li>devices/： 连接到该总线上的所有设备。</li>
+<li>drivers/： 注册到该总线上的所有驱动程序。</li>
+</ul>
+</li>
+<li>&hellip;</li>
+</ul>
+<p><strong>工作原理</strong>：</p>
+<ul>
+<li>sysfs 中的文件通常不是普通的磁盘文件，而是内核中相应对象的属性（Attributes）。</li>
+<li>读取文件（cat）： 相当于查询该内核对象的某个属性（如设备名称、电源状态、驱动版本等）。</li>
+<li>写入文件（echo）： 相当于修改或配置该内核对象的某个属性（如改变设备状态、设置参数等）。
+<ul>
+<li>注意：写入操作通常需要 root 权限，且操作有风险。</li>
+</ul>
+</li>
+</ul>
+<h2 id="debugfs">DebugFS
+</h2><p>debugfs 是内核专门为调试场景设计的文件系统，相比 sysfs 的 “结构化设备管理” 和 procfs 的 “进程 / 系统信息”，它的优势在于：</p>
+<ul>
+<li>轻量灵活：内核模块可快速创建/删除文件或者目录，无需遵循严格的对象模型（如 sysfs 的 kobject 机制）；</li>
+<li>数据直观：文件内容多为纯文本格式，直接 cat 即可查看内核内部数据（如变量值、状态标志），无需复杂解析；</li>
+<li>无持久化：debugfs 数据完全在内存中，重启后所有内容消失，不会占用磁盘空间。</li>
+</ul>
+<p>为避免普通用户误操作影响内核稳定性，/sys/kernel/debug 的默认权限为 drwx&mdash;&mdash;（仅root可读可写），且多数文件的权限也限制为root专属。这是因为目录下的部分操作（如修改内核调试开关、触发跟踪）可能直接影响内核运行，甚至导致系统崩溃。</p>
+<h3 id="syskerneldebug">/sys/kernel/debug
+</h3><p>/sys/kernel/debug一般就是DebugFS的挂载目录，如果该文件夹下存在内容，那么debugfs一般是挂载了的。Ubuntu22.04默认是挂载的。当然也可以通过下面的命令检查debugfs是否挂载到某个目录下：</p>
+<ul>
+<li><code>mount | grep debugfs</code></li>
+<li><code>cat /proc/mounts | grep debugfs</code></li>
+<li>默认情况下，debugfs 通常挂载在 /sys/kernel/debug。你可以直接检查这个目录是否存在，以及它是否是一个独立的挂载点。</li>
+<li><code>df -T /sys/kernel/debug</code> 查看这个目录的文件系统类型，如果显示debugfs就表示已挂载。未挂载显示<code>sysfs</code> 文件系统类型。</li>
+</ul>
+<p>手动挂载debugfs方法 <code>sudo mount -t debugfs debugfs /sys/kernel/debug</code>：</p>
+<ul>
+<li>-t 是type的缩写，用于指定要挂载的文件系统类型</li>
+<li>第一个debugfs是-t参数的值</li>
+<li>第二个debugfs参数在mount命令中是指源设备，对于物理设备（如硬盘），这里会写设备路径（如 /dev/sda1）。但对于 debugfs 这种内核虚拟文件系统，它并不对应一个实际的硬件设备。按照惯例，这里通常再次写上文件系统类型的名字 debugfs 作为一个占位符，也可以写成 none。内核看到这个类型后会自行处理，无需实际设备。</li>
+<li>/sys/kernel/debug 这是挂载点。是一个目录的路径。mount 命令会将 debugfs 文件系统的内容“映射”到这个目录下。<strong>之后，所有对 /sys/kernel/debug 目录的读写操作，实际上都是在与内核的调试接口进行交互</strong>。这个路径是 Linux 系统中约定俗成的、专门用于挂载 debugfs 的标准位置。</li>
+</ul>
+<h3 id="syskerneldebugtracing">/sys/kernel/debug/tracing
+</h3><p>ftrace 工具的核心目录，可通过修改 current_tracer 选择跟踪类型（如函数调用、上下文切换），通过 trace 文件查看跟踪结果，常用于定位 “内核函数耗时过长”“任务调度卡顿” 等问题。</p>
+<p>一种触发ftrace的方法是读写该目录下的文件，另一种方法怎是使用 Ubuntu平台上的 <code>linux-tools</code> 软件包的 <code>trace-cmd</code>命令。后者代替手动修改 /sys/kernel/debug/tracing 下的文件，通过命令行快速配置跟踪规则（如跟踪内核调度、中断延迟）</p>
+<h3 id="syskerneldebugdmesg">/sys/kernel/debug/dmesg
+</h3><p>部分内核版本会在此处同步内核日志（与 dmesg 命令输出一致），方便实时查看内核报错信息。</p>
+<h3 id="syskerneldebugkprobes">/sys/kernel/debug/kprobes
+</h3><p>查看 kprobes（内核动态探针）的状态，可通过 kprobes 在不修改内核代码的情况下，在指定函数处插入 “钩子”，跟踪参数和返回值，定位函数调用异常。</p>
+<h2 id="tracefs">TraceFS
+</h2><p>TraceFS 是 Linux 内核专为 事件跟踪（tracing） 设计的内存文件系统，核心作用是为 ftrace（内核跟踪框架）提供标准化的用户态接口，方便开发者监控内核函数调用、进程调度、中断处理等底层行为。它与 DebugFS 既有关联（均服务于内核调试），又有明确分工（定位和用途不同）。</p>
+<p>TraceFS 是内核跟踪功能的 “前端”，所有文件和目录都围绕 ftrace 的需求设计，提供了一套结构化的接口用于：</p>
+<ul>
+<li>配置跟踪规则（如选择跟踪哪些内核事件、函数）；</li>
+<li>启动 / 停止跟踪；</li>
+<li>读取跟踪结果（如函数调用顺序、事件发生时间戳）。</li>
+</ul>
+<p>最初，ftrace 的所有接口都位于 debugfs 的挂载点下（通常是 /sys/kernel/debug/tracing）。这在一开始是合理的，因为 ftrace 本质上就是一种内核调试工具。然而，随着时间推移，跟踪（Tracing）的概念逐渐从单纯的“调试”（Debugging）中分离出来：</p>
+<ul>
+<li>调试 (Debugging)： 更侧重于发现和修复错误，通常是间歇性的、非持续的行为。debugfs 包含了各种杂项的调试接口（如 GPIO、USB 设备状态等）。</li>
+<li>跟踪 (Tracing)： 更侧重于持续地收集和分析系统运行时的大量数据，以进行性能剖析、瓶颈定位和行为分析。它通常是系统性的、长时间运行的。</li>
+</ul>
+<p>为了体现这种功能上的区分，并让跟踪子系统更加独立，内核开发者将 ftrace 的接口从 debugfs 中抽象出来，创建了专门的 tracefs。</p>
+<p>旧版内核中tracefs被自动挂载在debugfs挂载的目录点之下 <code>/sys/kernel/debug/tracing</code>。新版内核tracefs 拥有自己独立的挂载点（如 /sys/kernel/tracing），同时为了保持向后兼容，仍然在 /sys/kernel/debug/tracing 下创建一个挂载。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mount <span class="p">|</span> grep tracefs
+</span></span><span class="line"><span class="cl">tracefs on /sys/kernel/tracing <span class="nb">type</span> tracefs <span class="o">(</span>rw,nosuid,nodev,noexec,relatime<span class="o">)</span>
+</span></span><span class="line"><span class="cl">tracefs on /sys/kernel/debug/tracing <span class="nb">type</span> tracefs <span class="o">(</span>rw,nosuid,nodev,noexec,relatime<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 这意味着你可以通过 /sys/kernel/tracing 或 /sys/kernel/debug/tracing 这两个路径访问完全相同的内容。前者更为简洁和独立。</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">文件系统</a>
+        
+            <a href="/tags/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/elf-format/">
+        
+        
+            <div class="article-image">
+                <img src="/p/elf-format/cover.54add658b8d2b0451a27cc39cb2720a0_hu_cacb52883a74ab2e.png" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post ELF格式解析"
+                        data-key="elf-format" 
+                        data-hash="md5-VK3WWLjSsEUaJ8w5yycgoA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">ELF格式解析</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.9332f09241b6ef5c1fc0c5d058c2585c_hu_89398df38c139eb8.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Linux v1.0 代码初探"
+                        
+                        data-hash="md5-kzLwkkG271wfwMXQWMJYXA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Linux v1.0 代码初探</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/linux-epoll-api/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux-epoll-api/cover.ec8e4fac264ca8a7bb92b3774bf3a8a5_hu_f6397f5714a1583.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Linux epoll API"
+                        
+                        data-hash="md5-7I5PrCZMqKe7krN3S/OopQ==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Linux epoll API</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover.8c0b22750436acf837a0e27ebab14500_hu_ffb8773c4963df28.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 程序ELF格式布局初探"
+                        
+                        data-hash="md5-jAsidQQ2rPg3oOJ&#43;urFFAA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">程序ELF格式布局初探</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Weijie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

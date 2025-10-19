@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="编译环境准备 从 这里 下载v1.0版本的内核代码，该版本代码sha1为6bdcbdb4d42c3bec7cbd7e6cc50e7c378acf4faa。看发布时间，Linux的第一个版本是在1994年发布的。\n">
+<title>Linux v1.0 代码初探</title>
+
+<link rel='canonical' href='https://example.com/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Linux v1.0 代码初探">
+<meta property='og:description' content="编译环境准备 从 这里 下载v1.0版本的内核代码，该版本代码sha1为6bdcbdb4d42c3bec7cbd7e6cc50e7c378acf4faa。看发布时间，Linux的第一个版本是在1994年发布的。\n">
+<meta property='og:url' content='https://example.com/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/'>
+<meta property='og:site_name' content='Weijie&#39;s Blog Site'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Linux内核' /><meta property='article:tag' content='Linux-v1.0' /><meta property='article:published_time' content='2024-09-20T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-09-20T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.jpg' />
+<meta name="twitter:title" content="Linux v1.0 代码初探">
+<meta name="twitter:description" content="编译环境准备 从 这里 下载v1.0版本的内核代码，该版本代码sha1为6bdcbdb4d42c3bec7cbd7e6cc50e7c378acf4faa。看发布时间，Linux的第一个版本是在1994年发布的。\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://example.com/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.jpg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    <img src="/img/avatar.jpg" width="300" height="300" class="site-logo" loading="lazy" alt="Avatar">
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Weijie&#39;s Blog Site</a></h1>
+            <h2 class="site-description">My Tech Blogs</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#编译环境准备">编译环境准备</a>
+      <ol>
+        <li><a href="#配置内核">配置内核</a></li>
+        <li><a href="#编译内核">编译内核</a></li>
+        <li><a href="#修改编译参数">修改编译参数</a></li>
+        <li><a href="#处理链接时找不到符号问题">处理链接时找不到符号问题</a></li>
+        <li><a href="#预处理器语法修改">预处理器语法修改</a></li>
+        <li><a href="#extern-inline-改为-static-inline">extern inline 改为 static inline</a></li>
+        <li><a href="#内联汇编语法">内联汇编语法</a></li>
+        <li><a href="#内联汇编代码修改">内联汇编代码修改</a></li>
+        <li><a href="#使用链接器脚本控制内核映像格式">使用链接器脚本控制内核映像格式</a></li>
+      </ol>
+    </li>
+    <li><a href="#构建映像中的辅助工具">构建映像中的辅助工具</a>
+      <ol>
+        <li><a href="#xtractc">xtract.c</a></li>
+        <li><a href="#piggybackc">piggyback.c</a></li>
+        <li><a href="#buildc-工具">build.c 工具</a></li>
+      </ol>
+    </li>
+    <li><a href="#使用qemu模拟执行内核映像">使用qemu模拟执行内核映像</a></li>
+    <li><a href="#to-be-continued">To Be Continued</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/">
+                <img src="/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover_hu_5d1bf81ca6490b6b.jpg"
+                        srcset="/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover_hu_5d1bf81ca6490b6b.jpg 800w, /p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover_hu_96e9e5d9fb985377.jpg 1600w"
+                        width="800" 
+                        height="400" 
+                        loading="lazy"
+                        alt="Featured image of post Linux v1.0 代码初探" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/linux%E5%86%85%E6%A0%B8/" style="background-color: #fa3da9; color: #fff;">
+                Linux内核
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/">Linux v1.0 代码初探</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Sep 20, 2024</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    9 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="编译环境准备">编译环境准备
+</h2><p>从 <a class="link" href="https://www.kernel.org/pub/linux/kernel/v1.0/linux-1.0.tar.xz"  target="_blank" rel="noopener"
+    >这里</a> 下载v1.0版本的内核代码，该版本代码sha1为<code>6bdcbdb4d42c3bec7cbd7e6cc50e7c378acf4faa</code>。看发布时间，Linux的第一个版本是在1994年发布的。</p>
+<p>早期的Linux是在Minix上开发的，使用的编译工具也是移植到Minix上的GCC编译器。后续等到Linux版本迭代的越来越成熟后，开源社区将GCC移植到Linux上，此时才支持在旧版本Linux上开发新版本的Linux。</p>
+<h3 id="配置内核">配置内核
+</h3><p>通过执行 <code>make config</code> 命令来做构建之前的配置。要求配置的选项在 config.in 中，通过执行Configure shell脚本文件读取 config.in 生成构建所需要的配置文件 .config。.config文件中的内容其实是一些Shell变量定义，这些变量会被Makefile文件include进去，影响Makefile中的构建逻辑。</p>
+<p>通过执行 <code>make dep</code> 命令来正确设置所有的依赖。这里的依赖是指编译上的依赖。该命令会生成文件 .depend ，其内容是按照Makefile的目标依赖规则来组织的，其实这部分和在Makefile硬编码指定编译目标的依赖也是可以实现的，只不过因为编译目标的依赖项太多，这种方法比起硬编码的实现方式更加自动化，更加方便。比如 init/main.o 的依赖内容如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">init/main.o: init/main.c /usr/include/stdc-predef.h \
+</span></span><span class="line"><span class="cl"> /usr/lib/gcc/x86_64-linux-gnu/9/include/stdarg.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/asm/system.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/segment.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/asm/io.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/types.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/fcntl.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/config.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/autoconf.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/sched.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/tasks.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/head.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/fs.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/linkage.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/limits.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/wait.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/dirent.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/vfs.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/net.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/socket.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/sockios.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/pipe_fs_i.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/minix_fs_i.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/ext_fs_i.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/ext2_fs_i.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/hpfs_fs_i.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/msdos_fs_i.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/iso_fs_i.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/nfs_fs_i.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/nfs.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/xia_fs_i.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/sysv_fs_i.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/minix_fs_sb.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/ext_fs_sb.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/ext2_fs_sb.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/hpfs_fs_sb.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/msdos_fs_sb.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/iso_fs_sb.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/nfs_fs_sb.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/xia_fs_sb.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/sysv_fs_sb.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/mm.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/page.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/errno.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/kernel.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/signal.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/time.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/param.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/resource.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/vm86.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/math_emu.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/tty.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/termios.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/unistd.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/string.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/timer.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/ctype.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/delay.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/utsname.h \
+</span></span><span class="line"><span class="cl"> /home/raymond/workspace/linux/linux-v1.0/include/linux/ioport.h
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>同样可以把 .depend 看作是一个 Makefile 碎片文件，它会被Makefile文件include进去，用于指定哪些不方便手动编码的编译目标的依赖项。</p>
+<h3 id="编译内核">编译内核
+</h3><p>通过执行 <code>make zImage</code> 命令就可以创建一个压缩的内核映像了。由于当时Linux内核编译使用的是非常古老的gcc，所以如果直接在我的实验环境Ubuntu-20.04 with gcc-9.4中编译会失败。一个解决方法是搭建出当时开发Linux内核所用到的Minix操作环境，这个的实现难度很大，一方面在于不清楚当时Minix的版本号，另一方面VMWare和VirtualBox在引导古早的操作系统时会出现问题。另一个解决办法就是修改Linux v1.0的源代码以适应现代编译器。</p>
+<h3 id="修改编译参数">修改编译参数
+</h3><ul>
+<li>由于我使用的操作系统是64位环境，所以编译工具中要增加相关参数，保证生成目标是32位的：
+<ul>
+<li>汇编器AS增加参数 <code>--32</code></li>
+<li>链接器LD增加参数 <code>-melf_i386</code></li>
+</ul>
+</li>
+<li>编译器HOSTCC用于生成构建内核的辅助程序，其执行环境是在Host主机上，这里选择 clang-18 替换原有的 gcc 再增加相关参数：
+<ul>
+<li>-std=gnu90 使用 gnu C90的语法</li>
+<li>-m32 生成32位程序</li>
+<li>-I/home/raymond/workspace/linux/linux-v1.0/include 指定头文件位置</li>
+</ul>
+</li>
+<li>编译器CC用于构建内核映像，其执行环境是在Target主机上，这里选择 clang-18 替换原有的 gcc 再增加相关参数：
+<ul>
+<li>-std=gnu90</li>
+<li>-m32</li>
+<li>&ndash;sysroot=/home/raymond/workspace/linux/linux-v1.0/include 使用该选项后，编译器会做如下映射：
+<ul>
+<li>默认搜索路径 /usr/include =&gt; 实际搜索路径 /home/raymond/workspace/linux/linux-v1.0/include</li>
+</ul>
+</li>
+<li>-I/home/raymond/workspace/linux/linux-v1.0/include 指定头文件位置</li>
+<li>-Wno-int-conversion 忽略相关编译警告</li>
+</ul>
+</li>
+<li>CPP预处理器增加参数：
+<ul>
+<li>-I/home/raymond/workspace/linux/linux-v1.0/include</li>
+<li>&ndash;sysroot=/home/raymond/workspace/linux/linux-v1.0/include</li>
+</ul>
+</li>
+</ul>
+<h3 id="处理链接时找不到符号问题">处理链接时找不到符号问题
+</h3><p>Linux-v1.0使用的链接器中有一个非常奇葩的规则，如果链接的目标中既有汇编目标文件（.s文件通过汇编器生成）还有编译目标文件（.c文件通过编译器生成），如果这两个目标文件中的全局符号存在相互引用的情况时：</p>
+<ul>
+<li>1.汇编目标文件中定义一个全局变量/函数，可以在C目标文件里使用</li>
+<li>2.C目标文件里定义一个全局变量/函数，可以在汇编目标文件里使用
+这时链接器会要求汇编目标文件使用的符号前加 <code>_</code> ，而C目标文件中的符号保持不变。现代链接器已经没有这种不合理的规则了，但是如果不修改代码，现代编译器会报无法找到符号定义的错误。我的解决办法是将交叉使用的符号在所有的汇编代码里 <code>_</code> 前缀去掉。这个改动非常大，至少有几百处位置修改，但是除此之外没有更好的办法了。</li>
+</ul>
+<h3 id="预处理器语法修改">预处理器语法修改
+</h3><p>Linux-v1.0中C代码会使用 <code>#ifdef 0</code> 来隐藏不需要被编译的代码，但是现代编译器不支持这种语法，直接改成 <code>#ifdef NO_DEF_REPLACE_0</code> 即可。</p>
+<h3 id="extern-inline-改为-static-inline">extern inline 改为 static inline
+</h3><p>在头文件中定义的 extern inline 函数，在现代编译器下会报多重定义的问题，将 extern 关键字改为 static 关键字可以通过编译。这是因为static限制符号只在文件内部可见。</p>
+<h3 id="内联汇编语法">内联汇编语法
+</h3><p>GCC 内联汇编是一种在 C/C++ 代码中直接嵌入汇编指令的强大功能，GCC 使用 AT&amp;T 语法。基本的语法结构如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">asm</span> <span class="p">[</span><span class="k">volatile</span><span class="p">]</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;汇编指令模板&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">:</span> <span class="err">输出操作数列表</span>      <span class="cm">/* 可选，形式为： &#34;操作数约束字符1&#34; (C环境变量1), &#34;操作数约束字符2&#34; (C环境变量2), ... */</span>
+</span></span><span class="line"><span class="cl">    <span class="o">:</span> <span class="err">输入操作数列表</span>      <span class="cm">/* 可选，形式同上 */</span>
+</span></span><span class="line"><span class="cl">    <span class="o">:</span> <span class="err">被破坏的寄存器列表</span>  <span class="cm">/* 可选，形式为：&#34;寄存器1名字&#34;, &#34;寄存器2名字&#34;, ...*/</span>
+</span></span><span class="line"><span class="cl"><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li><code>asm</code>：关键字，也可以用 <code>__asm__</code>，后者更常见，因为可以避免与代码中其他名为 asm 的标识符冲突。</li>
+<li><code>volatile</code>：可选关键字，也可以用 <code>__volatile__</code>，理由同上。它告诉编译器不要优化这段汇编代码，防止被意外删除或移动。在涉及内存操作或硬件I/O时，几乎总是需要它。</li>
+<li>括号内包含四个主要部分，用冒号分隔。
+<ul>
+<li>汇编指令模板：这是一个字符串，包含你的汇编指令。其中可以包含占位符，这些占位符会在编译时被具体的操作数替换。
+<ul>
+<li>占位符语法：%0, %1, %2, &hellip; 按操作数出现的顺序编号（先编码输出操作数编号，后编码输入操作数编号）。</li>
+<li>寄存器名前加两个百分号 %%（如 %%eax），以区别于占位符（如 %0）。</li>
+<li>使用 \n 或 \t 来格式化汇编代码。</li>
+</ul>
+</li>
+<li>输入/输出操作数约束：也就是上述语法中的输出操作数列表和输入操作数列表中的字符串部分中的大小写字母。它告诉编译器如何为C语言操作数分配寄存器或内存。
+<ul>
+<li>约束 含义</li>
+<li>r 让编译器选择任何一个通用寄存器</li>
+<li>a 使用 %eax, %ax, %al</li>
+<li>b 使用 %ebx, %bx, %bl</li>
+<li>c 使用 %ecx, %cx, %cl</li>
+<li>d 使用 %edx, %dx, %dl</li>
+<li>S 使用 %esi, %si</li>
+<li>D 使用 %edi, %di</li>
+<li>m 使用内存地址（而不是寄存器）</li>
+<li>i 立即数（编译时常量）</li>
+<li>g 寄存器、内存或立即数（任何通用类型）</li>
+</ul>
+</li>
+<li>输出操作数修饰符：也就是上述语法中输出操作数列表和输入操作数列表中的字符串部分中的特殊符号。
+<ul>
+<li>修饰符 含义</li>
+<li>= 只写（通常用于输出操作数）</li>
+<li>+ 读写（操作数既是输入又是输出）</li>
+<li>&amp; 早期破坏寄存器（不能与输入操作数共用寄存器）</li>
+</ul>
+</li>
+<li>被破坏的寄存器列表（GCC手册中叫做Clobber List）：这个部分告诉编译器我们在汇编代码中显式修改了哪些寄存器（除了通过输出操作数隐式修改的之外）。
+<ul>
+<li>寄存器名：&ldquo;eax&rdquo;, &ldquo;ebx&rdquo; 等</li>
+<li>&ldquo;memory&rdquo;：表示我们修改了内存（不仅仅是输出操作数指向的内存），编译器在执行汇编代码前会将所有内存值写回，并在执行后重新读取。</li>
+<li>&ldquo;cc&rdquo;：表示我们修改了条件码寄存器（EFLAGS）。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>扩展汇编模板（Named Operands）：为了避免手动计算 %0, %1 的麻烦，GCC 支持命名操作数，这样代码更易读和维护。如下示例：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">src</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">dst</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">asm</span> <span class="nf">volatile</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;movl %[input], %%eax</span><span class="se">\n</span><span class="s">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;movl %%eax, %[output]&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">:</span> <span class="p">[</span><span class="n">output</span><span class="p">]</span> <span class="s">&#34;=r&#34;</span> <span class="p">(</span><span class="n">dst</span><span class="p">)</span>   <span class="c1">// 输出操作数命名为 output
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="o">:</span> <span class="p">[</span><span class="n">input</span><span class="p">]</span> <span class="s">&#34;r&#34;</span> <span class="p">(</span><span class="n">src</span><span class="p">)</span>     <span class="c1">// 输入操作数命名为 input
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="o">:</span> <span class="s">&#34;%eax&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="内联汇编代码修改">内联汇编代码修改
+</h3><p>Linux-v1.0中C代码会使用内联汇编，但是当时的内联汇编语法和现代编译器支持的内联汇编语法有些区别，差异在于现代gcc要求如果被破坏的寄存器在输入操作数中出现，那就需要写到被破坏的寄存器列表里。比如这段代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="n">__asm__</span> <span class="nf">__volatile__</span><span class="p">(</span><span class="s">&#34;rep ; movsl&#34;</span><span class="o">:</span> \
+</span></span><span class="line"><span class="cl">	<span class="o">:</span><span class="s">&#34;c&#34;</span> <span class="p">(((</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span> <span class="n">size</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">2</span><span class="p">),</span><span class="s">&#34;S&#34;</span> <span class="p">(</span><span class="n">from</span><span class="p">),</span><span class="s">&#34;D&#34;</span> <span class="p">(</span><span class="n">to</span><span class="p">)</span> \
+</span></span><span class="line"><span class="cl">	<span class="o">:</span><span class="s">&#34;cx&#34;</span><span class="p">,</span><span class="s">&#34;di&#34;</span><span class="p">,</span><span class="s">&#34;si&#34;</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>因为 cx, di, si在输入操作数列表中都出现了，所以最后的Clobber List中要置为空。</p>
+<h3 id="使用链接器脚本控制内核映像格式">使用链接器脚本控制内核映像格式
+</h3><p>Linux-v1.0代码中没有加载器的概念，都是硬盘上的可执行文件直接映射到内存中的一段区域，为了适应这种限制，只能用链接器脚本(*.lds)让链接器把<code>.text</code>段空出一个特定的偏移，并且<code>.text</code>, <code>.data</code>, <code>.rodata</code>, <code>.bss</code> 段的file offset和虚拟地址保持一致。</p>
+<p>比如生成zSystem的控制脚本为：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">SECTIONS {
+</span></span><span class="line"><span class="cl">    . = 0x1000; 
+</span></span><span class="line"><span class="cl">    .text : { *(.text) }
+</span></span><span class="line"><span class="cl">    .rodata : { *(.rodata) *(.kernel_zip_data)}
+</span></span><span class="line"><span class="cl">    .data : { *(.data) }
+</span></span><span class="line"><span class="cl">    PROVIDE(edata = .);
+</span></span><span class="line"><span class="cl">    .bss : { *(.bss) }
+</span></span><span class="line"><span class="cl">    PROVIDE(end = .);
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="构建映像中的辅助工具">构建映像中的辅助工具
+</h2><h3 id="xtractc">xtract.c
+</h3><p>zBoot/xtract.c是一个可执行程序，用于从 tools/zSystem（从stdin中读取） 中的 .text .data .bss 段数据提取出来，输出到stdout。</p>
+<p>由于早期Linux都是用Minix开发的，随着Linux内核逐渐完善后才自举开发（在Linux上开发Linux）。猜测在Linux 1.0 构建二进制可执行文件格式应该是 a.out 格式，从 xtract.c 中包含的头文件 <code>&lt;a.out.h&gt;</code> 可以验证这一推测，但是现代构建工具已经不支持 a.out 的，生成的是elf格式。所以 xtract.c 的逻辑需要改写。</p>
+<p>xtract.c 从stdin里读取 ELF 格式的输入文件 tools/zSystem，从中提取代码段和数据段，生成新的 a.out 格式的文件输出到 stdout。</p>
+<p>通过 xtract.c 代码逻辑猜测 a.out 格式如下：</p>
+<ul>
+<li>最开始的1024字节就是 <code>GCC_HEADER</code>，这1024个字节的最开始部分包含了 <code>a.out.h</code> 中的结构体 <code>struct exec</code>内容。</li>
+<li>1024字节后的部分就是 .text段</li>
+<li>然后紧接着 .data 段</li>
+<li>然后紧接着是符号表。<code>xtract.c</code> 中通过符号表开始位置减去GCC_HEADER获取 .text段和 .data 段总共的大小 <code>N_SYMOFF(*ex) - GCC_HEADER</code></li>
+</ul>
+<h3 id="piggybackc">piggyback.c
+</h3><p>xtract.c 提取了 .text段和 .data 段后的 a.out 文件经过gzip压缩后从stdin传递给 piggyback.c 程序。该程序的作用是模拟链接器将 stdin 中输入的内容链接到一个可重定位的 piggy.o 文件中（从stdout输出）。piggy.o 其中有一个全局符号 <code>_input_data</code>，该符号是 piggyback.c 从stdin中读取到数据写入的起始位置，另外还有一个全局符号 <code>_input_len</code> 该符号是记录的是piggyback.c 从stdin中读取到数据的长度。</p>
+<h3 id="buildc-工具">build.c 工具
+</h3><p>将 boot/bootsect, boot/setup 和 zBoot/zSystem 依次写入zImage里。zImage就是生成的内核镜像。zBoot/zSystem会做strip操作，只写入 .text 段 和 .data段，减少映像文件大小。</p>
+<h2 id="使用qemu模拟执行内核映像">使用qemu模拟执行内核映像
+</h2><p>一开始没有指定machine参数，发现boot阶段有一段复制磁盘的逻辑无法生效。如果发现qemu不停reboot，那一般就是BIOS环境不支持，考虑到Linux-v1.0是在1994年发布的，所以用<code>-machine pc-1.0</code>参数指定一个较古老的机器环境。</p>
+<p>经过多次探索，最终使用如下命令启动qemu的模拟器，能成功引导内核映像：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># -boot a 表示从第一块软盘启动</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># -fda 指定软盘映像的文件</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># -d 所选择的日志会直接打印到terminal上</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># -s 开启gdb调试端口</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># -S 启动后立刻停止</span>
+</span></span><span class="line"><span class="cl">qemu-system-i386 -machine pc-1.0 -boot a -fda zImage -d in_asm,guest_errors -s -S
+</span></span><span class="line"><span class="cl"><span class="c1"># -machine help 查看更多机器类型</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="to-be-continued">To Be Continued
+</h2><p>目前实验可以成功执行到 start_kernel 之前的代码，但是由于缺少 Linux-v1.0 配套的根文件系统，系统还是无法成功启动。后续再更新。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        
+            <a href="/tags/linux-v1.0/">Linux-V1.0</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/linux-proc-file-system/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux-proc-file-system/cover.9de61f04c0763783daf0ad63a6b5a330_hu_bc48bf34997a1e6d.png" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Linux中几个特殊文件系统"
+                        data-key="linux-proc-file-system" 
+                        data-hash="md5-neYfBMB2N4Pa8K1jprWjMA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Linux中几个特殊文件系统</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/elf-format/">
+        
+        
+            <div class="article-image">
+                <img src="/p/elf-format/cover.54add658b8d2b0451a27cc39cb2720a0_hu_cacb52883a74ab2e.png" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post ELF格式解析"
+                        data-key="elf-format" 
+                        data-hash="md5-VK3WWLjSsEUaJ8w5yycgoA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">ELF格式解析</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/linux-epoll-api/">
+        
+        
+            <div class="article-image">
+                <img src="/p/linux-epoll-api/cover.ec8e4fac264ca8a7bb92b3774bf3a8a5_hu_f6397f5714a1583.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Linux epoll API"
+                        
+                        data-hash="md5-7I5PrCZMqKe7krN3S/OopQ==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Linux epoll API</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover.8c0b22750436acf837a0e27ebab14500_hu_ffb8773c4963df28.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 程序ELF格式布局初探"
+                        
+                        data-hash="md5-jAsidQQ2rPg3oOJ&#43;urFFAA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">程序ELF格式布局初探</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Weijie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
