@@ -2,401 +2,401 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>Tags on Weijie&#39;s Blog Site</title>
-        <link>https://example.com/tags/</link>
+        <link>http://localhost:1313/tags/</link>
         <description>Recent content in Tags on Weijie&#39;s Blog Site</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>Weijie</copyright>
-        <lastBuildDate>Sat, 01 Mar 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Sat, 01 Mar 2025 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Java</title>
-        <link>https://example.com/tags/java/</link>
+        <link>http://localhost:1313/tags/java/</link>
         <pubDate>Sat, 01 Mar 2025 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/java/</guid>
+        <guid>http://localhost:1313/tags/java/</guid>
         <description></description>
         </item>
         <item>
         <title>Socket</title>
-        <link>https://example.com/tags/socket/</link>
+        <link>http://localhost:1313/tags/socket/</link>
         <pubDate>Sat, 01 Mar 2025 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/socket/</guid>
+        <guid>http://localhost:1313/tags/socket/</guid>
         <description></description>
         </item>
         <item>
         <title>动态代理</title>
-        <link>https://example.com/tags/%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/</link>
+        <link>http://localhost:1313/tags/%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/</link>
         <pubDate>Tue, 25 Feb 2025 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/</guid>
+        <guid>http://localhost:1313/tags/%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/</guid>
         <description></description>
         </item>
         <item>
         <title>Thread</title>
-        <link>https://example.com/tags/thread/</link>
+        <link>http://localhost:1313/tags/thread/</link>
         <pubDate>Sun, 16 Feb 2025 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/thread/</guid>
+        <guid>http://localhost:1313/tags/thread/</guid>
         <description></description>
         </item>
         <item>
         <title>Object</title>
-        <link>https://example.com/tags/object/</link>
+        <link>http://localhost:1313/tags/object/</link>
         <pubDate>Mon, 10 Feb 2025 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/object/</guid>
+        <guid>http://localhost:1313/tags/object/</guid>
         <description></description>
         </item>
         <item>
         <title>根类方法</title>
-        <link>https://example.com/tags/%E6%A0%B9%E7%B1%BB%E6%96%B9%E6%B3%95/</link>
+        <link>http://localhost:1313/tags/%E6%A0%B9%E7%B1%BB%E6%96%B9%E6%B3%95/</link>
         <pubDate>Mon, 10 Feb 2025 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E6%A0%B9%E7%B1%BB%E6%96%B9%E6%B3%95/</guid>
+        <guid>http://localhost:1313/tags/%E6%A0%B9%E7%B1%BB%E6%96%B9%E6%B3%95/</guid>
         <description></description>
         </item>
         <item>
         <title>字节码</title>
-        <link>https://example.com/tags/%E5%AD%97%E8%8A%82%E7%A0%81/</link>
+        <link>http://localhost:1313/tags/%E5%AD%97%E8%8A%82%E7%A0%81/</link>
         <pubDate>Wed, 05 Feb 2025 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E5%AD%97%E8%8A%82%E7%A0%81/</guid>
+        <guid>http://localhost:1313/tags/%E5%AD%97%E8%8A%82%E7%A0%81/</guid>
         <description></description>
         </item>
         <item>
         <title>虚拟机</title>
-        <link>https://example.com/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/</link>
+        <link>http://localhost:1313/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/</link>
         <pubDate>Wed, 05 Feb 2025 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/</guid>
+        <guid>http://localhost:1313/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/</guid>
         <description></description>
         </item>
         <item>
         <title>OpenJDK</title>
-        <link>https://example.com/tags/openjdk/</link>
+        <link>http://localhost:1313/tags/openjdk/</link>
         <pubDate>Sun, 29 Dec 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/openjdk/</guid>
+        <guid>http://localhost:1313/tags/openjdk/</guid>
         <description></description>
         </item>
         <item>
         <title>CPython</title>
-        <link>https://example.com/tags/cpython/</link>
+        <link>http://localhost:1313/tags/cpython/</link>
         <pubDate>Sun, 15 Dec 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/cpython/</guid>
+        <guid>http://localhost:1313/tags/cpython/</guid>
         <description></description>
         </item>
         <item>
         <title>Linux内核</title>
-        <link>https://example.com/tags/linux%E5%86%85%E6%A0%B8/</link>
+        <link>http://localhost:1313/tags/linux%E5%86%85%E6%A0%B8/</link>
         <pubDate>Wed, 20 Nov 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/linux%E5%86%85%E6%A0%B8/</guid>
+        <guid>http://localhost:1313/tags/linux%E5%86%85%E6%A0%B8/</guid>
         <description></description>
         </item>
         <item>
         <title>文件系统</title>
-        <link>https://example.com/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/</link>
+        <link>http://localhost:1313/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/</link>
         <pubDate>Wed, 20 Nov 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/</guid>
+        <guid>http://localhost:1313/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/</guid>
         <description></description>
         </item>
         <item>
         <title>Linux命令</title>
-        <link>https://example.com/tags/linux%E5%91%BD%E4%BB%A4/</link>
+        <link>http://localhost:1313/tags/linux%E5%91%BD%E4%BB%A4/</link>
         <pubDate>Tue, 12 Nov 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/linux%E5%91%BD%E4%BB%A4/</guid>
+        <guid>http://localhost:1313/tags/linux%E5%91%BD%E4%BB%A4/</guid>
         <description></description>
         </item>
         <item>
         <title>ELF</title>
-        <link>https://example.com/tags/elf/</link>
+        <link>http://localhost:1313/tags/elf/</link>
         <pubDate>Sun, 03 Nov 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/elf/</guid>
+        <guid>http://localhost:1313/tags/elf/</guid>
         <description></description>
         </item>
         <item>
         <title>ELF格式</title>
-        <link>https://example.com/tags/elf%E6%A0%BC%E5%BC%8F/</link>
+        <link>http://localhost:1313/tags/elf%E6%A0%BC%E5%BC%8F/</link>
         <pubDate>Sun, 03 Nov 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/elf%E6%A0%BC%E5%BC%8F/</guid>
+        <guid>http://localhost:1313/tags/elf%E6%A0%BC%E5%BC%8F/</guid>
         <description></description>
         </item>
         <item>
         <title>GDB</title>
-        <link>https://example.com/tags/gdb/</link>
+        <link>http://localhost:1313/tags/gdb/</link>
         <pubDate>Wed, 30 Oct 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/gdb/</guid>
+        <guid>http://localhost:1313/tags/gdb/</guid>
         <description></description>
         </item>
         <item>
         <title>GDB高级</title>
-        <link>https://example.com/tags/gdb%E9%AB%98%E7%BA%A7/</link>
+        <link>http://localhost:1313/tags/gdb%E9%AB%98%E7%BA%A7/</link>
         <pubDate>Wed, 30 Oct 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/gdb%E9%AB%98%E7%BA%A7/</guid>
+        <guid>http://localhost:1313/tags/gdb%E9%AB%98%E7%BA%A7/</guid>
         <description></description>
         </item>
         <item>
         <title>Linux调试器</title>
-        <link>https://example.com/tags/linux%E8%B0%83%E8%AF%95%E5%99%A8/</link>
+        <link>http://localhost:1313/tags/linux%E8%B0%83%E8%AF%95%E5%99%A8/</link>
         <pubDate>Wed, 30 Oct 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/linux%E8%B0%83%E8%AF%95%E5%99%A8/</guid>
+        <guid>http://localhost:1313/tags/linux%E8%B0%83%E8%AF%95%E5%99%A8/</guid>
         <description></description>
         </item>
         <item>
         <title>GDB指南</title>
-        <link>https://example.com/tags/gdb%E6%8C%87%E5%8D%97/</link>
+        <link>http://localhost:1313/tags/gdb%E6%8C%87%E5%8D%97/</link>
         <pubDate>Fri, 25 Oct 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/gdb%E6%8C%87%E5%8D%97/</guid>
+        <guid>http://localhost:1313/tags/gdb%E6%8C%87%E5%8D%97/</guid>
         <description></description>
         </item>
         <item>
         <title>LLVM</title>
-        <link>https://example.com/tags/llvm/</link>
+        <link>http://localhost:1313/tags/llvm/</link>
         <pubDate>Mon, 30 Sep 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/llvm/</guid>
+        <guid>http://localhost:1313/tags/llvm/</guid>
         <description></description>
         </item>
         <item>
         <title>编译原理</title>
-        <link>https://example.com/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/</link>
+        <link>http://localhost:1313/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/</link>
         <pubDate>Mon, 30 Sep 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/</guid>
+        <guid>http://localhost:1313/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/</guid>
         <description></description>
         </item>
         <item>
         <title>PDF书签</title>
-        <link>https://example.com/tags/pdf%E4%B9%A6%E7%AD%BE/</link>
+        <link>http://localhost:1313/tags/pdf%E4%B9%A6%E7%AD%BE/</link>
         <pubDate>Fri, 27 Sep 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/pdf%E4%B9%A6%E7%AD%BE/</guid>
+        <guid>http://localhost:1313/tags/pdf%E4%B9%A6%E7%AD%BE/</guid>
         <description></description>
         </item>
         <item>
         <title>Python</title>
-        <link>https://example.com/tags/python/</link>
+        <link>http://localhost:1313/tags/python/</link>
         <pubDate>Fri, 27 Sep 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/python/</guid>
+        <guid>http://localhost:1313/tags/python/</guid>
         <description></description>
         </item>
         <item>
         <title>自动化处理</title>
-        <link>https://example.com/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E5%A4%84%E7%90%86/</link>
+        <link>http://localhost:1313/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E5%A4%84%E7%90%86/</link>
         <pubDate>Fri, 27 Sep 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E5%A4%84%E7%90%86/</guid>
+        <guid>http://localhost:1313/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E5%A4%84%E7%90%86/</guid>
         <description></description>
         </item>
         <item>
         <title>Bencode</title>
-        <link>https://example.com/tags/bencode/</link>
+        <link>http://localhost:1313/tags/bencode/</link>
         <pubDate>Fri, 20 Sep 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/bencode/</guid>
+        <guid>http://localhost:1313/tags/bencode/</guid>
         <description></description>
         </item>
         <item>
         <title>Linux-V1.0</title>
-        <link>https://example.com/tags/linux-v1.0/</link>
+        <link>http://localhost:1313/tags/linux-v1.0/</link>
         <pubDate>Fri, 20 Sep 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/linux-v1.0/</guid>
+        <guid>http://localhost:1313/tags/linux-v1.0/</guid>
         <description></description>
         </item>
         <item>
         <title>Torrent</title>
-        <link>https://example.com/tags/torrent/</link>
+        <link>http://localhost:1313/tags/torrent/</link>
         <pubDate>Fri, 20 Sep 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/torrent/</guid>
+        <guid>http://localhost:1313/tags/torrent/</guid>
         <description></description>
         </item>
         <item>
         <title>X86指令</title>
-        <link>https://example.com/tags/x86%E6%8C%87%E4%BB%A4/</link>
+        <link>http://localhost:1313/tags/x86%E6%8C%87%E4%BB%A4/</link>
         <pubDate>Fri, 13 Sep 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/x86%E6%8C%87%E4%BB%A4/</guid>
+        <guid>http://localhost:1313/tags/x86%E6%8C%87%E4%BB%A4/</guid>
         <description></description>
         </item>
         <item>
         <title>X86汇编</title>
-        <link>https://example.com/tags/x86%E6%B1%87%E7%BC%96/</link>
+        <link>http://localhost:1313/tags/x86%E6%B1%87%E7%BC%96/</link>
         <pubDate>Fri, 13 Sep 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/x86%E6%B1%87%E7%BC%96/</guid>
+        <guid>http://localhost:1313/tags/x86%E6%B1%87%E7%BC%96/</guid>
         <description></description>
         </item>
         <item>
         <title>总线</title>
-        <link>https://example.com/tags/%E6%80%BB%E7%BA%BF/</link>
+        <link>http://localhost:1313/tags/%E6%80%BB%E7%BA%BF/</link>
         <pubDate>Sat, 10 Aug 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E6%80%BB%E7%BA%BF/</guid>
+        <guid>http://localhost:1313/tags/%E6%80%BB%E7%BA%BF/</guid>
         <description></description>
         </item>
         <item>
         <title>硬件</title>
-        <link>https://example.com/tags/%E7%A1%AC%E4%BB%B6/</link>
+        <link>http://localhost:1313/tags/%E7%A1%AC%E4%BB%B6/</link>
         <pubDate>Sat, 10 Aug 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E7%A1%AC%E4%BB%B6/</guid>
+        <guid>http://localhost:1313/tags/%E7%A1%AC%E4%BB%B6/</guid>
         <description></description>
         </item>
         <item>
         <title>ATX电源</title>
-        <link>https://example.com/tags/atx%E7%94%B5%E6%BA%90/</link>
+        <link>http://localhost:1313/tags/atx%E7%94%B5%E6%BA%90/</link>
         <pubDate>Mon, 05 Aug 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/atx%E7%94%B5%E6%BA%90/</guid>
+        <guid>http://localhost:1313/tags/atx%E7%94%B5%E6%BA%90/</guid>
         <description></description>
         </item>
         <item>
         <title>主板芯片</title>
-        <link>https://example.com/tags/%E4%B8%BB%E6%9D%BF%E8%8A%AF%E7%89%87/</link>
+        <link>http://localhost:1313/tags/%E4%B8%BB%E6%9D%BF%E8%8A%AF%E7%89%87/</link>
         <pubDate>Mon, 05 Aug 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E4%B8%BB%E6%9D%BF%E8%8A%AF%E7%89%87/</guid>
+        <guid>http://localhost:1313/tags/%E4%B8%BB%E6%9D%BF%E8%8A%AF%E7%89%87/</guid>
         <description></description>
         </item>
         <item>
         <title>计算机启动</title>
-        <link>https://example.com/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%90%AF%E5%8A%A8/</link>
+        <link>http://localhost:1313/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%90%AF%E5%8A%A8/</link>
         <pubDate>Mon, 05 Aug 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%90%AF%E5%8A%A8/</guid>
+        <guid>http://localhost:1313/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%90%AF%E5%8A%A8/</guid>
         <description></description>
         </item>
         <item>
         <title>Linux编程</title>
-        <link>https://example.com/tags/linux%E7%BC%96%E7%A8%8B/</link>
+        <link>http://localhost:1313/tags/linux%E7%BC%96%E7%A8%8B/</link>
         <pubDate>Fri, 02 Aug 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/linux%E7%BC%96%E7%A8%8B/</guid>
+        <guid>http://localhost:1313/tags/linux%E7%BC%96%E7%A8%8B/</guid>
         <description></description>
         </item>
         <item>
         <title>文件IO</title>
-        <link>https://example.com/tags/%E6%96%87%E4%BB%B6io/</link>
+        <link>http://localhost:1313/tags/%E6%96%87%E4%BB%B6io/</link>
         <pubDate>Fri, 02 Aug 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E6%96%87%E4%BB%B6io/</guid>
+        <guid>http://localhost:1313/tags/%E6%96%87%E4%BB%B6io/</guid>
         <description></description>
         </item>
         <item>
         <title>文件指针</title>
-        <link>https://example.com/tags/%E6%96%87%E4%BB%B6%E6%8C%87%E9%92%88/</link>
+        <link>http://localhost:1313/tags/%E6%96%87%E4%BB%B6%E6%8C%87%E9%92%88/</link>
         <pubDate>Fri, 02 Aug 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E6%96%87%E4%BB%B6%E6%8C%87%E9%92%88/</guid>
+        <guid>http://localhost:1313/tags/%E6%96%87%E4%BB%B6%E6%8C%87%E9%92%88/</guid>
         <description></description>
         </item>
         <item>
         <title>文件描述符</title>
-        <link>https://example.com/tags/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/</link>
+        <link>http://localhost:1313/tags/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/</link>
         <pubDate>Fri, 02 Aug 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/</guid>
+        <guid>http://localhost:1313/tags/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/</guid>
         <description></description>
         </item>
         <item>
         <title>Epoll</title>
-        <link>https://example.com/tags/epoll/</link>
+        <link>http://localhost:1313/tags/epoll/</link>
         <pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/epoll/</guid>
+        <guid>http://localhost:1313/tags/epoll/</guid>
         <description></description>
         </item>
         <item>
         <title>Linux</title>
-        <link>https://example.com/tags/linux/</link>
+        <link>http://localhost:1313/tags/linux/</link>
         <pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/linux/</guid>
+        <guid>http://localhost:1313/tags/linux/</guid>
         <description></description>
         </item>
         <item>
         <title>Linux API</title>
-        <link>https://example.com/tags/linux-api/</link>
+        <link>http://localhost:1313/tags/linux-api/</link>
         <pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/linux-api/</guid>
+        <guid>http://localhost:1313/tags/linux-api/</guid>
         <description></description>
         </item>
         <item>
         <title>算法复杂度分析</title>
-        <link>https://example.com/tags/%E7%AE%97%E6%B3%95%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%88%86%E6%9E%90/</link>
+        <link>http://localhost:1313/tags/%E7%AE%97%E6%B3%95%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%88%86%E6%9E%90/</link>
         <pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E7%AE%97%E6%B3%95%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%88%86%E6%9E%90/</guid>
+        <guid>http://localhost:1313/tags/%E7%AE%97%E6%B3%95%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%88%86%E6%9E%90/</guid>
         <description></description>
         </item>
         <item>
         <title>可执行程序</title>
-        <link>https://example.com/tags/%E5%8F%AF%E6%89%A7%E8%A1%8C%E7%A8%8B%E5%BA%8F/</link>
+        <link>http://localhost:1313/tags/%E5%8F%AF%E6%89%A7%E8%A1%8C%E7%A8%8B%E5%BA%8F/</link>
         <pubDate>Fri, 19 Jul 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E5%8F%AF%E6%89%A7%E8%A1%8C%E7%A8%8B%E5%BA%8F/</guid>
+        <guid>http://localhost:1313/tags/%E5%8F%AF%E6%89%A7%E8%A1%8C%E7%A8%8B%E5%BA%8F/</guid>
         <description></description>
         </item>
         <item>
         <title>程序布局</title>
-        <link>https://example.com/tags/%E7%A8%8B%E5%BA%8F%E5%B8%83%E5%B1%80/</link>
+        <link>http://localhost:1313/tags/%E7%A8%8B%E5%BA%8F%E5%B8%83%E5%B1%80/</link>
         <pubDate>Fri, 19 Jul 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E7%A8%8B%E5%BA%8F%E5%B8%83%E5%B1%80/</guid>
+        <guid>http://localhost:1313/tags/%E7%A8%8B%E5%BA%8F%E5%B8%83%E5%B1%80/</guid>
         <description></description>
         </item>
         <item>
         <title>Shell</title>
-        <link>https://example.com/tags/shell/</link>
+        <link>http://localhost:1313/tags/shell/</link>
         <pubDate>Tue, 09 Jul 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/shell/</guid>
+        <guid>http://localhost:1313/tags/shell/</guid>
         <description></description>
         </item>
         <item>
         <title>输入流</title>
-        <link>https://example.com/tags/%E8%BE%93%E5%85%A5%E6%B5%81/</link>
+        <link>http://localhost:1313/tags/%E8%BE%93%E5%85%A5%E6%B5%81/</link>
         <pubDate>Tue, 09 Jul 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E8%BE%93%E5%85%A5%E6%B5%81/</guid>
+        <guid>http://localhost:1313/tags/%E8%BE%93%E5%85%A5%E6%B5%81/</guid>
         <description></description>
         </item>
         <item>
         <title>输出流</title>
-        <link>https://example.com/tags/%E8%BE%93%E5%87%BA%E6%B5%81/</link>
+        <link>http://localhost:1313/tags/%E8%BE%93%E5%87%BA%E6%B5%81/</link>
         <pubDate>Tue, 09 Jul 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E8%BE%93%E5%87%BA%E6%B5%81/</guid>
+        <guid>http://localhost:1313/tags/%E8%BE%93%E5%87%BA%E6%B5%81/</guid>
         <description></description>
         </item>
         <item>
         <title>重定向</title>
-        <link>https://example.com/tags/%E9%87%8D%E5%AE%9A%E5%90%91/</link>
+        <link>http://localhost:1313/tags/%E9%87%8D%E5%AE%9A%E5%90%91/</link>
         <pubDate>Tue, 09 Jul 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E9%87%8D%E5%AE%9A%E5%90%91/</guid>
+        <guid>http://localhost:1313/tags/%E9%87%8D%E5%AE%9A%E5%90%91/</guid>
         <description></description>
         </item>
         <item>
         <title>错误流</title>
-        <link>https://example.com/tags/%E9%94%99%E8%AF%AF%E6%B5%81/</link>
+        <link>http://localhost:1313/tags/%E9%94%99%E8%AF%AF%E6%B5%81/</link>
         <pubDate>Tue, 09 Jul 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/tags/%E9%94%99%E8%AF%AF%E6%B5%81/</guid>
+        <guid>http://localhost:1313/tags/%E9%94%99%E8%AF%AF%E6%B5%81/</guid>
         <description></description>
         </item>
         

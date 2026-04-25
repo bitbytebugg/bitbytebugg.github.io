@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>输入流 on Weijie&#39;s Blog Site</title>
-        <link>https://example.com/tags/%E8%BE%93%E5%85%A5%E6%B5%81/</link>
+        <link>http://localhost:1313/tags/%E8%BE%93%E5%85%A5%E6%B5%81/</link>
         <description>Recent content in 输入流 on Weijie&#39;s Blog Site</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>Weijie</copyright>
-        <lastBuildDate>Tue, 09 Jul 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/%E8%BE%93%E5%85%A5%E6%B5%81/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Tue, 09 Jul 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/%E8%BE%93%E5%85%A5%E6%B5%81/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Shell重定向符号</title>
-        <link>https://example.com/p/shell-redirection-symbol/</link>
+        <link>http://localhost:1313/p/shell-redirection-symbol/</link>
         <pubDate>Tue, 09 Jul 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/p/shell-redirection-symbol/</guid>
-        <description>&lt;img src="https://example.com/p/shell-redirection-symbol/cover.jpg" alt="Featured image of post Shell重定向符号" /&gt;&lt;h2 id=&#34;标准流概念和重定向符号语法&#34;&gt;标准流概念和重定向符号语法
+        <guid>http://localhost:1313/p/shell-redirection-symbol/</guid>
+        <description>&lt;img src="http://localhost:1313/p/shell-redirection-symbol/cover.jpg" alt="Featured image of post Shell重定向符号" /&gt;&lt;h2 id=&#34;标准流概念和重定向符号语法&#34;&gt;标准流概念和重定向符号语法
 &lt;/h2&gt;&lt;p&gt;在shell脚本中，默认情况下，总是有三个文件处于打开状态，标准输入、标准输出、标准错误，它们分别对应的文件描述符是0，1，2 。这三个文件描述符常和重定向符号一起使用。&lt;/p&gt;
 &lt;p&gt;重定向的输入流和输出流/错误流都是指的执行程序的0，1，2这三个文件描述符，而重定向符号 &lt;code&gt;&amp;gt;&lt;/code&gt; 或者 &lt;code&gt;&amp;lt;&lt;/code&gt; 的左边是一个执行的程序（可能带着参数），右边是一个文件。&lt;/p&gt;
 &lt;h2 id=&#34;输出流包括错误流的重定向符号是-&#34;&gt;输出流（包括错误流）的重定向符号是 &lt;code&gt;&amp;gt;&lt;/code&gt;:

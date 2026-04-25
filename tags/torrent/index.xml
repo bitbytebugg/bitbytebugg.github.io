@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>Torrent on Weijie&#39;s Blog Site</title>
-        <link>https://example.com/tags/torrent/</link>
+        <link>http://localhost:1313/tags/torrent/</link>
         <description>Recent content in Torrent on Weijie&#39;s Blog Site</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>Weijie</copyright>
-        <lastBuildDate>Fri, 20 Sep 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/torrent/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 20 Sep 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/torrent/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Torrent格式解析实践</title>
-        <link>https://example.com/p/torrent%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90%E5%AE%9E%E8%B7%B5/</link>
+        <link>http://localhost:1313/p/torrent%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90%E5%AE%9E%E8%B7%B5/</link>
         <pubDate>Fri, 20 Sep 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/p/torrent%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90%E5%AE%9E%E8%B7%B5/</guid>
-        <description>&lt;img src="https://example.com/p/torrent%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90%E5%AE%9E%E8%B7%B5/cover.jpg" alt="Featured image of post Torrent格式解析实践" /&gt;&lt;h2 id=&#34;bencode编码格式&#34;&gt;Bencode编码格式
+        <guid>http://localhost:1313/p/torrent%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90%E5%AE%9E%E8%B7%B5/</guid>
+        <description>&lt;img src="http://localhost:1313/p/torrent%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90%E5%AE%9E%E8%B7%B5/cover.jpg" alt="Featured image of post Torrent格式解析实践" /&gt;&lt;h2 id=&#34;bencode编码格式&#34;&gt;Bencode编码格式
 &lt;/h2&gt;&lt;p&gt;Bencode是torrent文件的编码格式。支持四种类型的数据：&lt;code&gt;string&lt;/code&gt;, &lt;code&gt;int&lt;/code&gt;, &lt;code&gt;Dictionary&amp;lt;string, object&amp;gt;&lt;/code&gt;, &lt;code&gt;List&amp;lt;object&amp;gt;&lt;/code&gt;。&lt;/p&gt;
 &lt;h3 id=&#34;string类型&#34;&gt;string类型
 &lt;/h3&gt;&lt;p&gt;string类型的编码格式为&lt;code&gt;[length]:[string]&lt;/code&gt;。以字符串的长度开头，加一个冒号，并以字符串内容结束。示例：&lt;/p&gt;

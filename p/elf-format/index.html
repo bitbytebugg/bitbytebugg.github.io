@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="zh-cn" dir="ltr">
-    <head><meta charset='utf-8'>
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="格式概览 整个ELF文件可以分成四块：\n1 2 3 4 5 6 7 8 9 10 11 12 ┌───────────────────────┐ │ ELF File Header │ ► 描述文件类型、架构、入口点等全局信息 ├───────────────────────┤ │ Program Headers │ ► 定义运行时内存布局（Segments） │ (Optional for reloc.) │ ├───────────────────────┤ │ Sections │ ► 实际存储代码、数据等（如 .text, .data） │ │ ├───────────────────────┤ │ Section Headers │ ► 描述各节的逻辑信息（供链接器使用） │ (Optional for exec.) │ └───────────────────────┘ ELF格式本质上是一些称为 Headers 的较小数据结构的集合。一个 Header 是由一些更简单（或原始的 primitive）的数据类型（例如整数）组成的连续序列。有多种类型的 Headers ，每种类型描述一种信息。下面这张图描述了ELF中包含的Header以及组成Header的原始数据类型之间的关系。\n">
 <title>ELF格式解析</title>
 
-<link rel='canonical' href='https://example.com/p/elf-format/'>
+<link rel='canonical' href='http://localhost:1313/p/elf-format/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="ELF格式解析">
 <meta property='og:description' content="格式概览 整个ELF文件可以分成四块：\n1 2 3 4 5 6 7 8 9 10 11 12 ┌───────────────────────┐ │ ELF File Header │ ► 描述文件类型、架构、入口点等全局信息 ├───────────────────────┤ │ Program Headers │ ► 定义运行时内存布局（Segments） │ (Optional for reloc.) │ ├───────────────────────┤ │ Sections │ ► 实际存储代码、数据等（如 .text, .data） │ │ ├───────────────────────┤ │ Section Headers │ ► 描述各节的逻辑信息（供链接器使用） │ (Optional for exec.) │ └───────────────────────┘ ELF格式本质上是一些称为 Headers 的较小数据结构的集合。一个 Header 是由一些更简单（或原始的 primitive）的数据类型（例如整数）组成的连续序列。有多种类型的 Headers ，每种类型描述一种信息。下面这张图描述了ELF中包含的Header以及组成Header的原始数据类型之间的关系。\n">
-<meta property='og:url' content='https://example.com/p/elf-format/'>
+<meta property='og:url' content='http://localhost:1313/p/elf-format/'>
 <meta property='og:site_name' content='Weijie&#39;s Blog Site'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='ELF格式' /><meta property='article:tag' content='ELF' /><meta property='article:tag' content='Linux内核' /><meta property='article:published_time' content='2024-11-03T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-03T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/elf-format/cover.png' />
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='ELF格式' /><meta property='article:tag' content='ELF' /><meta property='article:tag' content='Linux内核' /><meta property='article:published_time' content='2024-11-03T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-03T00:00:00&#43;00:00'/><meta property='og:image' content='http://localhost:1313/p/elf-format/cover.jpg' />
 <meta name="twitter:title" content="ELF格式解析">
 <meta name="twitter:description" content="格式概览 整个ELF文件可以分成四块：\n1 2 3 4 5 6 7 8 9 10 11 12 ┌───────────────────────┐ │ ELF File Header │ ► 描述文件类型、架构、入口点等全局信息 ├───────────────────────┤ │ Program Headers │ ► 定义运行时内存布局（Segments） │ (Optional for reloc.) │ ├───────────────────────┤ │ Sections │ ► 实际存储代码、数据等（如 .text, .data） │ │ ├───────────────────────┤ │ Section Headers │ ► 描述各节的逻辑信息（供链接器使用） │ (Optional for exec.) │ └───────────────────────┘ ELF格式本质上是一些称为 Headers 的较小数据结构的集合。一个 Header 是由一些更简单（或原始的 primitive）的数据类型（例如整数）组成的连续序列。有多种类型的 Headers ，每种类型描述一种信息。下面这张图描述了ELF中包含的Header以及组成Header的原始数据类型之间的关系。\n"><meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content='https://example.com/p/elf-format/cover.png' />
+    <meta name="twitter:image" content='http://localhost:1313/p/elf-format/cover.jpg' />
     </head>
     <body class="
     article-page
@@ -41,7 +41,7 @@
     })();
 </script>
 <div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
-    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
         <span class="hamburger-box">
             <span class="hamburger-inner"></span>
         </span>
@@ -188,7 +188,7 @@
 
 
 
-                        <span>Dark Mode</span>
+                        <span>暗色模式</span>
                     </li>
                 
             </ol>
@@ -213,7 +213,7 @@
 
 
         </div>
-        <h2 class="widget-title section-title">Table of contents</h2>
+        <h2 class="widget-title section-title">目录</h2>
         
         <div class="widget--toc">
             <nav id="TableOfContents">
@@ -294,10 +294,10 @@
     <header class="article-header">
         <div class="article-image">
             <a href="/p/elf-format/">
-                <img src="/p/elf-format/cover_hu_5556ff6dd272ffca.png"
-                        srcset="/p/elf-format/cover_hu_5556ff6dd272ffca.png 800w, /p/elf-format/cover_hu_63ecd5c3ca45738d.png 1600w"
+                <img src="/p/elf-format/cover_hu_9cb8977bdebd0792.jpg"
+                        srcset="/p/elf-format/cover_hu_9cb8977bdebd0792.jpg 800w, /p/elf-format/cover_hu_2f742af22ce357ef.jpg 1600w"
                         width="800" 
-                        height="452" 
+                        height="400" 
                         loading="lazy"
                         alt="Featured image of post ELF格式解析" />
                 
@@ -355,7 +355,7 @@
 
 
                 <time class="article-time--reading">
-                    21 minute read
+                    阅读时长: 21 分钟
                 </time>
             </div>
         
@@ -406,7 +406,7 @@
 <p><img src="/p/elf-format/elf-header-and-primitive-type.webp"
 	width="680"
 	height="1135"
-	srcset="/p/elf-format/elf-header-and-primitive-type_hu_33c61a3cfdc14b18.webp 480w, /p/elf-format/elf-header-and-primitive-type_hu_601728c17279fbaf.webp 1024w"
+	srcset="/p/elf-format/elf-header-and-primitive-type_hu_511e07529185a320.webp 480w, /p/elf-format/elf-header-and-primitive-type_hu_c1e55cf587a9c142.webp 1024w"
 	loading="lazy"
 	
 	
@@ -438,7 +438,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">/// linux/include/elf.h
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="cm">/* 64-bit ELF base types. */</span>
 </span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="kt">uint16_t</span> <span class="n">Elf64_Half</span><span class="p">;</span>        <span class="n">General</span> <span class="n">purpose</span> <span class="mi">16</span> <span class="n">bit</span> <span class="kt">unsigned</span> <span class="n">integer</span>
 </span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="kt">uint32_t</span> <span class="n">Elf64_Word</span><span class="p">;</span>        <span class="n">General</span> <span class="n">purpose</span> <span class="mi">32</span> <span class="n">bit</span> <span class="kt">unsigned</span> <span class="n">integer</span>
@@ -475,7 +475,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">elf64_hdr</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl"><span class="c1">// 16字节长度
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kt">unsigned</span> <span class="kt">char</span>	<span class="n">e_ident</span><span class="p">[</span><span class="n">EI_NIDENT</span><span class="p">];</span>
+</span></span></span><span class="line"><span class="cl">  <span class="kt">unsigned</span> <span class="kt">char</span>	<span class="n">e_ident</span><span class="p">[</span><span class="n">EI_NIDENT</span><span class="p">];</span>
 </span></span><span class="line"><span class="cl">  <span class="n">Elf64_Half</span> <span class="n">e_type</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">  <span class="n">Elf64_Half</span> <span class="n">e_machine</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">  <span class="n">Elf64_Word</span> <span class="n">e_version</span><span class="p">;</span>
@@ -624,7 +624,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">/// linux/include/elf.h
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span>
 </span></span><span class="line"><span class="cl"><span class="p">{</span>
 </span></span><span class="line"><span class="cl">  <span class="n">Elf64_Word</span>	<span class="n">p_type</span><span class="p">;</span>			<span class="cm">/* Segment type */</span>
@@ -769,7 +769,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">/// linux/include/elf.h
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span>
 </span></span><span class="line"><span class="cl"><span class="p">{</span>
 </span></span><span class="line"><span class="cl">  <span class="n">Elf64_Word</span>	<span class="n">sh_name</span><span class="p">;</span>		<span class="cm">/* Section name (string tbl index) */</span>
@@ -1166,7 +1166,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// ELF 符号表结构
 </span></span></span><span class="line"><span class="cl"><span class="c1">/// linux/include/elf.h
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">  <span class="n">Elf64_Word</span>	<span class="n">st_name</span><span class="p">;</span>		<span class="cm">/* Symbol name (string tbl index) */</span>
 </span></span><span class="line"><span class="cl">  <span class="kt">unsigned</span> <span class="kt">char</span>	<span class="n">st_info</span><span class="p">;</span>		<span class="cm">/* Symbol type and binding */</span>
@@ -1272,7 +1272,7 @@
     
 
 <aside class="related-content--wrapper">
-    <h2 class="section-title">Related content</h2>
+    <h2 class="section-title">相关文章</h2>
     <div class="related-content">
         <div class="flex article-list--tile">
             
@@ -1282,7 +1282,7 @@
         
         
             <div class="article-image">
-                <img src="/p/linux-proc-file-system/cover.9de61f04c0763783daf0ad63a6b5a330_hu_bc48bf34997a1e6d.png" 
+                <img src="/p/linux-proc-file-system/cover.9de61f04c0763783daf0ad63a6b5a330_hu_fe692bbde3030115.png" 
                         width="250" 
                         height="150" 
                         loading="lazy"
@@ -1306,7 +1306,7 @@
         
         
             <div class="article-image">
-                <img src="/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.9332f09241b6ef5c1fc0c5d058c2585c_hu_89398df38c139eb8.jpg" 
+                <img src="/p/linux-v1.0-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%8E%A2/cover.9332f09241b6ef5c1fc0c5d058c2585c_hu_8a8203437742f4f7.jpg" 
                         width="250" 
                         height="150" 
                         loading="lazy"
@@ -1330,7 +1330,7 @@
         
         
             <div class="article-image">
-                <img src="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover.8c0b22750436acf837a0e27ebab14500_hu_ffb8773c4963df28.jpg" 
+                <img src="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover.8c0b22750436acf837a0e27ebab14500_hu_1fd3e959ff90d9e3.jpg" 
                         width="250" 
                         height="150" 
                         loading="lazy"
@@ -1354,7 +1354,7 @@
         
         
             <div class="article-image">
-                <img src="/p/linux-epoll-api/cover.ec8e4fac264ca8a7bb92b3774bf3a8a5_hu_f6397f5714a1583.jpg" 
+                <img src="/p/linux-epoll-api/cover.ec8e4fac264ca8a7bb92b3774bf3a8a5_hu_bf3d1afd5c535a69.jpg" 
                         width="250" 
                         height="150" 
                         loading="lazy"
@@ -1387,12 +1387,12 @@
         
             2020 - 
         
-        2025 Weijie
+        2026 Weijie
     </section>
     
     <section class="powerby">
-        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
-        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
     </section>
 </footer>
 
@@ -1481,7 +1481,7 @@
                 src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
                 
                 >
-            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+            </script><script type="text/javascript" src="/ts/main.6fab8ce3b3a5e6a0da505041cdcb48364c581d3147da79145e96038cd4bcacbb.js" defer></script>
 <script>
     (function () {
         const customFont = document.createElement('link');

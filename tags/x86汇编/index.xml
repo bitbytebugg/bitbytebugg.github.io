@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>X86汇编 on Weijie&#39;s Blog Site</title>
-        <link>https://example.com/tags/x86%E6%B1%87%E7%BC%96/</link>
+        <link>http://localhost:1313/tags/x86%E6%B1%87%E7%BC%96/</link>
         <description>Recent content in X86汇编 on Weijie&#39;s Blog Site</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>Weijie</copyright>
-        <lastBuildDate>Fri, 13 Sep 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/x86%E6%B1%87%E7%BC%96/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 13 Sep 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/x86%E6%B1%87%E7%BC%96/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>x86指令编码</title>
-        <link>https://example.com/p/x86%E6%8C%87%E4%BB%A4%E7%BC%96%E7%A0%81/</link>
+        <link>http://localhost:1313/p/x86%E6%8C%87%E4%BB%A4%E7%BC%96%E7%A0%81/</link>
         <pubDate>Fri, 13 Sep 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/p/x86%E6%8C%87%E4%BB%A4%E7%BC%96%E7%A0%81/</guid>
-        <description>&lt;img src="https://example.com/p/x86%E6%8C%87%E4%BB%A4%E7%BC%96%E7%A0%81/cover.jpg" alt="Featured image of post x86指令编码" /&gt;&lt;h2 id=&#34;操作数类型标记&#34;&gt;操作数类型标记
+        <guid>http://localhost:1313/p/x86%E6%8C%87%E4%BB%A4%E7%BC%96%E7%A0%81/</guid>
+        <description>&lt;img src="http://localhost:1313/p/x86%E6%8C%87%E4%BB%A4%E7%BC%96%E7%A0%81/cover.jpg" alt="Featured image of post x86指令编码" /&gt;&lt;h2 id=&#34;操作数类型标记&#34;&gt;操作数类型标记
 &lt;/h2&gt;&lt;p&gt;x86 指令集不完全是严格的二地址指令集，而是以二地址指令为主，同时包含部分单地址、零地址甚至三地址指令，具有混合特性。但是多数指令是二地址形式，也就是说会包含两个操作数。&lt;/p&gt;
 &lt;p&gt;x86指令手册中用一个大写字母和一个小写字母来表示操作数的类型：&lt;/p&gt;
 &lt;ul&gt;

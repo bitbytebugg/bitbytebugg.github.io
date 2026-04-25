@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>GDB指南 on Weijie&#39;s Blog Site</title>
-        <link>https://example.com/tags/gdb%E6%8C%87%E5%8D%97/</link>
+        <link>http://localhost:1313/tags/gdb%E6%8C%87%E5%8D%97/</link>
         <description>Recent content in GDB指南 on Weijie&#39;s Blog Site</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>Weijie</copyright>
-        <lastBuildDate>Fri, 25 Oct 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/gdb%E6%8C%87%E5%8D%97/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 25 Oct 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/gdb%E6%8C%87%E5%8D%97/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>GDB使用指南</title>
-        <link>https://example.com/p/gdb-use-guide/</link>
+        <link>http://localhost:1313/p/gdb-use-guide/</link>
         <pubDate>Fri, 25 Oct 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/p/gdb-use-guide/</guid>
-        <description>&lt;img src="https://example.com/p/gdb-use-guide/cover.jpg" alt="Featured image of post GDB使用指南" /&gt;&lt;h2 id=&#34;print命令&#34;&gt;print命令
+        <guid>http://localhost:1313/p/gdb-use-guide/</guid>
+        <description>&lt;img src="http://localhost:1313/p/gdb-use-guide/cover.jpg" alt="Featured image of post GDB使用指南" /&gt;&lt;h2 id=&#34;print命令&#34;&gt;print命令
 &lt;/h2&gt;&lt;h3 id=&#34;查看历史变量&#34;&gt;查看历史变量
 &lt;/h3&gt;&lt;p&gt;GDB会记录之前打印的值，通过 &lt;code&gt;$n&lt;/code&gt; 引用：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;

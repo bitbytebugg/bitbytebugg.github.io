@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="zh-cn" dir="ltr">
-    <head><meta charset='utf-8'>
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="理解水平触发和边缘触发 select()和poll()是采用水平触发(Level Triggered)，也就是这两接口会将就绪的文件描述符告诉进程，如果进程没有对这些就绪文件描述符进行IO处理，那么下次调用 select() 和 poll() 的时候还会再次报告这些文件描述符，**这里把未就绪状态比作低电平，就绪状态比作高电平，那么水平触发的含义是只要文件描述符处于高电平就会持续报告这个文件描述符需要被处理。\n">
 <title>Linux epoll API</title>
 
-<link rel='canonical' href='https://example.com/p/linux-epoll-api/'>
+<link rel='canonical' href='http://localhost:1313/p/linux-epoll-api/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Linux epoll API">
 <meta property='og:description' content="理解水平触发和边缘触发 select()和poll()是采用水平触发(Level Triggered)，也就是这两接口会将就绪的文件描述符告诉进程，如果进程没有对这些就绪文件描述符进行IO处理，那么下次调用 select() 和 poll() 的时候还会再次报告这些文件描述符，**这里把未就绪状态比作低电平，就绪状态比作高电平，那么水平触发的含义是只要文件描述符处于高电平就会持续报告这个文件描述符需要被处理。\n">
-<meta property='og:url' content='https://example.com/p/linux-epoll-api/'>
+<meta property='og:url' content='http://localhost:1313/p/linux-epoll-api/'>
 <meta property='og:site_name' content='Weijie&#39;s Blog Site'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='epoll' /><meta property='article:tag' content='Linux API' /><meta property='article:tag' content='算法复杂度分析' /><meta property='article:tag' content='Linux' /><meta property='article:published_time' content='2024-07-30T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-07-30T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/linux-epoll-api/cover.jpg' />
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='epoll' /><meta property='article:tag' content='Linux API' /><meta property='article:tag' content='算法复杂度分析' /><meta property='article:tag' content='Linux' /><meta property='article:published_time' content='2024-07-30T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-07-30T00:00:00&#43;00:00'/><meta property='og:image' content='http://localhost:1313/p/linux-epoll-api/cover.webp' />
 <meta name="twitter:title" content="Linux epoll API">
 <meta name="twitter:description" content="理解水平触发和边缘触发 select()和poll()是采用水平触发(Level Triggered)，也就是这两接口会将就绪的文件描述符告诉进程，如果进程没有对这些就绪文件描述符进行IO处理，那么下次调用 select() 和 poll() 的时候还会再次报告这些文件描述符，**这里把未就绪状态比作低电平，就绪状态比作高电平，那么水平触发的含义是只要文件描述符处于高电平就会持续报告这个文件描述符需要被处理。\n"><meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content='https://example.com/p/linux-epoll-api/cover.jpg' />
+    <meta name="twitter:image" content='http://localhost:1313/p/linux-epoll-api/cover.webp' />
     </head>
     <body class="
     article-page
@@ -41,7 +41,7 @@
     })();
 </script>
 <div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
-    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
         <span class="hamburger-box">
             <span class="hamburger-inner"></span>
         </span>
@@ -188,7 +188,7 @@
 
 
 
-                        <span>Dark Mode</span>
+                        <span>暗色模式</span>
                     </li>
                 
             </ol>
@@ -213,7 +213,7 @@
 
 
         </div>
-        <h2 class="widget-title section-title">Table of contents</h2>
+        <h2 class="widget-title section-title">目录</h2>
         
         <div class="widget--toc">
             <nav id="TableOfContents">
@@ -246,10 +246,10 @@
     <header class="article-header">
         <div class="article-image">
             <a href="/p/linux-epoll-api/">
-                <img src="/p/linux-epoll-api/cover_hu_3d6feb2710906b92.jpg"
-                        srcset="/p/linux-epoll-api/cover_hu_3d6feb2710906b92.jpg 800w, /p/linux-epoll-api/cover_hu_c7123dc3122af273.jpg 1600w"
+                <img src="/p/linux-epoll-api/cover_hu_5a1094fb5d48f041.webp"
+                        srcset="/p/linux-epoll-api/cover_hu_5a1094fb5d48f041.webp 800w, /p/linux-epoll-api/cover_hu_fa21e0268f5d940a.webp 1600w"
                         width="800" 
-                        height="400" 
+                        height="450" 
                         loading="lazy"
                         alt="Featured image of post Linux epoll API" />
                 
@@ -311,7 +311,7 @@
 
 
                 <time class="article-time--reading">
-                    7 minute read
+                    阅读时长: 7 分钟
                 </time>
             </div>
         
@@ -364,11 +364,11 @@
 </span></span><span class="line"><span class="cl"><span class="nf">select</span><span class="p">(</span><span class="n">max_fd</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">read_fds</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1">// 必须遍历所有fd判断哪些就绪
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">fd_list</span><span class="p">.</span><span class="nf">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">fd_list</span><span class="p">.</span><span class="nf">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="n">fd_i</span> <span class="o">=</span> <span class="n">fd_list</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nf">FD_ISSET</span><span class="p">(</span><span class="n">fd_i</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">read_fds</span><span class="p">))</span> <span class="p">{</span>  <span class="c1">// 逐个检查
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 处理可读的fd_i
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span></span><span class="line"><span class="cl">        <span class="c1">// 处理可读的fd_i
+</span></span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></td></tr></table>
@@ -431,24 +431,24 @@
 </span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">epfd</span> <span class="o">=</span> <span class="nf">epoll_create1</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1">// 创建一个能存放多个就绪事件的数组。这里数组长度 10 表示 epoll_wait() 一次最多返回 10 个就绪事件。这个可以根据需求调整。越大的数组可以避免频繁调用 epoll_wait()；越小的数组单次处理的事件量越少，利于降低延迟。
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">struct</span> <span class="n">epoll_event</span> <span class="n">events</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+</span></span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">epoll_event</span> <span class="n">events</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1">// 注册事件到epoll上，可以多次调用来注册多个事件
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">struct</span> <span class="n">epoll_event</span> <span class="n">ev</span><span class="p">;</span>
+</span></span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">epoll_event</span> <span class="n">ev</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="n">ev</span><span class="p">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">EPOLLIN</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="n">ev</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">fd</span> <span class="o">=</span> <span class="n">a_fd</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="nf">epoll_ctl</span><span class="p">(</span><span class="n">epfd</span><span class="p">,</span> <span class="n">EPOLL_CTL_ADD</span><span class="p">,</span> <span class="n">a_fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ev</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="p">...</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1">// 等待事件，返回n为就绪事件个数
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="nf">epoll_wait</span><span class="p">(</span><span class="n">epfd</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+</span></span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="nf">epoll_wait</span><span class="p">(</span><span class="n">epfd</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1">// 直接处理返回的就绪事件（无需遍历）
 </span></span></span><span class="line"><span class="cl"><span class="c1">// 如果 n &gt; 10，则需要继续调用 epoll_wait()
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="o">&amp;&amp;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="o">&amp;&amp;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">ready_fd</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">data</span><span class="p">.</span><span class="n">fd</span><span class="p">;</span>  <span class="c1">// 直接获取就绪fd
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 处理可读的fd
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// 处理可读的fd
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>epoll_create1(0)是linux的系统调用，用于创建一个新的 epoll 实例。它是 epoll_create 的改进版本，提供了更灵活的控制选项：</p>
@@ -482,11 +482,11 @@ epoll主动维护一个就绪事件链表，用户可以直接得到就绪事件
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// 内核源码示例（简化版）
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="kt">int</span> <span class="nf">ep_poll_callback</span><span class="p">(</span><span class="kt">wait_queue_entry_t</span> <span class="o">*</span><span class="n">wait</span><span class="p">,</span> <span class="p">...)</span> <span class="p">{</span>
+</span></span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">int</span> <span class="nf">ep_poll_callback</span><span class="p">(</span><span class="kt">wait_queue_entry_t</span> <span class="o">*</span><span class="n">wait</span><span class="p">,</span> <span class="p">...)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="n">epitem</span> <span class="o">*</span><span class="n">epi</span> <span class="o">=</span> <span class="nf">ep_item_from_wait</span><span class="p">(</span><span class="n">wait</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">    <span class="nf">list_add_tail</span><span class="p">(</span><span class="o">&amp;</span><span class="n">epi</span><span class="o">-&gt;</span><span class="n">rdllink</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ep</span><span class="o">-&gt;</span><span class="n">rdllist</span><span class="p">);</span>  <span class="c1">// 加入就绪队列
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nf">wake_up_locked</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ep</span><span class="o">-&gt;</span><span class="n">wq</span><span class="p">);</span>                     <span class="c1">// 唤醒进程
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></span><span class="line"><span class="cl">    <span class="nf">wake_up_locked</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ep</span><span class="o">-&gt;</span><span class="n">wq</span><span class="p">);</span>                     <span class="c1">// 唤醒进程
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>算法复杂度分析：因为仅有活跃的 fd 会触发回调，不受监控的 fd 总量影响，所以时间复杂度可以看作是 O(1)</p>
@@ -504,8 +504,8 @@ epoll主动维护一个就绪事件链表，用户可以直接得到就绪事件
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">timeval</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="kt">long</span> <span class="n">tv_sec</span><span class="p">;</span>   <span class="c1">// 秒
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">long</span> <span class="n">tv_usec</span><span class="p">;</span>  <span class="c1">// 微秒（1秒=1,000,000微秒）
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span></span><span class="line"><span class="cl">    <span class="kt">long</span> <span class="n">tv_usec</span><span class="p">;</span>  <span class="c1">// 微秒（1秒=1,000,000微秒）
+</span></span></span><span class="line"><span class="cl"><span class="p">};</span>
 </span></span></code></pre></td></tr></table>
 </div>
 </div><ul>
@@ -531,17 +531,17 @@ epoll主动维护一个就绪事件链表，用户可以直接得到就绪事件
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">timeval</span> <span class="n">timeout</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">};</span>  <span class="c1">// 1秒超时
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span></span><span class="line"><span class="cl"><span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="nf">select</span><span class="p">(</span><span class="n">nfds</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">readfds</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">timeout</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">ret</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">        <span class="c1">// 处理就绪fd
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
+</span></span></span><span class="line"><span class="cl">    <span class="p">}</span>
 </span></span><span class="line"><span class="cl">    <span class="cm">/*
 </span></span></span><span class="line"><span class="cl"><span class="cm">      select 可能会修改 timeout 参数（剩余时间），循环调用时应每次重置。
 </span></span></span><span class="line"><span class="cl"><span class="cm">      如果不重置，当 timeout 被修改为0时，会出现CPU 100% 占用问题。
 </span></span></span><span class="line"><span class="cl"><span class="cm">    */</span>
 </span></span><span class="line"><span class="cl">    <span class="n">timeout</span><span class="p">.</span><span class="n">tv_sec</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="c1">// 每次循环重置超时
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
 </div>
@@ -586,7 +586,7 @@ epoll主动维护一个就绪事件链表，用户可以直接得到就绪事件
     
 
 <aside class="related-content--wrapper">
-    <h2 class="section-title">Related content</h2>
+    <h2 class="section-title">相关文章</h2>
     <div class="related-content">
         <div class="flex article-list--tile">
             
@@ -596,13 +596,13 @@ epoll主动维护一个就绪事件链表，用户可以直接得到就绪事件
         
         
             <div class="article-image">
-                <img src="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover.8c0b22750436acf837a0e27ebab14500_hu_ffb8773c4963df28.jpg" 
+                <img src="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover.95b02d7f50974a98f67ee02303549f53_hu_27cbb58809ed25a1.webp" 
                         width="250" 
                         height="150" 
                         loading="lazy"
                         alt="Featured image of post 程序ELF格式布局初探"
                         
-                        data-hash="md5-jAsidQQ2rPg3oOJ&#43;urFFAA==">
+                        data-hash="md5-lbAtf1CXSpj2fuAjA1SfUw==">
                 
             </div>
         
@@ -620,7 +620,7 @@ epoll主动维护一个就绪事件链表，用户可以直接得到就绪事件
         
         
             <div class="article-image">
-                <img src="/p/linux-proc-file-system/cover.9de61f04c0763783daf0ad63a6b5a330_hu_bc48bf34997a1e6d.png" 
+                <img src="/p/linux-proc-file-system/cover.9de61f04c0763783daf0ad63a6b5a330_hu_fe692bbde3030115.png" 
                         width="250" 
                         height="150" 
                         loading="lazy"
@@ -644,7 +644,7 @@ epoll主动维护一个就绪事件链表，用户可以直接得到就绪事件
         
         
             <div class="article-image">
-                <img src="/p/linux-command-daily-learning/cover.6f1fc27e7c6dd18f63cb338db59d5c13_hu_d363ddb6ab4eb88d.jpg" 
+                <img src="/p/linux-command-daily-learning/cover.6f1fc27e7c6dd18f63cb338db59d5c13_hu_b51cf58b1024e272.jpg" 
                         width="250" 
                         height="150" 
                         loading="lazy"
@@ -668,13 +668,13 @@ epoll主动维护一个就绪事件链表，用户可以直接得到就绪事件
         
         
             <div class="article-image">
-                <img src="/p/elf-format/cover.54add658b8d2b0451a27cc39cb2720a0_hu_cacb52883a74ab2e.png" 
+                <img src="/p/elf-format/cover.360e4d33c543e96cddc85cbac26b8e4b_hu_7914c3a3685ebfa8.jpg" 
                         width="250" 
                         height="150" 
                         loading="lazy"
                         alt="Featured image of post ELF格式解析"
                         data-key="elf-format" 
-                        data-hash="md5-VK3WWLjSsEUaJ8w5yycgoA==">
+                        data-hash="md5-Ng5NM8VD6WzdyFy6wmuOSw==">
                 
             </div>
         
@@ -692,13 +692,13 @@ epoll主动维护一个就绪事件链表，用户可以直接得到就绪事件
         
         
             <div class="article-image">
-                <img src="/p/gdb-advance-tips/cover.fbb800aca25cac30cb4a425b547b438b_hu_396b4e5c1343b36c.jpg" 
+                <img src="/p/gdb-advance-tips/cover.7e02921036d372bd79f545ff09b3f770_hu_c88539b10b1f568d.jpg" 
                         width="250" 
                         height="150" 
                         loading="lazy"
                         alt="Featured image of post GDB高级调试技巧"
                         data-key="gdb-advance-tips" 
-                        data-hash="md5-&#43;7gArKJcrDDLSkJbVHtDiw==">
+                        data-hash="md5-fgKSEDbTcr159UX/CbP3cA==">
                 
             </div>
         
@@ -725,12 +725,12 @@ epoll主动维护一个就绪事件链表，用户可以直接得到就绪事件
         
             2020 - 
         
-        2025 Weijie
+        2026 Weijie
     </section>
     
     <section class="powerby">
-        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
-        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
     </section>
 </footer>
 
@@ -819,7 +819,7 @@ epoll主动维护一个就绪事件链表，用户可以直接得到就绪事件
                 src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
                 
                 >
-            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+            </script><script type="text/javascript" src="/ts/main.6fab8ce3b3a5e6a0da505041cdcb48364c581d3147da79145e96038cd4bcacbb.js" defer></script>
 <script>
     (function () {
         const customFont = document.createElement('link');

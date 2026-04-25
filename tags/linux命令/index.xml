@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>Linux命令 on Weijie&#39;s Blog Site</title>
-        <link>https://example.com/tags/linux%E5%91%BD%E4%BB%A4/</link>
+        <link>http://localhost:1313/tags/linux%E5%91%BD%E4%BB%A4/</link>
         <description>Recent content in Linux命令 on Weijie&#39;s Blog Site</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>Weijie</copyright>
-        <lastBuildDate>Tue, 12 Nov 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/linux%E5%91%BD%E4%BB%A4/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Tue, 12 Nov 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/linux%E5%91%BD%E4%BB%A4/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>【更新中】每天学习一个Linux命令</title>
-        <link>https://example.com/p/linux-command-daily-learning/</link>
+        <link>http://localhost:1313/p/linux-command-daily-learning/</link>
         <pubDate>Tue, 12 Nov 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/p/linux-command-daily-learning/</guid>
-        <description>&lt;img src="https://example.com/p/linux-command-daily-learning/cover.jpg" alt="Featured image of post 【更新中】每天学习一个Linux命令" /&gt;&lt;h2 id=&#34;readelf&#34;&gt;READELF
+        <guid>http://localhost:1313/p/linux-command-daily-learning/</guid>
+        <description>&lt;img src="http://localhost:1313/p/linux-command-daily-learning/cover.jpg" alt="Featured image of post 【更新中】每天学习一个Linux命令" /&gt;&lt;h2 id=&#34;readelf&#34;&gt;READELF
 &lt;/h2&gt;&lt;p&gt;除了 -v 和 -H 之外，必须至少提供一个选项。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;-a -all  相当于指定 &amp;ndash;file-header &amp;ndash;program-headers &amp;ndash;sections &amp;ndash;symbols &amp;ndash;relocs &amp;ndash;dynamic &amp;ndash;notes和&amp;ndash;version-info&lt;/li&gt;

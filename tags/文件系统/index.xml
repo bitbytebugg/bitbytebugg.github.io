@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>文件系统 on Weijie&#39;s Blog Site</title>
-        <link>https://example.com/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/</link>
+        <link>http://localhost:1313/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/</link>
         <description>Recent content in 文件系统 on Weijie&#39;s Blog Site</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>Weijie</copyright>
-        <lastBuildDate>Wed, 20 Nov 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Wed, 20 Nov 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Linux中几个特殊文件系统</title>
-        <link>https://example.com/p/linux-proc-file-system/</link>
+        <link>http://localhost:1313/p/linux-proc-file-system/</link>
         <pubDate>Wed, 20 Nov 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/p/linux-proc-file-system/</guid>
-        <description>&lt;img src="https://example.com/p/linux-proc-file-system/cover.png" alt="Featured image of post Linux中几个特殊文件系统" /&gt;&lt;h2 id=&#34;procfs&#34;&gt;ProcFS
+        <guid>http://localhost:1313/p/linux-proc-file-system/</guid>
+        <description>&lt;img src="http://localhost:1313/p/linux-proc-file-system/cover.png" alt="Featured image of post Linux中几个特殊文件系统" /&gt;&lt;h2 id=&#34;procfs&#34;&gt;ProcFS
 &lt;/h2&gt;&lt;p&gt;通过 &lt;code&gt;mount | grep proc&lt;/code&gt; 查看procfs的挂载情况。&lt;/p&gt;
 &lt;p&gt;procfs 的核心工作原理是：将内核数据结构、进程信息和系统运行状态，以“文件”和“目录”的抽象形式动态地暴露给用户空间。 这些“文件”并不存在于磁盘上；当读取或写入它们时，内核会动态地生成内容或触发相应的内核函数。&lt;/p&gt;
 &lt;p&gt;可以把它理解为一个只存在于内存中的、动态的、交互式的内核状态报告和配置界面。它的挂载点通常是 /proc。&lt;/p&gt;

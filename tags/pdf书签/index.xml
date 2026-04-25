@@ -2,23 +2,23 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>PDF书签 on Weijie&#39;s Blog Site</title>
-        <link>https://example.com/tags/pdf%E4%B9%A6%E7%AD%BE/</link>
+        <link>http://localhost:1313/tags/pdf%E4%B9%A6%E7%AD%BE/</link>
         <description>Recent content in PDF书签 on Weijie&#39;s Blog Site</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>Weijie</copyright>
-        <lastBuildDate>Fri, 27 Sep 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/pdf%E4%B9%A6%E7%AD%BE/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 27 Sep 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/pdf%E4%B9%A6%E7%AD%BE/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>PDF电子书添加书签的自动化探索</title>
-        <link>https://example.com/p/pdf%E7%94%B5%E5%AD%90%E4%B9%A6%E6%B7%BB%E5%8A%A0%E4%B9%A6%E7%AD%BE%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A2%E7%B4%A2/</link>
+        <link>http://localhost:1313/p/pdf%E7%94%B5%E5%AD%90%E4%B9%A6%E6%B7%BB%E5%8A%A0%E4%B9%A6%E7%AD%BE%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A2%E7%B4%A2/</link>
         <pubDate>Fri, 27 Sep 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/p/pdf%E7%94%B5%E5%AD%90%E4%B9%A6%E6%B7%BB%E5%8A%A0%E4%B9%A6%E7%AD%BE%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A2%E7%B4%A2/</guid>
-        <description>&lt;img src="https://example.com/p/pdf%E7%94%B5%E5%AD%90%E4%B9%A6%E6%B7%BB%E5%8A%A0%E4%B9%A6%E7%AD%BE%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A2%E7%B4%A2/cover.jpg" alt="Featured image of post PDF电子书添加书签的自动化探索" /&gt;&lt;h2 id=&#34;背景&#34;&gt;背景
+        <guid>http://localhost:1313/p/pdf%E7%94%B5%E5%AD%90%E4%B9%A6%E6%B7%BB%E5%8A%A0%E4%B9%A6%E7%AD%BE%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A2%E7%B4%A2/</guid>
+        <description>&lt;img src="http://localhost:1313/p/pdf%E7%94%B5%E5%AD%90%E4%B9%A6%E6%B7%BB%E5%8A%A0%E4%B9%A6%E7%AD%BE%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A2%E7%B4%A2/cover.jpg" alt="Featured image of post PDF电子书添加书签的自动化探索" /&gt;&lt;h2 id=&#34;背景&#34;&gt;背景
 &lt;/h2&gt;&lt;p&gt;有些扫面版的电子书会有这种形式的书签，这看起来不是手动添加的，更像是通过扫描程序自动生成的。这时我就有了一个想法，能否通过程序实现自动添加PDF电子书的书签。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://example.com/p/pdf%E7%94%B5%E5%AD%90%E4%B9%A6%E6%B7%BB%E5%8A%A0%E4%B9%A6%E7%AD%BE%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A2%E7%B4%A2/%E8%87%AA%E5%8A%A8%E4%B9%A6%E7%AD%BE.jpg&#34;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/pdf%E7%94%B5%E5%AD%90%E4%B9%A6%E6%B7%BB%E5%8A%A0%E4%B9%A6%E7%AD%BE%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A2%E7%B4%A2/%E8%87%AA%E5%8A%A8%E4%B9%A6%E7%AD%BE.jpg&#34;
 	width=&#34;375&#34;
 	height=&#34;580&#34;
-	srcset=&#34;https://example.com/p/pdf%E7%94%B5%E5%AD%90%E4%B9%A6%E6%B7%BB%E5%8A%A0%E4%B9%A6%E7%AD%BE%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A2%E7%B4%A2/%E8%87%AA%E5%8A%A8%E4%B9%A6%E7%AD%BE_hu_df6d2640813abda5.jpg 480w, https://example.com/p/pdf%E7%94%B5%E5%AD%90%E4%B9%A6%E6%B7%BB%E5%8A%A0%E4%B9%A6%E7%AD%BE%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A2%E7%B4%A2/%E8%87%AA%E5%8A%A8%E4%B9%A6%E7%AD%BE_hu_b5820d77b7f91219.jpg 1024w&#34;
+	srcset=&#34;http://localhost:1313/p/pdf%E7%94%B5%E5%AD%90%E4%B9%A6%E6%B7%BB%E5%8A%A0%E4%B9%A6%E7%AD%BE%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A2%E7%B4%A2/%E8%87%AA%E5%8A%A8%E4%B9%A6%E7%AD%BE_hu_5be3080d96360d56.jpg 480w, http://localhost:1313/p/pdf%E7%94%B5%E5%AD%90%E4%B9%A6%E6%B7%BB%E5%8A%A0%E4%B9%A6%E7%AD%BE%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E6%8E%A2%E7%B4%A2/%E8%87%AA%E5%8A%A8%E4%B9%A6%E7%AD%BE_hu_26015593376cc86f.jpg 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 	

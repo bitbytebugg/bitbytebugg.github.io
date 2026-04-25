@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="zh-cn" dir="ltr">
-    <head><meta charset='utf-8'>
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Linux API Linux中所有执行IO操作的系统调用都围绕着文件描述符来进行，文件描述符是一个非负整数，来指代打开的文件。这里&quot;打开的文件&quot;包括管道、FIFO、socket、终端、设备和普通文件。针对每个进程，文件描述符都自成一套：\n">
 <title>Linux文件IO操作总结</title>
 
-<link rel='canonical' href='https://example.com/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/'>
+<link rel='canonical' href='http://localhost:1313/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Linux文件IO操作总结">
 <meta property='og:description' content="Linux API Linux中所有执行IO操作的系统调用都围绕着文件描述符来进行，文件描述符是一个非负整数，来指代打开的文件。这里&quot;打开的文件&quot;包括管道、FIFO、socket、终端、设备和普通文件。针对每个进程，文件描述符都自成一套：\n">
-<meta property='og:url' content='https://example.com/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/'>
+<meta property='og:url' content='http://localhost:1313/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/'>
 <meta property='og:site_name' content='Weijie&#39;s Blog Site'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Linux编程' /><meta property='article:tag' content='文件IO' /><meta property='article:tag' content='文件描述符' /><meta property='article:tag' content='文件指针' /><meta property='article:published_time' content='2024-08-02T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-08-02T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover.jpg' />
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Linux编程' /><meta property='article:tag' content='文件IO' /><meta property='article:tag' content='文件描述符' /><meta property='article:tag' content='文件指针' /><meta property='article:published_time' content='2024-08-02T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-08-02T00:00:00&#43;00:00'/><meta property='og:image' content='http://localhost:1313/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover.webp' />
 <meta name="twitter:title" content="Linux文件IO操作总结">
 <meta name="twitter:description" content="Linux API Linux中所有执行IO操作的系统调用都围绕着文件描述符来进行，文件描述符是一个非负整数，来指代打开的文件。这里&quot;打开的文件&quot;包括管道、FIFO、socket、终端、设备和普通文件。针对每个进程，文件描述符都自成一套：\n"><meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content='https://example.com/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover.jpg' />
+    <meta name="twitter:image" content='http://localhost:1313/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover.webp' />
     </head>
     <body class="
     article-page
@@ -41,7 +41,7 @@
     })();
 </script>
 <div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
-    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
         <span class="hamburger-box">
             <span class="hamburger-inner"></span>
         </span>
@@ -188,7 +188,7 @@
 
 
 
-                        <span>Dark Mode</span>
+                        <span>暗色模式</span>
                     </li>
                 
             </ol>
@@ -213,7 +213,7 @@
 
 
         </div>
-        <h2 class="widget-title section-title">Table of contents</h2>
+        <h2 class="widget-title section-title">目录</h2>
         
         <div class="widget--toc">
             <nav id="TableOfContents">
@@ -237,10 +237,10 @@
     <header class="article-header">
         <div class="article-image">
             <a href="/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/">
-                <img src="/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover_hu_beaf84dc1d7a68e6.jpg"
-                        srcset="/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover_hu_beaf84dc1d7a68e6.jpg 800w, /p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover_hu_85b403e6ef7a0ba7.jpg 1600w"
+                <img src="/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover_hu_560e66d9633ee810.webp"
+                        srcset="/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover_hu_560e66d9633ee810.webp 800w, /p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover_hu_3ab9fd2f96c18e52.webp 1600w"
                         width="800" 
-                        height="420" 
+                        height="450" 
                         loading="lazy"
                         alt="Featured image of post Linux文件IO操作总结" />
                 
@@ -298,7 +298,7 @@
 
 
                 <time class="article-time--reading">
-                    3 minute read
+                    阅读时长: 3 分钟
                 </time>
             </div>
         
@@ -434,7 +434,7 @@
     
 
 <aside class="related-content--wrapper">
-    <h2 class="section-title">Related content</h2>
+    <h2 class="section-title">相关文章</h2>
     <div class="related-content">
         <div class="flex article-list--tile">
             
@@ -444,7 +444,7 @@
         
         
             <div class="article-image">
-                <img src="/p/linux-command-daily-learning/cover.6f1fc27e7c6dd18f63cb338db59d5c13_hu_d363ddb6ab4eb88d.jpg" 
+                <img src="/p/linux-command-daily-learning/cover.6f1fc27e7c6dd18f63cb338db59d5c13_hu_b51cf58b1024e272.jpg" 
                         width="250" 
                         height="150" 
                         loading="lazy"
@@ -468,13 +468,13 @@
         
         
             <div class="article-image">
-                <img src="/p/gdb-advance-tips/cover.fbb800aca25cac30cb4a425b547b438b_hu_396b4e5c1343b36c.jpg" 
+                <img src="/p/gdb-advance-tips/cover.7e02921036d372bd79f545ff09b3f770_hu_c88539b10b1f568d.jpg" 
                         width="250" 
                         height="150" 
                         loading="lazy"
                         alt="Featured image of post GDB高级调试技巧"
                         data-key="gdb-advance-tips" 
-                        data-hash="md5-&#43;7gArKJcrDDLSkJbVHtDiw==">
+                        data-hash="md5-fgKSEDbTcr159UX/CbP3cA==">
                 
             </div>
         
@@ -492,7 +492,7 @@
         
         
             <div class="article-image">
-                <img src="/p/gdb-use-guide/cover.cecdc30ee1ccb2f69fe667fcf8489e2b_hu_f58864ec373a3d7a.jpg" 
+                <img src="/p/gdb-use-guide/cover.cecdc30ee1ccb2f69fe667fcf8489e2b_hu_eeae854c665ac777.jpg" 
                         width="250" 
                         height="150" 
                         loading="lazy"
@@ -516,7 +516,7 @@
         
         
             <div class="article-image">
-                <img src="/p/linux-epoll-api/cover.ec8e4fac264ca8a7bb92b3774bf3a8a5_hu_f6397f5714a1583.jpg" 
+                <img src="/p/linux-epoll-api/cover.ec8e4fac264ca8a7bb92b3774bf3a8a5_hu_bf3d1afd5c535a69.jpg" 
                         width="250" 
                         height="150" 
                         loading="lazy"
@@ -540,7 +540,7 @@
         
         
             <div class="article-image">
-                <img src="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover.8c0b22750436acf837a0e27ebab14500_hu_ffb8773c4963df28.jpg" 
+                <img src="/p/%E7%A8%8B%E5%BA%8Felf%E6%A0%BC%E5%BC%8F%E5%B8%83%E5%B1%80%E5%88%9D%E6%8E%A2/cover.8c0b22750436acf837a0e27ebab14500_hu_1fd3e959ff90d9e3.jpg" 
                         width="250" 
                         height="150" 
                         loading="lazy"
@@ -573,12 +573,12 @@
         
             2020 - 
         
-        2025 Weijie
+        2026 Weijie
     </section>
     
     <section class="powerby">
-        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
-        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
     </section>
 </footer>
 
@@ -667,7 +667,7 @@
                 src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
                 
                 >
-            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+            </script><script type="text/javascript" src="/ts/main.6fab8ce3b3a5e6a0da505041cdcb48364c581d3147da79145e96038cd4bcacbb.js" defer></script>
 <script>
     (function () {
         const customFont = document.createElement('link');

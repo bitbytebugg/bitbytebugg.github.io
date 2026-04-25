@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>主板芯片 on Weijie&#39;s Blog Site</title>
-        <link>https://example.com/tags/%E4%B8%BB%E6%9D%BF%E8%8A%AF%E7%89%87/</link>
+        <link>http://localhost:1313/tags/%E4%B8%BB%E6%9D%BF%E8%8A%AF%E7%89%87/</link>
         <description>Recent content in 主板芯片 on Weijie&#39;s Blog Site</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>Weijie</copyright>
-        <lastBuildDate>Mon, 05 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/%E4%B8%BB%E6%9D%BF%E8%8A%AF%E7%89%87/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Mon, 05 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/%E4%B8%BB%E6%9D%BF%E8%8A%AF%E7%89%87/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>计算机启动过程</title>
-        <link>https://example.com/p/computer-booting-process/</link>
+        <link>http://localhost:1313/p/computer-booting-process/</link>
         <pubDate>Mon, 05 Aug 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/p/computer-booting-process/</guid>
-        <description>&lt;img src="https://example.com/p/computer-booting-process/cover.jpg" alt="Featured image of post 计算机启动过程" /&gt;&lt;p&gt;我们启动计算机的第一步实际上是从插上主机电源开始的，因为从此时开始主板上已经产生电信号了。所以我们的故事也从计算机电源的开启过程讲起。&lt;/p&gt;
+        <guid>http://localhost:1313/p/computer-booting-process/</guid>
+        <description>&lt;img src="http://localhost:1313/p/computer-booting-process/cover.webp" alt="Featured image of post 计算机启动过程" /&gt;&lt;p&gt;我们启动计算机的第一步实际上是从插上主机电源开始的，因为从此时开始主板上已经产生电信号了。所以我们的故事也从计算机电源的开启过程讲起。&lt;/p&gt;
 &lt;h2 id=&#34;atx供电电路&#34;&gt;ATX供电电路
 &lt;/h2&gt;&lt;p&gt;PC电源不仅输出电压，还要与主板有信号联系，两者在时间次序上有一定的关系，这个次序也是数字电路中经常提到的概念——时序。时序是电源与主板良好配合的重要条件，也是导致电脑无法正常开关机，以及电源与主板不兼容的最常见原因。&lt;/p&gt;
 &lt;p&gt;ATX电源和主板在开机过程中交互的信号有两个：&lt;/p&gt;
@@ -34,10 +34,10 @@
     &gt;电源保持时间&lt;/a&gt;和 P.G信号的关系不大。电源保持时间是指在失去交流电输入时，PC电源在100%负载的情况下，各路输出的保持时间（因为有电容元件的关系，插头断电后电源输出线上的电流不会立刻归0，一般主电容越大，这个电流持续时间越长）。ATX规范里这项标准要求不低于16ms。当非正常关机时，主板无法给出关机信号，此时电源会探测到交流断电，并把P.G信号变为低电平通知主板，主板立刻进行硬件的紧急复位，以保护硬件不会受损。这种情况电源通知主板断电后，至少还要保持千分之一秒的正常输出电压，供主板进行复位，否则有可能造某些硬件的损坏。我猜测这里保持时间超过1ms并不能保证硬件不损坏，因为上面说过各路电压在P.G信号消失的100ms后断电，所以如果保持时间在100ms以上应该是可以保证硬件不损坏的。但是ATX规范的电源保持时间16ms虽然比1ms大但是小于非断电保持时间100ms，即使达到ATX规范给的断电保持时间，还是有可能出现硬件损坏的。所以电源断电保持时间这个参数并不是严格意义上的断电保护机制，而是一种确保断电保护机制（UPS）能够实行的措施，所以16ms只是给UPS启动并正常工作的时间。&lt;/p&gt;
 &lt;h2 id=&#34;主板触发电路&#34;&gt;主板触发电路
 &lt;/h2&gt;&lt;p&gt;“主板触发电路”应该是电脑维修中的一个专业的术语。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://example.com/p/computer-booting-process/%E4%B8%BB%E6%9D%BF%E8%A7%A6%E5%8F%91%E7%94%B5%E8%B7%AF.webp&#34;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/computer-booting-process/%E4%B8%BB%E6%9D%BF%E8%A7%A6%E5%8F%91%E7%94%B5%E8%B7%AF.webp&#34;
 	width=&#34;1920&#34;
 	height=&#34;879&#34;
-	srcset=&#34;https://example.com/p/computer-booting-process/%E4%B8%BB%E6%9D%BF%E8%A7%A6%E5%8F%91%E7%94%B5%E8%B7%AF_hu_f0e327749c38e163.webp 480w, https://example.com/p/computer-booting-process/%E4%B8%BB%E6%9D%BF%E8%A7%A6%E5%8F%91%E7%94%B5%E8%B7%AF_hu_d222bfac1a88b306.webp 1024w&#34;
+	srcset=&#34;http://localhost:1313/p/computer-booting-process/%E4%B8%BB%E6%9D%BF%E8%A7%A6%E5%8F%91%E7%94%B5%E8%B7%AF_hu_8e8821e19745297a.webp 480w, http://localhost:1313/p/computer-booting-process/%E4%B8%BB%E6%9D%BF%E8%A7%A6%E5%8F%91%E7%94%B5%E8%B7%AF_hu_788430ae30fbaa7a.webp 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 	
@@ -80,10 +80,10 @@
 &lt;/ol&gt;
 &lt;h2 id=&#34;cpu-reset-vector&#34;&gt;CPU Reset Vector
 &lt;/h2&gt;&lt;p&gt;关于CPU复位向量网上有两种解答，0xFFFF_FFF0、0xF_FFF0。当然第一种是对的，这个Intel SDM vol3 chapter9有详细说明(9.1.4 First Instruction Executed)就是第一种。这个地址自从intel发布80386后就延续下来了。第二种地址在早年间也是对的，在intel还在使用16位cpu也就是8086和8088时，地址空间是1M，第一条指令的地址就是0xF_FFF0。回答这种地址应该看的是早年的书，或者是理解错了，认为PC刚开机时是16位实模式，这种模式的地址计算方式是使用CS和IP寄存器中的值($CS \times 16 + IP$)，这么算下来确实是0xF_FFF0。但是复位时并不是使用这种计算方式，&lt;strong&gt;虽然CPU初始确实是16位实模式，但这是在复位后进入16位模式的&lt;/strong&gt;。实际上，Intel规定32位、64位CPU复位向量就是0xFFFF_FFF0，只有CS寄存器中初始值被改变后才进入16位模式。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://example.com/p/computer-booting-process/intel-sdm-first-instruction-exe.webp&#34;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/computer-booting-process/intel-sdm-first-instruction-exe.webp&#34;
 	width=&#34;1102&#34;
 	height=&#34;431&#34;
-	srcset=&#34;https://example.com/p/computer-booting-process/intel-sdm-first-instruction-exe_hu_e69562ab52605430.webp 480w, https://example.com/p/computer-booting-process/intel-sdm-first-instruction-exe_hu_7ce2cb765a92fec5.webp 1024w&#34;
+	srcset=&#34;http://localhost:1313/p/computer-booting-process/intel-sdm-first-instruction-exe_hu_d01c8af6ef008447.webp 480w, http://localhost:1313/p/computer-booting-process/intel-sdm-first-instruction-exe_hu_e7eaa825902089fd.webp 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 	
@@ -100,10 +100,10 @@
 &lt;p&gt;BIOS代码存储在EPROM里，通过硬件也就是北桥南桥芯片把EPROM内的程序映射到两个地方，一个是从FFFF_FFFFh（4GB）处向下扩展，另一个是从F_FFFFh（1MB）处向下扩展）。
 第一个映射是因为现代CPU第一条指令在FFFF_FFF0h，所以EPROM必须在那个位置。第二个映射是为兼容16位CPU时代。注意此时内存还无法使用，只是把地址空间分配给了EPROM，CPU访问这段地址就相当于在直接访问EPROM里的数据。这里地址空间受CPU地址线个数控制，不是受RAM的空间限制。&lt;/p&gt;
 &lt;h2 id=&#34;南桥芯片和北桥芯片&#34;&gt;南桥芯片和北桥芯片
-&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/computer-booting-process/%E5%8D%97%E6%A1%A5%E5%8C%97%E6%A1%A5%E6%9E%B6%E6%9E%84%E5%9B%BE.webp&#34;
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/computer-booting-process/%E5%8D%97%E6%A1%A5%E5%8C%97%E6%A1%A5%E6%9E%B6%E6%9E%84%E5%9B%BE.webp&#34;
 	width=&#34;488&#34;
 	height=&#34;360&#34;
-	srcset=&#34;https://example.com/p/computer-booting-process/%E5%8D%97%E6%A1%A5%E5%8C%97%E6%A1%A5%E6%9E%B6%E6%9E%84%E5%9B%BE_hu_66c9f48d447fcf8f.webp 480w, https://example.com/p/computer-booting-process/%E5%8D%97%E6%A1%A5%E5%8C%97%E6%A1%A5%E6%9E%B6%E6%9E%84%E5%9B%BE_hu_e2e1859f240adc26.webp 1024w&#34;
+	srcset=&#34;http://localhost:1313/p/computer-booting-process/%E5%8D%97%E6%A1%A5%E5%8C%97%E6%A1%A5%E6%9E%B6%E6%9E%84%E5%9B%BE_hu_b90161402b0cca93.webp 480w, http://localhost:1313/p/computer-booting-process/%E5%8D%97%E6%A1%A5%E5%8C%97%E6%A1%A5%E6%9E%B6%E6%9E%84%E5%9B%BE_hu_94f0bf3eb72ec3c3.webp 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 	
@@ -123,7 +123,7 @@
 &lt;h3 id=&#34;南桥芯片&#34;&gt;南桥芯片
 &lt;/h3&gt;&lt;p&gt;南桥芯片就一个部分ICH也就是Input/Output Controller Hub。&lt;/p&gt;
 &lt;h2 id=&#34;什么是总线&#34;&gt;什么是总线
-&lt;/h2&gt;&lt;p&gt;参考 &lt;a class=&#34;link&#34; href=&#34;https://example.com/p/computer-bus/&#34; &gt;计算机总线&lt;/a&gt;&lt;/p&gt;
+&lt;/h2&gt;&lt;p&gt;参考 &lt;a class=&#34;link&#34; href=&#34;http://localhost:1313/p/computer-bus/&#34; &gt;计算机总线&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;前端总线&#34;&gt;前端总线
 &lt;/h2&gt;&lt;p&gt;Front Side Bus，缩写FSB。早期计算机北桥的MCH和IOH都在CPU外部，都是是通过FSB和CPU连接，所以此时它是CPU和外界交换数据的主要通道（内存，显卡，还有南桥的一些设备）。现代CPU已经摒弃了FSB，采用HT总线或者QPI总线。&lt;/p&gt;
 &lt;h2 id=&#34;ht总线&#34;&gt;HT总线
@@ -135,10 +135,10 @@
 &lt;/h2&gt;&lt;p&gt;后来intel发现，CPU通过北桥与显卡相连也很麻烦，不如直接通信方便，这样数据交换更加方便，于是干脆把PCI-E控制器也整合了进了CPU内部，这样一来，相当于北桥芯片组整个都集成到了CPU内部，主板上不再需要这个芯片组了，只剩下了南桥，这时CPU直接与“南桥”相连，他们之间的总线叫做DMI。（北桥的MCH和IOH是逐步集成到CPU内部的）DMI取代了以前的Hub-Link总线。DMI采用点对点的连接方式，具有PCI-E总线的优势。&lt;/p&gt;
 &lt;p&gt;Intel CPU 经过FSB—&amp;gt;QPI-&amp;gt;DMI总线的发展，CPU内部集成了内存控制器和PCI-E控制器，实现了直接和内存及显卡进行数据传输，而由于南桥则整合了几乎所有的I/O功能，因此CPU具备的DMI总线有多高频率意义已经不大了，因为磁盘类设备的速率无法跟上，再高的DMI总线也没有用。&lt;/p&gt;
 &lt;p&gt;最后通过一张图来对比这这几种总线之间的构建：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://example.com/p/computer-booting-process/%E5%90%84%E7%A7%8D%E6%80%BB%E7%BA%BF%E5%AF%B9%E6%AF%94.jpg&#34;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/computer-booting-process/%E5%90%84%E7%A7%8D%E6%80%BB%E7%BA%BF%E5%AF%B9%E6%AF%94.jpg&#34;
 	width=&#34;500&#34;
 	height=&#34;671&#34;
-	srcset=&#34;https://example.com/p/computer-booting-process/%E5%90%84%E7%A7%8D%E6%80%BB%E7%BA%BF%E5%AF%B9%E6%AF%94_hu_d3c86056dc3d3982.jpg 480w, https://example.com/p/computer-booting-process/%E5%90%84%E7%A7%8D%E6%80%BB%E7%BA%BF%E5%AF%B9%E6%AF%94_hu_7498d0605438b485.jpg 1024w&#34;
+	srcset=&#34;http://localhost:1313/p/computer-booting-process/%E5%90%84%E7%A7%8D%E6%80%BB%E7%BA%BF%E5%AF%B9%E6%AF%94_hu_a9d959d5b3d18b9d.jpg 480w, http://localhost:1313/p/computer-booting-process/%E5%90%84%E7%A7%8D%E6%80%BB%E7%BA%BF%E5%AF%B9%E6%AF%94_hu_ff58a6fad6121755.jpg 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 	

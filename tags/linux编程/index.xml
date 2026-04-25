@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>Linux编程 on Weijie&#39;s Blog Site</title>
-        <link>https://example.com/tags/linux%E7%BC%96%E7%A8%8B/</link>
+        <link>http://localhost:1313/tags/linux%E7%BC%96%E7%A8%8B/</link>
         <description>Recent content in Linux编程 on Weijie&#39;s Blog Site</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>Weijie</copyright>
-        <lastBuildDate>Fri, 02 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/linux%E7%BC%96%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 02 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/linux%E7%BC%96%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Linux文件IO操作总结</title>
-        <link>https://example.com/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/</link>
+        <link>http://localhost:1313/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/</link>
         <pubDate>Fri, 02 Aug 2024 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/</guid>
-        <description>&lt;img src="https://example.com/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover.jpg" alt="Featured image of post Linux文件IO操作总结" /&gt;&lt;h2 id=&#34;linux-api&#34;&gt;Linux API
+        <guid>http://localhost:1313/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/</guid>
+        <description>&lt;img src="http://localhost:1313/p/linux%E6%96%87%E4%BB%B6io%E6%93%8D%E4%BD%9C%E6%80%BB%E7%BB%93/cover.webp" alt="Featured image of post Linux文件IO操作总结" /&gt;&lt;h2 id=&#34;linux-api&#34;&gt;Linux API
 &lt;/h2&gt;&lt;p&gt;Linux中所有执行IO操作的系统调用都围绕着文件描述符来进行，文件描述符是一个非负整数，来指代打开的文件。这里&amp;quot;打开的文件&amp;quot;包括管道、FIFO、socket、终端、设备和普通文件。针对每个进程，文件描述符都自成一套：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;#include &amp;lt;unistd.h&amp;gt;&lt;/code&gt;&lt;/li&gt;
